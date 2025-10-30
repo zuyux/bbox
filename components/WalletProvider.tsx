@@ -18,7 +18,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (saved) {
       setAddress(saved);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Intentionally empty - only run on mount to restore saved address
 
   useEffect(() => {

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail, emailTemplates } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,19 +7,14 @@ export async function POST(request: NextRequest) {
     if (!email || !address) {
       return NextResponse.json({ error: 'Missing email or address' }, { status: 400 });
     }
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-    const html = `
-      <h2>Welcome to BBOX!</h2>
-      <p>Your account has been created.</p>
-      <p><strong>Address:</strong> ${address}</p>
-      <p>Keep your mnemonic safe. Never share it with anyone.</p>
-    `;
-    await resend.emails.send({
-      from: fromEmail,
-      to: [email],
-      subject: 'BBOX Account Created',
-      html,
+
+    const emailTemplate = emailTemplates.accountCreated(address);
+    await sendEmail({
+      to: email,
+      subject: emailTemplate.subject,
+      html: emailTemplate.html,
     });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to send account created email:', error);

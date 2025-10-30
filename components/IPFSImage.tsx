@@ -121,7 +121,7 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
 
   const imageProps = {
     src: currentSrc,
-    alt: alt || '',
+    alt: alt || 'IPFS Image',
     className,
     onError: handleImageError,
     onLoad: handleImageLoad,
@@ -129,7 +129,7 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
     ...(fill ? { fill: true } : { width: width || 400, height: height || 400 })
   };
 
-  return <Image {...imageProps} />;
+  return <Image {...imageProps} alt={alt || 'IPFS Image'} />;
 };
 
 export default IPFSImage;
