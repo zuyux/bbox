@@ -135,7 +135,7 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
         <div className='fixed top-5 right-5 md:right-5 z-100'>
           <Button
             onClick={() => setShowGetInModal(true)}
-            className="title rounded-md px-2 md:px-6 py-4 md:py-2 text-xs md:text-sm bg-background/50 border-border border-[1px] hover:bg-[#000] hover:border-white text-foreground cursor-pointer select-none"
+            className="title rounded-md px-2 md:px-6 py-4 md:py-2 text-xs md:text-sm bg-background/50 border-border border-[1px] hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-200 text-foreground cursor-pointer select-none"
             {...buttonProps}
           >
             <span className="hidden md:inline">{children || 'CONNECT'}</span>

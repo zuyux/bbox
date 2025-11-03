@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,7 +43,7 @@ const appStats = getAppStats();
 
 function AppCard({ app }: { app: BitcoinApp }) {
   return (
-    <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+    <Card className="flex flex-col min-h-[340px] h-full hover:shadow-lg transition-shadow cursor-pointer">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -61,15 +62,17 @@ function AppCard({ app }: { app: BitcoinApp }) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex flex-wrap gap-1 mb-3">
-          {app.tags.map(tag => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
+      <CardContent className="pt-0 flex-1 flex flex-col justify-between">
+        <div>
+          <div className="flex flex-wrap gap-1 mb-3">
+            {app.tags.map(tag => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex items-center justify-between text-sm text-muted-foreground mt-auto">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <Download className="w-4 h-4" />
@@ -96,7 +99,7 @@ export default function HomePage() {
       
       <div className="container mx-auto px-4 pt-20 pb-12">
         {/* Hero Section */}
-        <div className="flex flex-col items-center justify-center text-center mb-16 min-h-screen">
+        <div className="flex flex-col items-center justify-center text-center mb-16 h-[80vh]">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
             The Open Bitcoin App Store
           </h1>
@@ -104,11 +107,13 @@ export default function HomePage() {
             Discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and smart contracts.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600">
-              Explore Apps
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button size="lg" className="bg-orange-500 hover:bg-orange-600" asChild>
+              <Link href="/apps">
+                Explore Apps
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
-            <Button size="lg" variant="outline">
+            <Button size="lg" variant="outline" className='cursor-pointer'>
               <Github className="mr-2 h-4 w-4" />
               Submit Your App
             </Button>
@@ -138,9 +143,11 @@ export default function HomePage() {
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Featured Apps</h2>
-            <Button variant="ghost">
-              View All
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button variant="ghost" asChild>
+              <Link href="/apps">
+                View All
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

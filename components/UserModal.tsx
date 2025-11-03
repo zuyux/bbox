@@ -165,15 +165,15 @@ export default function UserModal({ onClose }: UserModalProps) {
   };
 
   return (
-    <div className="fixed top-9 right-3 z-[200]">
+    <div className="fixed top-7 right-1 z-[200]">
       <div ref={modalRef} className="relative rounded-3xl p-4 w-[340px] flex flex-col items-center shadow-xl pointer-events-auto z-[201] opacity-0 translate-y-[-24px] animate-getinmodal backdrop-blur-md border bg-white dark:bg-black border-gray-200 dark:border-white/20 text-gray-900 dark:text-white">
         <div className="flex items-center w-full mb-6">
-          {/* MINT button on the left */}
+          {/* SUBMIT button on the left */}
           <button
-            onClick={() => { onClose(); router.push('/mint'); }}
-            className="px-6 py-1.5 bg-background/10 border border-foreground/50 text-foreground text-sm font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 cursor-pointer select-none mr-3"
+            onClick={() => { onClose(); router.push('/submit'); }}
+            className="px-6 py-1.5 bg-background/10 border border-foreground/50 text-foreground text-sm font-medium rounded-lg hover:bg-foreground hover:text-background transition-all duration-200 cursor-pointer select-none mr-3"
           >
-            MINT
+            SUBMIT
           </button>
           
           <Link
