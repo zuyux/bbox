@@ -101,10 +101,10 @@ export default function HomePage() {
         {/* Hero Section */}
         <div className="flex flex-col items-center justify-center text-center mb-16 h-[80vh]">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
-            The Open Bitcoin App Store
+            Our Open Bitcoin App Store
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and smart contracts.
+            Discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and on-chain contracts.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600" asChild>

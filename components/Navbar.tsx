@@ -14,8 +14,8 @@ export const Navbar = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 w-full z-50 select-none">
-        <div className="mx-auto px-2 md:px-4">
-          <div className="grid grid-cols-3 h-12 items-center">
+        <div className="mx-auto px-3 md:px-5">
+          <div className="grid grid-cols-3 items-center">
             {/* Left: Logo */}
             <div className="flex justify-start">
               <Link href="/">
@@ -25,7 +25,7 @@ export const Navbar = () => {
             
             {/* Center: Search Input */}
             <div className="flex justify-center">
-              <div className="relative md:max-w-xl my-3">
+              <div className="relative md:max-w-xl my-5">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-100" />
                 <input
                   type="text"
