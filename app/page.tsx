@@ -83,8 +83,10 @@ function AppCard({ app }: { app: BitcoinApp }) {
               {app.rating}
             </div>
           </div>
-          <Button size="sm" variant="outline">
-            View App
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`/apps/${app.id}`}>
+              View App
+            </Link>
           </Button>
         </div>
       </CardContent>

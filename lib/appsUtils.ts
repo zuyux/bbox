@@ -33,20 +33,21 @@ export const getFeaturedApps = (limit: number = 8): BitcoinApp[] => {
 };
 
 // Search apps
-export const searchApps = (query: string, limit: number = 20): BitcoinApp[] => {
+export const searchApps = (query: string, limit?: number): BitcoinApp[] => {
   if (!query.trim()) {
-    return allApps.slice(0, limit);
+    return limit ? allApps.slice(0, limit) : allApps;
   }
 
   const searchTerm = query.toLowerCase();
-  return allApps
+  const results = allApps
     .filter(app => 
       app.name.toLowerCase().includes(searchTerm) ||
       app.description.toLowerCase().includes(searchTerm) ||
       app.category.toLowerCase().includes(searchTerm) ||
       app.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-    )
-    .slice(0, limit);
+    );
+  
+  return limit ? results.slice(0, limit) : results;
 };
 
 // Get category statistics

@@ -179,7 +179,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
               placeholder="Search Bitcoin apps, developers, or users..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="flex-1 bg-transparent text-foreground text-lg placeholder-gray-400 outline-none"
+              className="flex-1 bg-transparent text-foreground text-lg placeholder:text-foreground/50 outline-none"
             />
             <button
               onClick={onClose}
