@@ -43,11 +43,11 @@ const appStats = getAppStats();
 
 function AppCard({ app }: { app: BitcoinApp }) {
   return (
-    <Card className="flex flex-col min-h-[340px] h-full hover:shadow-lg transition-shadow cursor-pointer">
-      <CardHeader className="pb-3">
+    <Card className="flex flex-col h-full hover:shadow-lg transition-shadow cursor-pointer">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <CardTitle className="text-lg">{app.name}</CardTitle>
               {app.verified && (
                 <Badge variant="secondary" className="text-xs">
@@ -56,31 +56,31 @@ function AppCard({ app }: { app: BitcoinApp }) {
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-2">
+            <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
               {app.description}
             </p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 flex-1 flex flex-col justify-between">
-        <div>
+      <CardContent className="pt-0 flex-1 flex flex-col">
+        <div className="flex-1 min-h-[60px]">
           <div className="flex flex-wrap gap-1 mb-3">
-            {app.tags.map(tag => (
+            {app.tags.slice(0, 3).map(tag => (
               <Badge key={tag} variant="outline" className="text-xs">
                 {tag}
               </Badge>
             ))}
           </div>
         </div>
-        <div className="flex items-center justify-between text-sm text-muted-foreground mt-auto">
+        <div className="flex items-center justify-between text-sm text-muted-foreground pt-3 border-t">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <Download className="w-4 h-4" />
-              {app.downloads}
+              <span className="text-xs">{app.downloads}</span>
             </div>
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              {app.rating}
+              <span className="text-xs">{app.rating}</span>
             </div>
           </div>
           <Button size="sm" variant="outline" asChild>
@@ -102,10 +102,10 @@ export default function HomePage() {
       <div className="container mx-auto px-4 pt-20 pb-12">
         {/* Hero Section */}
         <div className="flex flex-col items-center justify-center text-center mb-16 h-[80vh]">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent select-text">
             Our Open Bitcoin App Store
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto select-text">
             Discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and on-chain contracts.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
