@@ -26,7 +26,7 @@ function ProfileDisplay({ profile, isOwnProfile }: {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="bg-background/95 p-4 mt-16 md:p-6 rounded-lg border border-border">
+    <div className="mx-auto max-w-4xl bg-background/95 p-4 mt-16 md:p-6 rounded-lg border border-border">
       <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         <div className="flex-shrink-0">
           <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center overflow-hidden">
@@ -115,7 +115,7 @@ function ProfileDisplay({ profile, isOwnProfile }: {
 
 function BitcoinAppsSection({ apps }: { apps: BitcoinApp[] }) {
   return (
-    <div className="bg-background/95 p-4 md:p-6 rounded-lg border border-border">
+    <div className="mx-auto max-w-4xl bg-background/95 p-4 md:p-6 rounded-lg border border-border">
       <div className="flex items-center gap-2 mb-4">
         <Code className="text-orange-500" size={20} />
         <h2 className="text-lg font-semibold text-foreground">Bitcoin Apps</h2>

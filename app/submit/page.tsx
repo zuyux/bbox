@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -21,9 +21,20 @@ import {
   Zap,
   AlertCircle,
   CheckCircle,
-  Loader2
+  Loader2,
+  Coins,
+  Info
 } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
+import { getListingFee, formatListingFee } from '@/lib/bbox-contract';
+import { getPersistedNetwork } from '@/lib/network';
+
+// Extend Window interface for Stacks wallet
+declare global {
+  interface Window {
+    StacksProvider?: unknown;
+  }
+}
 
 interface AppFormData {
   name: string;
@@ -101,32 +112,41 @@ export default function PublishPage() {
   const router = useRouter();
   const currentAddress = useCurrentAddress();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'uploading' | 'signing' | 'pending' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [newTag, setNewTag] = useState('');
+  const [listingFee, setListingFee] = useState<{ token: string; amount: bigint } | null>(null);
+  const [network, setNetwork] = useState<string>('');
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Fetch listing fee and network on mount
+  useEffect(() => {
+    getListingFee().then(setListingFee);
+    setNetwork(getPersistedNetwork());
+  }, []);
 
   const [formData, setFormData] = useState<AppFormData>({
-    name: '',
-    description: '',
-    category: '',
-    tags: [],
-    version: '1.0.0',
-    website_url: '',
-    github_url: '',
-    documentation_url: '',
-    platforms: [],
-    supported_networks: [],
+    name: 'BBOX',
+    description: 'A decentralized app directory and funding layer for Bitcoin and its Layer-2 ecosystems (Stacks, Lightning, Runes, etc.). BBOX helps users discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and smart contracts.',
+    category: 'Infrastructure',
+    tags: ['bitcoin', 'stacks', 'directory', 'funding', 'open-source', 'dao'],
+    version: '0.2.0',
+    website_url: 'https://bbox.app',
+    github_url: 'https://github.com/zuyux/bbox',
+    documentation_url: 'https://github.com/zuyux/bbox#readme',
+    platforms: ['Web Application'],
+    supported_networks: ['Bitcoin', 'Stacks', 'Lightning Network'],
     license: 'MIT',
     pricing_model: 'free',
     price_usd: 0,
-    accepts_lightning: false,
-    lightning_address: '',
+    accepts_lightning: true,
+    lightning_address: 'zuyux@getalby.com',
     privacy_policy_url: '',
     terms_of_service_url: '',
-    data_collection_summary: '',
+    data_collection_summary: 'BBOX collects minimal data: wallet addresses for authentication, IPFS metadata for app listings, and on-chain transaction data for funding milestones. No personal information is required.',
     open_source: true,
-    publisher_name: '',
-    publisher_email: ''
+    publisher_name: 'Zuyux DAO',
+    publisher_email: 'hello@zuyux.xyz'
   });
 
   const handleInputChange = (field: keyof AppFormData, value: string | number | boolean | string[]) => {
@@ -169,40 +189,90 @@ export default function PublishPage() {
     }
 
     setIsSubmitting(true);
-    setSubmitStatus('idle');
+    setSubmitStatus('uploading');
     setErrorMessage('');
+    setValidationErrors([]);
 
     try {
-      const appData = {
-        ...formData,
-        publisher_address: currentAddress,
-        status: 'pending'
-      };
+      // Validate required fields
+      if (!formData.name || !formData.description || !formData.category || !formData.publisher_email) {
+        setValidationErrors(['Please fill in all required fields (Name, Description, Category, Email)']);
+        throw new Error('Please fill in all required fields');
+      }
 
-      const response = await fetch('/api/apps', {
+      if (formData.description.length < 50) {
+        setValidationErrors(['Description must be at least 50 characters long']);
+        throw new Error('Description is too short');
+      }
+
+      // Step 1: Submit to Supabase
+      setSubmitStatus('uploading');
+      const submitResponse = await fetch('/api/submit-app', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(appData),
+        body: JSON.stringify({
+          ...formData,
+          publisher_address: currentAddress,
+        }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to publish app');
+      const submitData = await submitResponse.json();
+
+      if (!submitResponse.ok || !submitData.success) {
+        throw new Error(submitData.error || 'Failed to submit app to database');
       }
 
+      console.log('✅ App submitted to database:', submitData.app.id);
+
+      // Step 2: Send confirmation emails
+      setSubmitStatus('signing'); // Reusing this status for "sending emails"
+      const emailResponse = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'app-submission',
+          data: {
+            appName: formData.name,
+            version: formData.version,
+            category: formData.category,
+            description: formData.description,
+            userEmail: formData.publisher_email,
+            publisherName: formData.publisher_name,
+            publisherAddress: currentAddress,
+            websiteUrl: formData.website_url,
+            githubUrl: formData.github_url,
+            pricingModel: formData.pricing_model,
+            license: formData.license,
+            openSource: formData.open_source,
+            acceptsLightning: formData.accepts_lightning,
+            tags: formData.tags,
+            platforms: formData.platforms,
+            supportedNetworks: formData.supported_networks,
+          },
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        console.error('⚠️ Failed to send emails, but app was submitted successfully');
+      } else {
+        console.log('✅ Confirmation emails sent');
+      }
+
+      // Step 3: Success! Redirect to success page
       setSubmitStatus('success');
       setTimeout(() => {
-        router.push('/apps');
-      }, 2000);
+        router.push('/submit/success');
+      }, 1000);
 
     } catch (error: unknown) {
-      console.error('Error publishing app:', error);
+      console.error('❌ Error publishing app:', error);
       const message = error instanceof Error ? error.message : 'Failed to publish app. Please try again.';
       setErrorMessage(message);
       setSubmitStatus('error');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -239,20 +309,55 @@ export default function PublishPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Publish Your Bitcoin App</h1>
             <p className="text-muted-foreground">
-              Submit your application to the Bitcoin app store. All submissions are reviewed before going live.
+              Submit your application to the Bitcoin app directory. All submissions are reviewed before going live. You&apos;ll receive a confirmation email once submitted.
             </p>
           </div>
 
           {/* Status Messages */}
+          {submitStatus === 'uploading' && (
+            <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                  <span className="text-blue-800 dark:text-blue-200">
+                    Submitting your app...
+                  </span>
+                </div>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-2 ml-7">
+                  Your app data is being saved to the database
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {submitStatus === 'signing' && (
+            <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
+                  <span className="text-orange-800 dark:text-orange-200">
+                    Sending confirmation emails...
+                  </span>
+                </div>
+                <p className="text-xs text-orange-700 dark:text-orange-300 mt-2 ml-7">
+                  You&apos;ll receive a confirmation shortly
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {submitStatus === 'success' && (
             <Card className="mb-6 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-green-800 dark:text-green-200">
-                    App submitted successfully! Redirecting to apps page...
+                  <span className="text-green-800 dark:text-green-200 font-semibold">
+                    App submitted successfully!
                   </span>
                 </div>
+                <p className="text-sm text-green-700 dark:text-green-300 mt-2 ml-7">
+                  Redirecting to success page...
+                </p>
               </CardContent>
             </Card>
           )}
@@ -260,11 +365,100 @@ export default function PublishPage() {
           {submitStatus === 'error' && (
             <Card className="mb-6 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
               <CardContent className="p-4">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <span className="text-red-800 dark:text-red-200 font-semibold block mb-1">
+                      {errorMessage}
+                    </span>
+                    {errorMessage.includes('wallet') && errorMessage.includes('install') && (
+                      <div className="mt-2 text-sm text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 p-3 rounded">
+                        <p className="font-semibold mb-2">💼 Install a Stacks Wallet:</p>
+                        <div className="space-y-2 text-xs">
+                          <div>
+                            <a 
+                              href="https://leather.io/install-extension" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="underline hover:text-red-900 dark:hover:text-red-100 font-semibold"
+                            >
+                              → Leather Wallet
+                            </a>
+                            <span className="ml-2">(Recommended)</span>
+                          </div>
+                          <div>
+                            <a 
+                              href="https://www.xverse.app/" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="underline hover:text-red-900 dark:hover:text-red-100 font-semibold"
+                            >
+                              → Xverse Wallet
+                            </a>
+                          </div>
+                          <p className="mt-2 italic">After installing, refresh this page and connect your wallet.</p>
+                        </div>
+                      </div>
+                    )}
+                    {errorMessage.includes('Contract not') && (
+                      <div className="mt-2 text-sm text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 p-3 rounded">
+                        <p className="font-semibold mb-2">📋 To deploy the contract:</p>
+                        <ol className="list-decimal list-inside space-y-1 text-xs">
+                          <li>Deploy bbox.clar to your Stacks testnet/mainnet</li>
+                          <li>Update the contract address in <code className="bg-red-200 dark:bg-red-800 px-1 rounded">lib/bbox-contract.ts</code></li>
+                          <li>Restart your development server</li>
+                        </ol>
+                      </div>
+                    )}
+                    {validationErrors.length > 0 && (
+                      <ul className="mt-2 space-y-1 text-sm text-red-700 dark:text-red-300">
+                        {validationErrors.map((err, idx) => (
+                          <li key={idx} className="flex items-start gap-1">
+                            <span className="text-red-500">•</span>
+                            <span>{err}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Network Warning */}
+          {network && network !== 'mainnet' && (
+            <Card className="mb-6 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20">
+              <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                  <span className="text-red-800 dark:text-red-200">
-                    {errorMessage}
-                  </span>
+                  <Info className="w-5 h-5 text-yellow-600" />
+                  <div>
+                    <span className="text-yellow-800 dark:text-yellow-200 font-semibold">
+                      Testing Mode: {network.charAt(0).toUpperCase() + network.slice(1)}
+                    </span>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                      You&apos;re submitting to the test network. This won&apos;t appear on mainnet.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Listing Fee Info Card */}
+          {listingFee && submitStatus === 'idle' && (
+            <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Coins className="w-5 h-5 text-orange-600" />
+                  <div>
+                    <div className="font-semibold text-orange-900 dark:text-orange-100">
+                      Listing Fee: {formatListingFee(listingFee.amount, listingFee.token)}
+                    </div>
+                    <div className="text-xs text-orange-800 dark:text-orange-200">
+                      One-time fee to publish your app on-chain • Paid in {listingFee.token}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -300,7 +494,12 @@ export default function PublishPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Description *</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="description">Description *</Label>
+                    <span className={`text-xs ${formData.description.length < 50 ? 'text-red-500' : 'text-muted-foreground'}`}>
+                      {formData.description.length} / 50 min
+                    </span>
+                  </div>
                   <Textarea
                     id="description"
                     value={formData.description}
@@ -309,6 +508,11 @@ export default function PublishPage() {
                     rows={4}
                     required
                   />
+                  {formData.description.length > 0 && formData.description.length < 50 && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Description must be at least 50 characters
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -344,10 +548,18 @@ export default function PublishPage() {
                     {formData.tags.map(tag => (
                       <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                         {tag}
-                        <X 
-                          className="w-3 h-3 cursor-pointer" 
-                          onClick={() => removeTag(tag)}
-                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeTag(tag);
+                          }}
+                          className="ml-1 hover:opacity-70"
+                          aria-label={`Remove ${tag} tag`}
+                        >
+                          <X className="w-3 h-3 cursor-pointer" />
+                        </button>
                       </Badge>
                     ))}
                   </div>
@@ -637,16 +849,22 @@ export default function PublishPage() {
               </Button>
               <Button
                 type="submit"
-                className="bg-orange-500 hover:bg-orange-600"
-                disabled={isSubmitting}
+                className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 cursor-pointer"
+                disabled={isSubmitting || !currentAddress}
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Publishing...
+                    {submitStatus === 'uploading' && 'Submitting...'}
+                    {submitStatus === 'signing' && 'Sending emails...'}
+                    {submitStatus === 'success' && 'Success!'}
+                    {(submitStatus === 'idle' || submitStatus === 'error' || submitStatus === 'pending') && 'Publishing...'}
                   </>
                 ) : (
-                  'Publish App'
+                  <>
+                    <Coins className="w-4 h-4 mr-2" />
+                    Submit App for Review
+                  </>
                 )}
               </Button>
             </div>

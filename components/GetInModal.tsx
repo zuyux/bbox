@@ -255,7 +255,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                   type="button"
                 >
                   <Shield className="w-[18px] h-[18px] mx-[5px]"/>
-                  <span className="text-center flex-1">
+                  <span className="text-center flex-1 text-white">
                     {isWalletEncrypted && walletInfo 
                       ? `Desbloquear ${formatStxAddress(walletInfo.address)}` 
                       : 'Crear Cuenta'}
