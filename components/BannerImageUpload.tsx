@@ -168,6 +168,7 @@ export function BannerImageUpload({
             {/* Remove button */}
             {(currentBannerCid || currentBannerUrl) && !previewUrl && (
               <button
+                type="button"
                 onClick={handleRemove}
                 disabled={isRemoving}
                 className="absolute top-2 right-2 p-2 bg-red-600 hover:bg-red-700 text-accent-background disabled:bg-red-600/50 rounded-lg transition-colors"
@@ -184,6 +185,7 @@ export function BannerImageUpload({
             {/* Cancel preview button */}
             {previewUrl && (
               <button
+                type="button"
                 onClick={cancelPreview}
                 className="absolute top-2 right-2 p-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors"
                 title="Cancel"
@@ -220,6 +222,7 @@ export function BannerImageUpload({
         
         {previewUrl && (
           <button
+            type="button"
             onClick={handleUpload}
             disabled={isUploading}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-background rounded-lg transition-colors text-sm cursor-pointer"

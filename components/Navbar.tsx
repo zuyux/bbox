@@ -19,7 +19,7 @@ export const Navbar = () => {
             {/* Left: Logo */}
             <div className="flex justify-start">
               <Link href="/">
-                <Image src="/bbox.png" alt="bbox Logo" width={21} height={21} className="object-contain"/>
+                <Image src="/bbox.png" alt="bbox Logo" width={27} height={27} className="-mt-4 object-contain"/>
               </Link>
             </div>
             

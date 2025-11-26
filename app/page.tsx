@@ -6,7 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Shield, Code, Coins, Globe, ArrowRight, Star, Download, Github } from 'lucide-react';
+import { Zap, Shield, Code, Coins, Globe, ArrowRight, Star, Download } from 'lucide-react';
 import { getFeaturedApps, getCategoryStats, getAppStats, BitcoinApp } from '@/lib/appsUtils';
 
 // Get featured apps using the utility function
@@ -111,14 +111,15 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600" asChild>
               <Link href="/apps">
-                Explore Apps
+                Explore
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className='cursor-pointer'>
-              <Github className="mr-2 h-4 w-4" />
-              Submit Your App
-            </Button>
+            <Link href="/submit" className="text-sm underline">
+              <Button size="lg" variant="outline" className='cursor-pointer'>
+                Submit Your App
+              </Button>
+            </Link>
           </div>
         </div>
 

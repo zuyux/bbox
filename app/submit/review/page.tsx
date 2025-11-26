@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -33,6 +34,7 @@ type SubmittedApp = {
   description: string;
   category: string;
   tags: string[];
+  icon_cid?: string | null;
   version: string;
   website_url?: string;
   github_url?: string;
@@ -304,7 +306,22 @@ export default function SubmittedAppsPage() {
             {filteredApps.map((app) => (
               <Card key={app.id} className="border-border/60">
                 <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
+                  <div className="flex gap-4">
+                    {app.icon_cid && (
+                      <div className="h-16 w-16 rounded-lg border border-dashed flex-shrink-0 bg-muted/60 flex items-center justify-center p-1">
+                        <Image
+                          src={`https://ipfs.io/ipfs/${app.icon_cid}`}
+                          alt={`${app.name} icon`}
+                          width={56}
+                          height={56}
+                          className="object-contain rounded-md"
+                          unoptimized
+                        />
+                      </div>
+                    )}
+                    <CardTitle className="text-2xl font-semibold mb-1">{app.name}</CardTitle>
+                    <p className="text-muted-foreground max-w-3xl">{app.description}</p>
+
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       {getStatusBadge(app.status)}
                       <Badge variant="secondary">{app.category}</Badge>
@@ -322,13 +339,10 @@ export default function SubmittedAppsPage() {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-2xl font-semibold mb-1">{app.name}</CardTitle>
-                    <p className="text-muted-foreground max-w-3xl">{app.description}</p>
                   </div>
                   <div className="text-sm text-right text-muted-foreground">
                     <p>Submitted {formatDate(app.created_at)}</p>
                     <p>Version {app.version}</p>
-                    <p>Publisher {app.publisher_name || "Unknown"}</p>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">

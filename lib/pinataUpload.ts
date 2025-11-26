@@ -20,9 +20,9 @@ export async function uploadFileToPinata(
 ): Promise<{ success: true; data: PinataUploadResponse } | { success: false; error: string }> {
   try {
     // Validate environment variables - use JWT token (preferred) or fallback to API keys
-    const pinataJWT = process.env.PINATA_JWT;
+    const pinataJWT = process.env.NEXT_PUBLIC_PINATA_JWT || process.env.PINATA_JWT;
     const pinataApiKey = process.env.NEXT_PUBLIC_PINATA_API_KEY || process.env.PINATA_API_KEY;
-    const pinataSecretApiKey = process.env.PINATA_SECRET_KEY;
+    const pinataSecretApiKey = process.env.NEXT_PUBLIC_PINATA_SECRET_API_KEY || process.env.PINATA_SECRET_KEY;
 
     if (!pinataJWT && (!pinataApiKey || !pinataSecretApiKey)) {
       console.error('Pinata credentials not found in environment variables');

@@ -174,6 +174,7 @@ export function ProfilePictureUpload({
         <div className="flex-1 space-y-2">
           <div className="flex items-center space-x-2">
             <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
               className="flex items-center space-x-2 px-4 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
@@ -184,6 +185,7 @@ export function ProfilePictureUpload({
 
             {currentAvatarUrl && (
               <button
+                type="button"
                 onClick={handleRemove}
                 disabled={isLoading}
                 className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"

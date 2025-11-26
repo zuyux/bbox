@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
+import GetInModal from '@/components/GetInModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,11 +27,15 @@ import {
   Loader2,
   Coins,
   Info,
-  ArrowRight
+  ArrowRight,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { getListingFee, formatListingFee } from '@/lib/bbox-contract';
 import { getPersistedNetwork } from '@/lib/network';
+import { uploadFileToPinata, getIPFSUrl } from '@/lib/pinataUpload';
+import { useWallet } from '@/components/WalletProvider';
+import { signStacksMessage, type StacksSignatureResult } from '@/lib/commentSigning';
 
 // Extend Window interface for Stacks wallet
 declare global {
@@ -43,6 +49,7 @@ interface AppFormData {
   description: string;
   category: string;
   tags: string[];
+  icon_cid: string;
   version: string;
   website_url: string;
   github_url: string;
@@ -113,6 +120,7 @@ const LICENSES = [
 export default function PublishPage() {
   const router = useRouter();
   const currentAddress = useCurrentAddress();
+  const { walletType } = useWallet();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'uploading' | 'signing' | 'pending' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -120,6 +128,26 @@ export default function PublishPage() {
   const [listingFee, setListingFee] = useState<{ token: string; amount: bigint } | null>(null);
   const [network, setNetwork] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [iconUploadStatus, setIconUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [iconUploadError, setIconUploadError] = useState('');
+  const [signatureStatus, setSignatureStatus] = useState<'idle' | 'signing' | 'signed' | 'error'>('idle');
+  const [signatureError, setSignatureError] = useState('');
+  const [signatureResult, setSignatureResult] = useState<StacksSignatureResult | null>(null);
+  const [showGetInModal, setShowGetInModal] = useState(false);
+
+  useEffect(() => {
+    setSignatureResult(null);
+    setSignatureStatus('idle');
+    setSignatureError('');
+  }, [currentAddress, walletType]);
+
+  useEffect(() => {
+    if (!currentAddress) {
+      setShowGetInModal(true);
+    } else {
+      setShowGetInModal(false);
+    }
+  }, [currentAddress]);
 
   // Fetch listing fee and network on mount
   useEffect(() => {
@@ -132,6 +160,7 @@ export default function PublishPage() {
     description: 'A decentralized app directory and funding layer for Bitcoin and its Layer-2 ecosystems (Stacks, Lightning, Runes, etc.). BBOX helps users discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and smart contracts.',
     category: 'Infrastructure',
     tags: ['bitcoin', 'stacks', 'directory', 'funding', 'open-source', 'dao'],
+    icon_cid: '',
     version: '0.2.0',
     website_url: 'https://bbox.app',
     github_url: 'https://github.com/zuyux/bbox',
@@ -140,7 +169,7 @@ export default function PublishPage() {
     supported_networks: ['Bitcoin', 'Stacks', 'Lightning Network'],
     license: 'MIT',
     pricing_model: 'free',
-    price_usd: 0,
+    price_usd: 0, 
     accepts_lightning: true,
     lightning_address: 'zuyux@getalby.com',
     privacy_policy_url: '',
@@ -151,7 +180,14 @@ export default function PublishPage() {
     publisher_email: 'hello@zuyux.xyz'
   });
 
+  const clearSignatureState = () => {
+    setSignatureResult(null);
+    setSignatureStatus('idle');
+    setSignatureError('');
+  };
+
   const handleInputChange = (field: keyof AppFormData, value: string | number | boolean | string[]) => {
+    clearSignatureState();
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -159,6 +195,7 @@ export default function PublishPage() {
   };
 
   const handleArrayToggle = (field: 'platforms' | 'supported_networks' | 'tags', value: string) => {
+    clearSignatureState();
     setFormData(prev => ({
       ...prev,
       [field]: prev[field].includes(value) 
@@ -175,10 +212,90 @@ export default function PublishPage() {
   };
 
   const removeTag = (tag: string) => {
+    clearSignatureState();
     setFormData(prev => ({
       ...prev,
       tags: prev.tags.filter(t => t !== tag)
     }));
+  };
+
+    const buildSignaturePayload = () => {
+      return JSON.stringify({
+        action: 'bbox_app_submission',
+        address: currentAddress,
+        network,
+        timestamp: new Date().toISOString(),
+        app: {
+          name: formData.name,
+          version: formData.version,
+          category: formData.category,
+          website_url: formData.website_url,
+          github_url: formData.github_url,
+          icon_cid: formData.icon_cid,
+          pricing_model: formData.pricing_model,
+          open_source: formData.open_source,
+          tags: formData.tags,
+        },
+      });
+    };
+
+    const requestSubmissionSignature = async (): Promise<StacksSignatureResult> => {
+      if (!walletType) {
+        throw new Error('Wallet type not detected. Reconnect your Stacks wallet and try again.');
+      }
+      if (!currentAddress) {
+        throw new Error('Please connect your wallet before signing the submission.');
+      }
+
+      setSignatureStatus('signing');
+      setSignatureError('');
+
+      const payload = buildSignaturePayload();
+
+      try {
+        const result = await signStacksMessage(payload, walletType);
+        setSignatureResult(result);
+        setSignatureStatus('signed');
+        return result;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to sign submission';
+        setSignatureError(message);
+        setSignatureStatus('error');
+        throw error;
+      }
+    };
+
+    const handleSignSubmission = async () => {
+      try {
+        await requestSubmissionSignature();
+      } catch (error) {
+        console.error('Signature request failed:', error);
+      }
+    };
+
+  const handleIconUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.target;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setIconUploadStatus('uploading');
+    setIconUploadError('');
+
+    try {
+      const result = await uploadFileToPinata(file);
+
+      if (result.success) {
+        handleInputChange('icon_cid', result.data.IpfsHash);
+        setIconUploadStatus('success');
+      } else {
+        setIconUploadStatus('error');
+        setIconUploadError(result.error);
+      }
+    } finally {
+      input.value = '';
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -207,6 +324,23 @@ export default function PublishPage() {
         throw new Error('Description is too short');
       }
 
+      let submissionSignature = signatureResult;
+      if (!submissionSignature) {
+        try {
+          submissionSignature = await requestSubmissionSignature();
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Signature required to submit app';
+          setErrorMessage(message);
+          setSubmitStatus('error');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      if (!submissionSignature) {
+        throw new Error('Missing submission signature. Please try again.');
+      }
+
       // Step 1: Submit to Supabase
       setSubmitStatus('uploading');
       const submitResponse = await fetch('/api/submit-app', {
@@ -217,6 +351,10 @@ export default function PublishPage() {
         body: JSON.stringify({
           ...formData,
           publisher_address: currentAddress,
+          signature: submissionSignature.signature,
+          signature_payload: submissionSignature.signedPayload,
+          signature_wallet_type: submissionSignature.walletType,
+          signature_public_key: submissionSignature.publicKey ?? '',
         }),
       });
 
@@ -279,24 +417,16 @@ export default function PublishPage() {
     }
   };
 
+  const handleGetInModalClose = () => {
+    setShowGetInModal(false);
+    router.push('/');
+  };
+
   if (!currentAddress) {
     return (
       <div className="bg-background min-h-screen">
         <Navbar />
-        <div className="container mx-auto px-4 pt-20 pb-12">
-          <Card className="max-w-md mx-auto">
-            <CardContent className="p-6 text-center">
-              <Shield className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <h2 className="text-xl font-bold mb-2">Wallet Required</h2>
-              <p className="text-muted-foreground mb-4">
-                Please connect your Bitcoin or Stacks wallet to publish an app.
-              </p>
-              <Button onClick={() => router.push('/')} className="w-full">
-                Go Back Home
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        {showGetInModal && <GetInModal onClose={handleGetInModalClose} />}
       </div>
     );
   }
@@ -578,6 +708,53 @@ export default function PublishPage() {
                     ))}
                   </div>
                 </div>
+
+                <div>
+                  <Label htmlFor="app_icon">App Icon</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Upload a square image (PNG, JPG, GIF, or WebP) under 10MB to host on IPFS.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start">
+                    <div className="relative h-20 w-20 rounded-lg border border-dashed flex items-center justify-center bg-muted overflow-hidden">
+                      {formData.icon_cid ? (
+                        <Image
+                          src={getIPFSUrl(formData.icon_cid)}
+                          alt="App icon preview"
+                          fill
+                          sizes="80px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-2 w-full">
+                      <Input
+                        id="app_icon"
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                        onChange={handleIconUpload}
+                        disabled={iconUploadStatus === 'uploading' || isSubmitting}
+                      />
+                      {iconUploadStatus === 'uploading' && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-2">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Uploading to IPFS...
+                        </p>
+                      )}
+                      {iconUploadStatus === 'success' && formData.icon_cid && (
+                        <p className="text-xs text-green-600">
+                          Icon uploaded • CID:
+                          <span className="font-mono break-all ml-1">{formData.icon_cid}</span>
+                        </p>
+                      )}
+                      {iconUploadStatus === 'error' && iconUploadError && (
+                        <p className="text-xs text-red-500">Upload failed: {iconUploadError}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -851,6 +1028,51 @@ export default function PublishPage() {
               </CardContent>
             </Card>
 
+            {/* Submission Signature */}
+            <div className="rounded-lg border border-dashed p-4 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Shield className="h-4 w-4 text-muted-foreground" />
+                Submission Signature
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Sign a short message with your connected wallet before publishing. This verifies that the submission
+                originated from {currentAddress ? 'your wallet address.' : 'a verified wallet once connected.'}
+              </p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleSignSubmission}
+                  disabled={!currentAddress || signatureStatus === 'signing' || isSubmitting}
+                  className="w-full sm:w-auto"
+                >
+                  {signatureStatus === 'signing' ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Requesting signature...
+                    </>
+                  ) : signatureStatus === 'signed' ? (
+                    'Re-sign submission'
+                  ) : (
+                    'Sign submission'
+                  )}
+                </Button>
+                <div className="text-xs flex-1">
+                  {signatureStatus === 'signed' && signatureResult ? (
+                    <p className="text-green-600">
+                      Signed with {signatureResult.walletType} • {signatureResult.signature.slice(0, 10)}…
+                    </p>
+                  ) : signatureStatus === 'error' && signatureError ? (
+                    <p className="text-red-500">{signatureError}</p>
+                  ) : signatureStatus === 'signing' ? (
+                    <p className="text-muted-foreground">Awaiting wallet confirmation…</p>
+                  ) : (
+                    <p className="text-muted-foreground">Status: Not signed</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Submit Button */}
             <div className="flex justify-end gap-4">
               <Button
@@ -864,7 +1086,7 @@ export default function PublishPage() {
               <Button
                 type="submit"
                 className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 cursor-pointer"
-                disabled={isSubmitting || !currentAddress}
+                disabled={isSubmitting || !currentAddress || iconUploadStatus === 'uploading' || signatureStatus === 'signing'}
               >
                 {isSubmitting ? (
                   <>

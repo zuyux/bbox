@@ -16,6 +16,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const signature = typeof body.signature === 'string' ? body.signature.trim() : '';
+    const signaturePayload = typeof body.signature_payload === 'string' ? body.signature_payload.trim() : '';
+    const signatureWalletType = typeof body.signature_wallet_type === 'string' ? body.signature_wallet_type.trim() : '';
+    const signaturePublicKey = typeof body.signature_public_key === 'string' ? body.signature_public_key.trim() : '';
+
     // Prepare the app data
     const appData = {
       name: body.name,
@@ -23,6 +28,7 @@ export async function POST(request: NextRequest) {
       category: body.category,
       tags: body.tags || [],
       version: body.version || '1.0.0',
+      icon_cid: body.icon_cid || '',
       website_url: body.website_url || '',
       github_url: body.github_url || '',
       documentation_url: body.documentation_url || '',
@@ -62,6 +68,14 @@ export async function POST(request: NextRequest) {
         { error: 'Database error: ' + error.message },
         { status: 500 }
       );
+    }
+
+    if (signature && signaturePayload) {
+      console.log('🔏 Submission signature received', {
+        appId: data?.id,
+        walletType: signatureWalletType || 'unknown',
+        hasPublicKey: Boolean(signaturePublicKey),
+      });
     }
 
     console.log('✅ App submitted to database:', data.id);

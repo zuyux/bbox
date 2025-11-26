@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
@@ -52,7 +53,6 @@ const formatDate = (value?: string | null) => {
   if (!value) return "Unknown";
   return new Intl.DateTimeFormat("en", {
     dateStyle: "medium",
-    timeStyle: "short",
   }).format(new Date(value));
 };
 
@@ -107,21 +107,35 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
           )}
         </div>
 
-        <Card className={`mb-6 border-2 ${status.border}`}>
+        <Card className={`mb-6 ${status.border}`}>
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${status.tone}`}>
+              <div className="flex gap-4">
+                {app.icon_cid && (
+                  <div className="h-16 w-16 rounded-lg border border-dashed flex-shrink-0 bg-muted/60 flex items-center justify-center p-1">
+                    <Image
+                      src={`https://ipfs.io/ipfs/${app.icon_cid}`}
+                      alt={`${app.name} icon`}
+                      width={56}
+                      height={56}
+                      className="object-contain rounded-md"
+                      unoptimized
+                    />
+                  </div>
+                )}
+                <div>
+                <CardTitle className="mb-2 text-3xl font-bold">{app.name}</CardTitle>
+                <p className="text-muted-foreground mt-2">{app.description}</p>
+                <p className={`inline-flex items-center gap-2 rounded-full mt-2 px-3 py-1 text-xs font-semibold ${status.tone}`}>
                   <ShieldCheck className="h-4 w-4" />
                   {status.label}
                 </p>
-                <CardTitle className="mt-4 text-3xl font-bold">{app.name}</CardTitle>
-                <p className="text-muted-foreground mt-2">{app.description}</p>
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground text-right">
-                <p>Submitted {formatDate(app.created_at)}</p>
-                <p>Updated {formatDate(app.updated_at)}</p>
-                <p>Version {textOrDash(app.version)}</p>
+              <div className="text-xs text-muted-foreground text-right">
+                <p>Submitted &nbsp; {formatDate(app.created_at)}</p>
+                <p>Updated &nbsp; {formatDate(app.updated_at)}</p>
+                <p>V. {textOrDash(app.version)}</p>
               </div>
             </div>
           </CardHeader>

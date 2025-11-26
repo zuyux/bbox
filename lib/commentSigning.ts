@@ -30,6 +30,8 @@ export interface CommentSignatureResult {
   publicKey?: string;
 }
 
+export type StacksSignatureResult = CommentSignatureResult;
+
 interface SignCommentArgs {
   appId: number;
   message: string;
@@ -139,10 +141,10 @@ const requestSignatureViaPopup = async (
   });
 };
 
-const signWithStacksConnect = async (
+export const signStacksMessage = async (
   payload: string,
   walletType: SupportedWalletType
-): Promise<CommentSignatureResult> => {
+): Promise<StacksSignatureResult> => {
   const provider = getStacksProvider(walletType);
   if (!provider) {
     throw new Error(providerNotFoundMessage(walletType));
@@ -169,5 +171,5 @@ export const signSubmissionComment = async ({
   const payload = buildPayload(appId, address, message);
 
   // Default to Stacks-compatible signing (Leather, Hiro, Xverse, etc.)
-  return signWithStacksConnect(payload, walletType);
+  return signStacksMessage(payload, walletType);
 };
