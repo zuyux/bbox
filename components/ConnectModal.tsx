@@ -61,7 +61,7 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
   const [passphrase, setPassphrase] = useState('');
   const [confirmPassphrase, setConfirmPassphrase] = useState('');
   const [walletLabel, setWalletLabel] = useState('');
-  const { setAddress } = useWallet();
+  const { setAddress, setWalletType } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<'import' | 'encrypt'>('import');
@@ -302,6 +302,7 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
                                 if (stxAddress) {
                                   console.log('Leather connect success, STX address:', stxAddress);
                                   setAddress(stxAddress);
+                                  setWalletType('leather');
                                   onSuccess?.();
                                   onClose();
                                   router.push(`/${stxAddress}`);
@@ -326,6 +327,7 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
                                   const stxAddress = stacksAddressItem?.address;
                                   if (stxAddress) {
                                     setAddress(stxAddress);
+                                    setWalletType('xverse');
                                     onSuccess?.();
                                     onClose();
                                     router.push(`/${stxAddress}`);

@@ -14,32 +14,27 @@ if (typeof window === 'undefined') {
   })
 }
 
-// Singleton pattern to prevent multiple instances
-let supabaseInstance: SupabaseClient | null = null;
-let supabaseAdminInstance: SupabaseClient | null = null;
+const globalForSupabase = globalThis as unknown as {
+  supabase?: SupabaseClient;
+  supabaseAdmin?: SupabaseClient;
+};
 
 // Client for frontend operations (with auth)
-export const supabase = (() => {
-  if (!supabaseInstance) {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        storageKey: 'bbox-auth',
-      }
-    });
-  }
-  return supabaseInstance;
-})();
+export const supabase = globalForSupabase.supabase ?? (
+  globalForSupabase.supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      storageKey: 'bbox-auth',
+    }
+  })
+);
 
 // Admin client for server-side operations (bypasses RLS)
-export const supabaseAdmin = (() => {
-  if (!supabaseAdminInstance) {
-    supabaseAdminInstance = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
-  }
-  return supabaseAdminInstance;
-})();
+export const supabaseAdmin = globalForSupabase.supabaseAdmin ?? (
+  globalForSupabase.supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
+);

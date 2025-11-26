@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { supabaseAdmin } from '@/lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Insert the app into the database
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('apps')
       .insert([appData])
       .select()
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const publisher = searchParams.get('publisher');
 
-    let query = supabase.from('apps').select('*');
+    let query = supabaseAdmin.from('apps').select('*');
 
     // Apply filters
     if (status) {

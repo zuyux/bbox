@@ -18,7 +18,7 @@ interface UserModalProps {
 }
 
 export default function UserModal({ onClose }: UserModalProps) {
-  const { address, setAddress } = useWallet();
+  const { address, setAddress, setWalletType } = useWallet();
   const [sbtcBalance, setSbtcBalance] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [usernameLoader, setUsernameLoader] = useState<boolean>(false);
@@ -151,9 +151,11 @@ export default function UserModal({ onClose }: UserModalProps) {
     if (typeof window !== "undefined") {
       localStorage.removeItem('4v4_session');
       localStorage.removeItem('walletAddress'); 
+      localStorage.removeItem('walletType');
       window.dispatchEvent(new Event("4v4-session-update"));
     }
     setAddress(null); // Also clear in context
+    setWalletType(null);
     onClose();
     // Always route to index after disconnect
     if (router) {

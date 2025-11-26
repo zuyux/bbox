@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,8 @@ import {
   CheckCircle,
   Loader2,
   Coins,
-  Info
+  Info,
+  ArrowRight
 } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { getListingFee, formatListingFee } from '@/lib/bbox-contract';
@@ -306,11 +308,23 @@ export default function PublishPage() {
       <div className="container mx-auto px-4 pt-20 pb-12">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Publish Your Bitcoin App</h1>
-            <p className="text-muted-foreground">
-              Submit your application to the Bitcoin app directory. All submissions are reviewed before going live. You&apos;ll receive a confirmation email once submitted.
-            </p>
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Publish Your Bitcoin App</h1>
+              <p className="text-muted-foreground">
+                Submit your application to the Bitcoin app directory. All submissions are reviewed before going live. You&apos;ll receive a confirmation email once submitted.
+              </p>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="cursor-pointer w-full sm:w-auto justify-center"
+            >
+              <Link href="/submit/review" className="flex items-center gap-2">
+                <ArrowRight className="h-4 w-4" />
+                Review submissions
+              </Link>
+            </Button>
           </div>
 
           {/* Status Messages */}

@@ -1,15 +1,20 @@
 'use client'
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
+type WalletType = 'leather' | 'xverse' | 'imported';
+
 interface WalletContextType {
   address: string | null;
   setAddress: (address: string | null) => void;
+  walletType: WalletType | null;
+  setWalletType: (type: WalletType | null) => void;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<string | null>(null);
+  const [walletType, setWalletType] = useState<WalletType | null>(null);
 
   // Persist wallet address for Xverse and Leather
   useEffect(() => {
@@ -17,6 +22,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem('walletAddress');
     if (saved) {
       setAddress(saved);
+    }
+    const savedType = localStorage.getItem('walletType') as WalletType | null;
+    if (savedType) {
+      setWalletType(savedType);
     }
   }, []); // Intentionally empty - only run on mount to restore saved address
 
@@ -28,8 +37,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [address]);
 
+  useEffect(() => {
+    if (walletType) {
+      localStorage.setItem('walletType', walletType);
+    } else {
+      localStorage.removeItem('walletType');
+    }
+  }, [walletType]);
+
   return (
-    <WalletContext.Provider value={{ address, setAddress }}>
+    <WalletContext.Provider value={{ address, setAddress, walletType, setWalletType }}>
       {children}
     </WalletContext.Provider>
   );
