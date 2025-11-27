@@ -7,10 +7,14 @@ export default function Footer() {
       <div className="mx-auto h-full px-4">
         <div className="flex justify-between items-center h-full">
           <Link href="/" className='flex items-center gap-1'>
-            <span className="text-left truncate">
-              BBOX
+            <span className="title text-left truncate">
+              BBOX <span className="text-[#555]">Our Open App Store</span>
             </span>
           </Link>
+          <div>
+            <Link href="/privacy-policy" className="text-[#555] mr-8">Privacy Policy</Link>
+            <Link href="/terms-of-service" className="text-[#555]">Terms of Service</Link>
+          </div>
           <div className="flex items-center gap-2 h-full">
             <ModeToggle />
           </div>

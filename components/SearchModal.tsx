@@ -176,7 +176,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search Bitcoin apps, developers, or users..."
+              placeholder="Search apps, developers, users..."
               value={searchQuery}
               onChange={handleSearchChange}
               className="flex-1 bg-transparent text-foreground text-lg placeholder:text-foreground/50 outline-none"

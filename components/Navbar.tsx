@@ -25,12 +25,12 @@ export const Navbar = () => {
             
             {/* Center: Search Input */}
             <div className="flex justify-center">
-              <div className="relative md:max-w-xl my-5">
+              <div className="relative md:w-full my-5">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-100" />
                 <input
                   type="text"
-                  placeholder="Search Bitcoin Apps..."
-                  className="w-full pl-10 pr-4 py-2 bg-background/50 border border-foreground/10 rounded-full text-sm text-foreground placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all mobile-hide-placeholder"
+                  placeholder="SEARCH APPS..."
+                  className="title-chakra-light w-full pl-10 pr-4 py-2 bg-background/50 border border-foreground/10 rounded-md text-xs text-foreground/20 placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all mobile-hide-placeholder"
                   onClick={() => setSearchOpen(true)}
                   readOnly
                 />

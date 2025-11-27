@@ -194,6 +194,12 @@ html, body {
   letter-spacing: 0.05em;
 }
 
+.title-chakra-light {
+  font-family: var(--font-chakra-petch);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+
 /* Apply Lacquer to decorative titles */
 .title-lacquer {
   font-family: var(--font-lacquer);
@@ -398,6 +404,62 @@ html, body {
   /* Firefox */
   .universal-image-fix {
     image-rendering: -moz-crisp-edges;
+  }
+}
+
+@layer components {
+  .category-slider-mask {
+    overflow: hidden;
+  }
+
+  .category-slider-track {
+    display: flex;
+    gap: 1rem;
+    width: max-content;
+    animation: category-marquee 28s linear infinite;
+  }
+
+  .category-slider-track:hover,
+  .category-slider-track:focus-within {
+    animation-play-state: paused;
+  }
+
+  .category-card {
+    min-width: 170px;
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background-color: var(--card);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+
+  .dark .category-card {
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.65);
+  }
+
+  .category-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .category-card:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+}
+
+@keyframes category-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-slider-track {
+    animation: none;
   }
 }
 

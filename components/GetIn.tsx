@@ -139,7 +139,7 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
             {...buttonProps}
           >
             <span className="hidden md:inline">{children || 'CONNECT'}</span>
-            <Pill className='ml-0 md:ml-2' />
+            <Pill />
           </Button>
         </div>
       )}

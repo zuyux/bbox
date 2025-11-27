@@ -2,11 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Shield, Code, Coins, Globe, ArrowRight, Star, Download } from 'lucide-react';
+import { Shield, ArrowRight, Star, Download } from 'lucide-react';
 import { getFeaturedApps, getCategoryStats, getAppStats, BitcoinApp } from '@/lib/appsUtils';
 
 // Get featured apps using the utility function
@@ -15,31 +16,33 @@ const featuredApps = getFeaturedApps(8);
 // Calculate actual categories from the data
 const calculateCategories = () => {
   const categoryCount = getCategoryStats();
-  
-  const categoryIcons: { [key: string]: typeof Shield } = {
-    'Wallet': Shield,
-    'Lightning': Zap,
-    'DeFi': Coins,
-    'Mining': Code,
-    'Payment': Coins,
-    'Explorer': Globe,
-    'Social': Globe,
-    'Networking': Globe,
-    'Identity': Shield,
-    'Infrastructure': Code,
-    'Developer': Code,
-    'Creator': Code
+
+  const categoryIcons: Record<string, string> = {
+    Wallet: '/icons/wallet.svg',
+    Lightning: '/icons/lightning.svg',
+    Payment: '/icons/payment.svg',
+    Explorer: '/icons/explore.svg',
+    Infrastructure: '/icons/infra.svg',
+    Mining: '/icons/mining.svg',
+    DeFi: '/icons/payment.svg',
+    Social: '/icons/social.svg',
+    Networking: '/icons/network.svg',
+    Identity: '/icons/id.svg',
+    Developer: '/icons/dev.svg',
+    Creator: '/icons/creator.svg'
   };
-  
+  const defaultCategoryIcon = '/icons/explore.svg';
+
   return Object.entries(categoryCount).map(([name, count]) => ({
     name,
-    icon: categoryIcons[name] || Code,
+    iconSrc: categoryIcons[name] || defaultCategoryIcon,
     count
-  })).slice(0, 6); // Show top 6 categories
+  }));
 };
 
 const categories = calculateCategories();
 const appStats = getAppStats();
+const duplicatedCategories = [...categories, ...categories];
 
 function AppCard({ app }: { app: BitcoinApp }) {
   return (
@@ -102,11 +105,11 @@ export default function HomePage() {
       <div className="container mx-auto px-4 pt-20 pb-12">
         {/* Hero Section */}
         <div className="flex flex-col items-center justify-center text-center mb-16 h-[80vh]">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent select-text">
-            Our Open Bitcoin App Store
+          <h1 className="title text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent select-text">
+            Our Open App Store
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto select-text">
-            Discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and on-chain contracts.
+            Discover, evaluate, and fund open-source applications through transparent milestones and smart contracts.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600" asChild>
@@ -125,27 +128,42 @@ export default function HomePage() {
 
         {/* Categories */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">Browse by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {categories.map(category => {
-              const Icon = category.icon;
-              return (
-                <Card key={category.name} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardContent className="p-4 text-center">
-                    <Icon className="w-8 h-8 mx-auto mb-2 text-orange-500" />
-                    <h3 className="font-medium text-sm mb-1">{category.name}</h3>
-                    <p className="text-xs text-muted-foreground">{category.count} apps</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          <h2 className="title text-2xl font-bold mb-6">Browse by Category</h2>
+          <div className="relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent z-10" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent z-10" aria-hidden="true" />
+            <div className="category-slider-mask">
+              <div className="category-slider-track" role="list" aria-label="Bitcoin app categories">
+                {duplicatedCategories.map((category, index) => (
+                  <Card
+                    key={`${category.name}-${index}`}
+                    role="listitem"
+                    tabIndex={0}
+                    className="category-card">
+                    <CardContent className="p-4 text-center">
+                      <div className="w-14 h-14 mx-auto mb-3 flex items-center justify-center rounded-full bg-muted/30">
+                        <Image
+                          src={category.iconSrc}
+                          alt={`${category.name} icon`}
+                          width={63}
+                          height={63}
+                          className="object-contain invert dark:invert-0 transition-[filter] duration-200"
+                        />
+                      </div>
+                      <h3 className="font-medium text-sm mb-1">{category.name}</h3>
+                      <p className="text-xs text-muted-foreground">{category.count} apps</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Featured Apps */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Featured Apps</h2>
+            <h2 className="title text-2xl font-bold">Featured Apps</h2>
             <Button variant="ghost" asChild>
               <Link href="/apps">
                 View All
@@ -161,8 +179,8 @@ export default function HomePage() {
         </div>
 
         {/* Stats Section */}
-        <div className="bg-background/50 rounded-lg border border-border p-8 mb-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div className="bg-background/50 rounded-lg border border-border p-8 mb-12 my-24">
+          <div className="title grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">{appStats.totalApps}+</div>
               <div className="text-sm text-muted-foreground">Bitcoin Apps</div>
@@ -172,27 +190,27 @@ export default function HomePage() {
               <div className="text-sm text-muted-foreground">Downloads</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">₿{Math.floor(appStats.totalApps / 4)}</div>
+              <div className="text-3xl font-bold text-orange-500 mb-2">3</div>
               <div className="text-sm text-muted-foreground">Funded Projects</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">{Math.floor(appStats.totalApps * 0.8)}+</div>
+              <div className="text-3xl font-bold text-orange-500 mb-2">10+</div>
               <div className="text-sm text-muted-foreground">Developers</div>
             </div>
           </div>
         </div>
 
         {/* Call to Action */}
-        <div className="text-center">
-          <h3 className="text-2xl font-bold mb-4">Build the Bitcoin Economy</h3>
+        <div className="text-center mt-8">
+          <h3 className="title text-5xl font-bold mb-8">Build the Bitcoin Economy</h3>
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
             Join thousands of developers building open-source applications for Bitcoin and its Layer-2 ecosystems.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="outline">
+            <Button size="lg" variant="outline" className='cursor-pointer'>
               Developer Guide
             </Button>
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600">
+            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 cursor-pointer">
               Start Building
             </Button>
           </div>
