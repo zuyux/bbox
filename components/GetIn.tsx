@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { Button } from '@/components/ui/button';
-import { Pill } from 'lucide-react';
 import GetInModal from './GetInModal';
 import UserModal from './UserModal';
 import { User } from 'lucide-react';
@@ -17,7 +16,6 @@ interface GetInButtonProps {
 }
 
 export const GetInButton = (buttonProps: GetInButtonProps) => {
-  const { children } = buttonProps;
   const [showUserModal, setShowUserModal] = useState(false);
   const [showGetInModal, setShowGetInModal] = useState(false);
   const [isSessionLoggedIn, setIsSessionLoggedIn] = useState(false);
@@ -138,8 +136,7 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
             className="title rounded-md px-2 md:px-6 py-4 md:py-2 text-xs md:text-sm bg-background/50 border-border border-[1px] hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-200 text-foreground cursor-pointer select-none"
             {...buttonProps}
           >
-            <span className="hidden md:inline">{children || 'CONNECT'}</span>
-            <Pill />
+            <User />
           </Button>
         </div>
       )}

@@ -25,14 +25,14 @@
   },
   {
     "id": 3,
-    "name": "BlueWallet (Lightning)",
+    "name": "BlueWallet",
     "description": "Lightning Network wallet with self-custody and node support",
     "category": "Wallet",
     "tags": ["Bitcoin","Lightning","Self-custody"],
     "downloads": "50K+",
     "rating": 4.5,
     "verified": true,
-    "link": "https://bluewallet.io/lightning/",
+    "link": "https://bluewallet.io/",
     "imgUrl": "https://ipfs.io/ipfs/{cid-bluewallet}"
   },
   {
@@ -61,7 +61,7 @@
   },
   {
     "id": 6,
-    "name": "ALEX (Stacks DeFi)",
+    "name": "ALEX",
     "description": "AMM & yield aggregation for Bitcoin-anchored assets on Stacks",
     "category": "DeFi",
     "tags": ["Stacks","Bitcoin","AMM"],
@@ -109,19 +109,19 @@
   },
   {
     "id": 10,
-    "name": "Stacks Wallet",
-    "description": "Secure Bitcoin and Stacks DeFi wallet",
+    "name": "Stack Wallet",
+    "description": "Secure Bitcoin and Cryptocurrency wallet",
     "category": "Wallet",
     "tags": ["DeFi","Stacks","Bitcoin"],
     "downloads": "100K+",
     "rating": 4.6,
     "verified": true,
-    "link": "https://stackswallet.com/",
+    "link": "https://stackwallet.com/",
     "imgUrl": "https://ipfs.io/ipfs/{cid-stackswallet}"
   },
   {
     "id": 11,
-    "name": "Lightning Terminal (Loop)",
+    "name": "Lightning Terminal",
     "description": "Liquidity management tool by Lightning Labs",
     "category": "Lightning",
     "tags": ["Loop","Lightning Labs","Liquidity"],
@@ -229,7 +229,7 @@
   },
   {
     "id": 20,
-    "name": "Ordinals.com",
+    "name": "Ordinals",
     "description": "Reference explorer for inscriptions and satoshi tracking",
     "category": "Explorer",
     "tags": ["Ordinals","Bitcoin","NFT"],
@@ -241,10 +241,10 @@
   },
   {
     "id": 21,
-    "name": "Gamma.io",
-    "description": "Stacks NFT marketplace anchored to Bitcoin",
+    "name": "Gamma",
+    "description": "Art marketplace anchored to Bitcoin",
     "category": "DeFi",
-    "tags": ["NFT","Stacks","Bitcoin"],
+    "tags": ["NFT","Stacks","Bitcoin", "Ordinals"],
     "downloads": "N/A",
     "rating": 4.6,
     "verified": true,
@@ -397,7 +397,7 @@
   },
   {
     "id": 34,
-    "name": "Mempool.space",
+    "name": "Mempool",
     "description": "Real-time Bitcoin and Lightning explorer",
     "category": "Explorer",
     "tags": ["Bitcoin","Lightning","Analytics"],
@@ -553,15 +553,15 @@
   },
   {
     "id": 47,
-    "name": "Mempool Open Source Project",
-    "description": "Self-hostable Bitcoin explorer powering mempool.space",
+    "name": "BitcoinOS",
+    "description": "The Operating System for a Bitcoin Powered World",
     "category": "Infrastructure",
-    "tags": ["Bitcoin","Explorer","Open Source"],
+    "tags": ["Bitcoin","Operative System","Open Source"],
     "downloads": "N/A",
     "rating": 4.9,
     "verified": true,
-    "link": "https://github.com/mempool/mempool",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-mempoolsrc}"
+    "link": "https://bitcoinos.build",
+    "imgUrl": "https://ipfs.io/ipfs/{cid-bitcoinos}"
   },
   {
     "id": 48,

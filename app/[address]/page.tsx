@@ -137,7 +137,7 @@ function BitcoinAppsSection({ apps, loading }: { apps: SubmittedApp[]; loading: 
       <div className="flex flex-wrap items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
           <Code className="text-orange-500" size={20} />
-          <h2 className="text-lg font-semibold text-foreground">Bitcoin Apps</h2>
+          <h2 className="text-lg font-semibold text-foreground">Apps</h2>
         </div>
         <div className="flex gap-3 text-xs text-muted-foreground">
           <span>Total: <strong>{stats.total}</strong></span>

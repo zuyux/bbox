@@ -208,9 +208,19 @@ html, body {
 }
 
 .dotted-grid-background {
-  background-color: transparent; /* Base background color */
-  background-image: radial-gradient(rgb(63, 63, 63) 1px, transparent 1px);
-  background-size: 120px 120px; /* Adjust the size of the grid */
+  background-image: radial-gradient(#222 1px, transparent 1px);
+  background-size: 72px 72px;
+  background-position: 0 0;
+}
+
+.l-dotted-grid-background {
+  background-image: radial-gradient(#bebebe 1px, transparent 1px);
+  background-size: 72px 72px;
+  background-position: 0 0;
+}
+
+.dark .l-dotted-grid-background {
+  background-image: radial-gradient(#222 1px, transparent 1px);
 }
 
 .font-work-sans {

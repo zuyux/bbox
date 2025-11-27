@@ -37,7 +37,7 @@ const lacquer = Lacquer({
 });
 
 export const metadata: Metadata = {
-  title: "BBOX - The Open Bitcoin App Store",
+  title: "BBOX - Our Open App Store",
   description: "Discover, evaluate, and fund open-source Bitcoin applications",
   icons: {
     icon: '/favicon.ico',

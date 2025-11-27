@@ -81,7 +81,8 @@ const CATEGORIES = [
   'Identity',
   'Infrastructure',
   'Developer',
-  'Creator'
+  'Creator',
+  'Nostr'
 ];
 
 const PLATFORMS = [
@@ -440,7 +441,7 @@ export default function PublishPage() {
           {/* Header */}
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Publish Your Bitcoin App</h1>
+              <h1 className="title text-3xl font-bold mb-2">Publish Your Bitcoin App</h1>
               <p className="text-muted-foreground">
                 Submit your application to the Bitcoin app directory. All submissions are reviewed before going live. You&apos;ll receive a confirmation email once submitted.
               </p>
@@ -564,44 +565,6 @@ export default function PublishPage() {
                         ))}
                       </ul>
                     )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Network Warning */}
-          {network && network !== 'mainnet' && (
-            <Card className="mb-6 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <Info className="w-5 h-5 text-yellow-600" />
-                  <div>
-                    <span className="text-yellow-800 dark:text-yellow-200 font-semibold">
-                      Testing Mode: {network.charAt(0).toUpperCase() + network.slice(1)}
-                    </span>
-                    <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                      You&apos;re submitting to the test network. This won&apos;t appear on mainnet.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Listing Fee Info Card */}
-          {listingFee && submitStatus === 'idle' && (
-            <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <Coins className="w-5 h-5 text-orange-600" />
-                  <div>
-                    <div className="font-semibold text-orange-900 dark:text-orange-100">
-                      Listing Fee: {formatListingFee(listingFee.amount, listingFee.token)}
-                    </div>
-                    <div className="text-xs text-orange-800 dark:text-orange-200">
-                      One-time fee to publish your app on-chain • Paid in {listingFee.token}
-                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -1104,6 +1067,45 @@ export default function PublishPage() {
                 )}
               </Button>
             </div>
+
+          {/* Network Warning */}
+          {network && network !== 'mainnet' && (
+            <Card className="mb-3 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20">
+              <CardContent className="px-2">
+                <div className="flex items-center gap-2">
+                  <Info className="w-5 h-5 text-yellow-600" />
+                  <div>
+                    <span className="text-yellow-800 dark:text-yellow-200 font-semibold">
+                      Testing Mode: {network.charAt(0).toUpperCase() + network.slice(1)}
+                    </span>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                      You&apos;re submitting to the test network. This won&apos;t appear on mainnet.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Listing Fee Info Card */}
+          {listingFee && submitStatus === 'idle' && (
+            <Card className="my-2 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
+              <CardContent className="px-2">
+                <div className="flex items-center gap-3">
+                  <Coins className="w-5 h-5 text-orange-600" />
+                  <div>
+                    <div className="font-semibold text-orange-900 dark:text-orange-100">
+                      Listing Fee: 100 000 Satoshis
+                    </div>
+                    <div className="text-xs text-orange-800 dark:text-orange-200">
+                      One-time fee to publish your app on-chain • Paid in {listingFee.token}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           </form>
         </div>
       </div>

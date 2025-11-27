@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -30,12 +30,17 @@ const categoryIcons: { [key: string]: typeof Shield } = {
   'Identity': Shield,
   'Infrastructure': Code,
   'Developer': Code,
-  'Creator': Code
+  'Creator': Code,
+  'Nostr': Globe
 };
+
+const CHUNK_SIZE = 10;
 
 export default function AppsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [visibleCount, setVisibleCount] = useState(CHUNK_SIZE);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   
   const categoryStats = getCategoryStats();
   const categories = Object.keys(categoryStats);
@@ -47,6 +52,44 @@ export default function AppsPage() {
         app.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
       );
+
+  const visibleApps = filteredApps.slice(0, visibleCount);
+  const hasMoreApps = visibleCount < filteredApps.length;
+
+  useEffect(() => {
+    setVisibleCount(CHUNK_SIZE);
+  }, [searchQuery, selectedCategory]);
+
+  const handleLoadMore = useCallback(() => {
+    setVisibleCount(prev => Math.min(prev + CHUNK_SIZE, filteredApps.length));
+  }, [filteredApps.length]);
+
+  useEffect(() => {
+    if (!hasMoreApps) {
+      return;
+    }
+
+    const target = sentinelRef.current;
+    if (!target) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0]?.isIntersecting) {
+          handleLoadMore();
+        }
+      },
+      { rootMargin: '200px 0px' }
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.unobserve(target);
+      observer.disconnect();
+    };
+  }, [hasMoreApps, handleLoadMore]);
 
   return (
     <div className="bg-background min-h-screen">
@@ -70,10 +113,14 @@ export default function AppsPage() {
         <div className="mb-8 max-w-4xl mx-auto">
           <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
             <Button
-              variant={selectedCategory === 'all' ? 'default' : 'outline'}
+              variant="outline"
               size="sm"
               onClick={() => setSelectedCategory('all')}
-              className="rounded-full whitespace-nowrap text-xs cursor-pointer"
+              className={`rounded-full whitespace-nowrap text-xs cursor-pointer border border-green-500 transition-colors ${
+                selectedCategory === 'all'
+                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  : 'text-green-600 hover:bg-green-50'
+              }`}
             >
               All Apps
             </Button>
@@ -82,10 +129,14 @@ export default function AppsPage() {
               return (
                 <Button
                   key={category}
-                  variant={selectedCategory === category ? 'default' : 'outline'}
+                  variant="outline"
                   size="sm"
                   onClick={() => setSelectedCategory(category)}
-                  className="rounded-full whitespace-nowrap flex items-center justify-center gap-1 text-xs cursor-pointer"
+                  className={`rounded-md whitespace-nowrap flex items-center justify-center gap-1 text-xs cursor-pointer border border-green-500 transition-colors ${
+                    selectedCategory === category
+                      ? 'bg-green-500 text-white hover:bg-green-600'
+                      : 'text-green-600 hover:bg-green-50'
+                  }`}
                 >
                   <Icon className="w-3 h-3 flex-shrink-0" />
                   <span className="truncate">{category}</span>
@@ -97,9 +148,9 @@ export default function AppsPage() {
 
         {/* Apps List */}
         <div className="space-y-4">
-          {filteredApps.map((app, index) => (
+          {visibleApps.map((app, index) => (
             <Link key={app.id} href={`/apps/${app.id}`}>
-              <div className="flex gap-4 p-4 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer border border-transparent hover:border-border">
+              <div className="flex gap-4 p-4 rounded-md hover:bg-muted/50 transition-colors cursor-pointer border border-transparent hover:border-border">
                 {/* App Icon */}
                 <div className="flex-shrink-0">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-sm">
@@ -118,7 +169,7 @@ export default function AppsPage() {
                     </div>
                     <Button 
                       size="sm" 
-                      className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-full px-6 flex-shrink-0"
+                      className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md px-6 flex-shrink-0 cursor-pointer"
                     >
                       GET
                     </Button>
@@ -162,12 +213,15 @@ export default function AppsPage() {
                   </div>
                 </div>
               </div>
-              {index < filteredApps.length - 1 && (
+              {index < visibleApps.length - 1 && (
                 <div className="h-px bg-border ml-24" />
               )}
             </Link>
           ))}
         </div>
+
+        {/* Sentinel triggers more loading when it enters view */}
+        <div ref={sentinelRef} className="h-1" />
         
         {filteredApps.length === 0 && (
           <div className="text-center py-16">

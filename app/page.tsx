@@ -24,12 +24,13 @@ const calculateCategories = () => {
     Explorer: '/icons/explore.svg',
     Infrastructure: '/icons/infra.svg',
     Mining: '/icons/mining.svg',
-    DeFi: '/icons/payment.svg',
+    DeFi: '/icons/defi.svg',
     Social: '/icons/social.svg',
     Networking: '/icons/network.svg',
     Identity: '/icons/id.svg',
     Developer: '/icons/dev.svg',
-    Creator: '/icons/creator.svg'
+    Creator: '/icons/creator.svg',
+    Nostr: '/icons/network.svg'
   };
   const defaultCategoryIcon = '/icons/explore.svg';
 
@@ -99,7 +100,7 @@ function AppCard({ app }: { app: BitcoinApp }) {
 
 export default function HomePage() {
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background l-dotted-grid-background min-h-screen">
       <Navbar />
       
       <div className="container mx-auto px-4 pt-20 pb-12">
@@ -109,11 +110,11 @@ export default function HomePage() {
             Our Open App Store
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto select-text">
-            Discover, evaluate, and fund open-source applications through transparent milestones and smart contracts.
+            Discover, evaluate, and fund open-source applications through transparent milestones and contracts.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600" asChild>
-              <Link href="/apps">
+              <Link href="/apps" className='text-white'>
                 Explore
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -210,7 +211,7 @@ export default function HomePage() {
             <Button size="lg" variant="outline" className='cursor-pointer'>
               Developer Guide
             </Button>
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 cursor-pointer">
+            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-[#fff] cursor-pointer">
               Start Building
             </Button>
           </div>

@@ -17,7 +17,17 @@ export const allApps: BitcoinApp[] = appsData;
 
 // Get apps by category
 export const getAppsByCategory = (category: string): BitcoinApp[] => {
-  return allApps.filter(app => app.category.toLowerCase() === category.toLowerCase());
+  const normalizedCategory = category.toLowerCase();
+
+  if (normalizedCategory === 'nostr') {
+    return allApps.filter(app => {
+      const matchesCategory = app.category.toLowerCase() === 'nostr';
+      const matchesTags = app.tags.some(tag => tag.toLowerCase() === 'nostr');
+      return matchesCategory || matchesTags;
+    });
+  }
+
+  return allApps.filter(app => app.category.toLowerCase() === normalizedCategory);
 };
 
 // Get featured apps (top rated and verified)
@@ -56,6 +66,17 @@ export const getCategoryStats = () => {
   allApps.forEach(app => {
     categoryCount[app.category] = (categoryCount[app.category] || 0) + 1;
   });
+
+  const nostrCount = allApps.filter(app => {
+    const appCategory = app.category.toLowerCase() === 'nostr';
+    const tagMatch = app.tags.some(tag => tag.toLowerCase() === 'nostr');
+    return appCategory || tagMatch;
+  }).length;
+
+  if (nostrCount > 0) {
+    const existingCount = categoryCount['Nostr'] || 0;
+    categoryCount['Nostr'] = Math.max(existingCount, nostrCount);
+  }
   
   return categoryCount;
 };

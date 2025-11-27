@@ -18,7 +18,7 @@ export function ModeToggle() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 cursor-pointer text-white hover:text-foreground">
+        <Button variant="ghost" size="sm" className="h-8 bg-transparent hover:bg-transparent cursor-pointer text-white hover:text-[#fff]">
           <div className="relative flex items-center">
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -52,7 +52,7 @@ export function ModeToggle() {
           className="hover:bg-accent focus:bg-accent cursor-pointer"
         >
           <Eclipse className="mr-2"/>
-          SYS
+          System
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
