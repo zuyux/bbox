@@ -22,7 +22,7 @@
 ;; ============================================
 
 (define-data-var admin principal contract-owner)
-(define-data-var listing-fee-sbtc uint u111111) ;; 111111 satoshis in sBTC
+(define-data-var listing-fee-sbtc uint u100) ;; 100 satoshis in sBTC
 (define-data-var app-id-nonce uint u0)
 (define-data-var total-apps uint u0)
 

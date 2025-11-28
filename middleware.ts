@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Agregar cabeceras CORS para todas las respuestas
+  // Add CORS headers for every response
   const response = NextResponse.next();
   
-  // Cabeceras CORS específicas para Safari/iOS
+  // Safari/iOS-specific CORS headers
   response.headers.set('Access-Control-Allow-Origin', '*');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   
-  // Cabeceras de cache para imágenes
+  // Cache headers for images
   if (request.nextUrl.pathname.startsWith('/_next/image') || 
       request.nextUrl.pathname.includes('ipfs') ||
       request.nextUrl.pathname.match(/\.(jpg|jpeg|png|gif|webp|avif)$/i)) {
@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
     response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
   }
   
-  // Cabeceras específicas para Safari
+  // Extra headers for Safari
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   

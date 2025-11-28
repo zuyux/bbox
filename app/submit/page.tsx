@@ -31,11 +31,12 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
-import { getListingFee, formatListingFee } from '@/lib/bbox-contract';
+import { getListingFee, formatListingFee, submitAppToContract } from '@/lib/bbox-contract';
 import { getPersistedNetwork } from '@/lib/network';
 import { uploadFileToPinata, getIPFSUrl } from '@/lib/pinataUpload';
 import { useWallet } from '@/components/WalletProvider';
 import { signStacksMessage, type StacksSignatureResult } from '@/lib/commentSigning';
+import { uploadAppMetadataToIPFS, validateAppMetadata, createMetadataFromFormData } from '@/lib/ipfs-metadata';
 
 // Extend Window interface for Stacks wallet
 declare global {
@@ -68,6 +69,8 @@ interface AppFormData {
   publisher_name: string;
   publisher_email: string;
 }
+
+type SubmitStatus = 'idle' | 'metadata' | 'contract' | 'uploading' | 'email' | 'success' | 'error';
 
 const CATEGORIES = [
   'Wallet',
@@ -123,7 +126,7 @@ export default function PublishPage() {
   const currentAddress = useCurrentAddress();
   const { walletType } = useWallet();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'uploading' | 'signing' | 'pending' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<SubmitStatus>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [newTag, setNewTag] = useState('');
   const [listingFee, setListingFee] = useState<{ token: string; amount: bigint } | null>(null);
@@ -134,6 +137,8 @@ export default function PublishPage() {
   const [signatureStatus, setSignatureStatus] = useState<'idle' | 'signing' | 'signed' | 'error'>('idle');
   const [signatureError, setSignatureError] = useState('');
   const [signatureResult, setSignatureResult] = useState<StacksSignatureResult | null>(null);
+  const [metadataCid, setMetadataCid] = useState<string | null>(null);
+  const [contractTxId, setContractTxId] = useState<string | null>(null);
   const [showGetInModal, setShowGetInModal] = useState(false);
 
   useEffect(() => {
@@ -309,20 +314,26 @@ export default function PublishPage() {
     }
 
     setIsSubmitting(true);
-    setSubmitStatus('uploading');
+    setSubmitStatus('idle');
     setErrorMessage('');
     setValidationErrors([]);
+    setMetadataCid(null);
+    setContractTxId(null);
 
     try {
       // Validate required fields
+      const baseValidationErrors: string[] = [];
       if (!formData.name || !formData.description || !formData.category || !formData.publisher_email) {
-        setValidationErrors(['Please fill in all required fields (Name, Description, Category, Email)']);
-        throw new Error('Please fill in all required fields');
+        baseValidationErrors.push('Please fill in all required fields (Name, Description, Category, Email)');
       }
 
       if (formData.description.length < 50) {
-        setValidationErrors(['Description must be at least 50 characters long']);
-        throw new Error('Description is too short');
+        baseValidationErrors.push('Description must be at least 50 characters long');
+      }
+
+      if (baseValidationErrors.length > 0) {
+        setValidationErrors(baseValidationErrors);
+        throw new Error(baseValidationErrors[0]);
       }
 
       let submissionSignature = signatureResult;
@@ -342,6 +353,31 @@ export default function PublishPage() {
         throw new Error('Missing submission signature. Please try again.');
       }
 
+      const metadataPayload = createMetadataFromFormData(formData as unknown as Record<string, unknown>, currentAddress);
+      const metadataValidation = validateAppMetadata(metadataPayload);
+
+      if (!metadataValidation.valid) {
+        setValidationErrors(metadataValidation.errors);
+        throw new Error(metadataValidation.errors[0] || 'Metadata validation failed');
+      }
+
+      setSubmitStatus('metadata');
+      const ipfsHash = await uploadAppMetadataToIPFS(metadataPayload);
+      setMetadataCid(ipfsHash);
+
+      const awaitContractTx = async (): Promise<string> =>
+        new Promise((resolve, reject) => {
+          submitAppToContract(
+            ipfsHash,
+            (txId) => resolve(txId),
+            () => reject(new Error('Contract call cancelled by user'))
+          ).catch((error) => reject(error));
+        });
+
+      setSubmitStatus('contract');
+      const txId = await awaitContractTx();
+      setContractTxId(txId);
+
       // Step 1: Submit to Supabase
       setSubmitStatus('uploading');
       const submitResponse = await fetch('/api/submit-app', {
@@ -352,6 +388,8 @@ export default function PublishPage() {
         body: JSON.stringify({
           ...formData,
           publisher_address: currentAddress,
+          metadata_cid: ipfsHash,
+          contract_txid: txId,
           signature: submissionSignature.signature,
           signature_payload: submissionSignature.signedPayload,
           signature_wallet_type: submissionSignature.walletType,
@@ -368,7 +406,7 @@ export default function PublishPage() {
       console.log('✅ App submitted to database:', submitData.app.id);
 
       // Step 2: Send confirmation emails
-      setSubmitStatus('signing'); // Reusing this status for "sending emails"
+      setSubmitStatus('email');
       const emailResponse = await fetch('/api/send-email', {
         method: 'POST',
         headers: {
@@ -405,6 +443,7 @@ export default function PublishPage() {
 
       // Step 3: Success! Redirect to success page
       setSubmitStatus('success');
+      setIsSubmitting(false);
       setTimeout(() => {
         router.push('/submit/success');
       }, 1000);
@@ -459,32 +498,74 @@ export default function PublishPage() {
           </div>
 
           {/* Status Messages */}
+          {submitStatus === 'metadata' && (
+            <Card className="mb-6 border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 text-purple-600 animate-spin" />
+                  <span className="text-purple-900 dark:text-purple-100">
+                    Uploading your metadata to IPFS...
+                  </span>
+                </div>
+                <p className="text-xs text-purple-800 dark:text-purple-200 mt-2 ml-7">
+                  This pins your app details before the on-chain submission
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {submitStatus === 'contract' && (
+            <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-900/40 dark:bg-orange-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
+                  <span className="text-orange-900 dark:text-orange-100">
+                    Confirm the on-chain listing fee in your wallet
+                  </span>
+                </div>
+                <p className="text-xs text-orange-800 dark:text-orange-200 mt-2 ml-7">
+                  Pay {listingFee ? formatListingFee(listingFee.amount, listingFee.token) : 'the required fee'} in sBTC plus STX gas to submit on-chain
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {submitStatus === 'uploading' && (
             <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
                   <span className="text-blue-800 dark:text-blue-200">
-                    Submitting your app...
+                    Finalizing your submission...
                   </span>
                 </div>
                 <p className="text-xs text-blue-700 dark:text-blue-300 mt-2 ml-7">
-                  Your app data is being saved to the database
+                  Saving metadata and transaction details to the database
                 </p>
+                {metadataCid && (
+                  <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-2 ml-7 break-all">
+                    Metadata CID: <span className="font-mono">{metadataCid}</span>
+                  </p>
+                )}
+                {contractTxId && (
+                  <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1 ml-7 break-all">
+                    Contract TX: <span className="font-mono">{contractTxId}</span>
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}
 
-          {submitStatus === 'signing' && (
-            <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
+          {submitStatus === 'email' && (
+            <Card className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
-                  <span className="text-orange-800 dark:text-orange-200">
+                  <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
+                  <span className="text-amber-900 dark:text-amber-100">
                     Sending confirmation emails...
                   </span>
                 </div>
-                <p className="text-xs text-orange-700 dark:text-orange-300 mt-2 ml-7">
+                <p className="text-xs text-amber-800 dark:text-amber-200 mt-2 ml-7">
                   You&apos;ll receive a confirmation shortly
                 </p>
               </CardContent>
@@ -503,6 +584,16 @@ export default function PublishPage() {
                 <p className="text-sm text-green-700 dark:text-green-300 mt-2 ml-7">
                   Redirecting to success page...
                 </p>
+                {contractTxId && (
+                  <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-7 break-all">
+                    Contract TX: <span className="font-mono">{contractTxId}</span>
+                  </p>
+                )}
+                {metadataCid && (
+                  <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-7 break-all">
+                    Metadata CID: <span className="font-mono">{metadataCid}</span>
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}
@@ -1054,10 +1145,12 @@ export default function PublishPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {submitStatus === 'metadata' && 'Uploading metadata...'}
+                    {submitStatus === 'contract' && 'Awaiting wallet...'}
                     {submitStatus === 'uploading' && 'Submitting...'}
-                    {submitStatus === 'signing' && 'Sending emails...'}
+                    {submitStatus === 'email' && 'Sending emails...'}
                     {submitStatus === 'success' && 'Success!'}
-                    {(submitStatus === 'idle' || submitStatus === 'error' || submitStatus === 'pending') && 'Publishing...'}
+                    {(submitStatus === 'idle' || submitStatus === 'error') && 'Publishing...'}
                   </>
                 ) : (
                   <>
@@ -1095,10 +1188,10 @@ export default function PublishPage() {
                   <Coins className="w-5 h-5 text-orange-600" />
                   <div>
                     <div className="font-semibold text-orange-900 dark:text-orange-100">
-                      Listing Fee: 100 000 Satoshis
+                      Listing Fee: {formatListingFee(listingFee.amount, listingFee.token)}
                     </div>
                     <div className="text-xs text-orange-800 dark:text-orange-200">
-                      One-time fee to publish your app on-chain • Paid in {listingFee.token}
+                      Pay this in sBTC plus the STX gas required to interact with bbox.clar
                     </div>
                   </div>
                 </div>

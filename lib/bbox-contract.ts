@@ -118,7 +118,7 @@ export async function getListingFee(): Promise<{
     // Convert Clarity value to JavaScript object
     const value = cvToValue(clarityValue);
     
-    // The contract returns { token: "sBTC", amount: u111111 }
+    // The contract returns { token: "sBTC", amount: u100 }
     if (!value || typeof value !== 'object') {
       console.warn('Parsed value is not an object:', value);
       throw new Error('Unexpected contract response format');
@@ -175,7 +175,7 @@ export async function getListingFee(): Promise<{
     // Return default fallback value
     return {
       token: 'sBTC',
-      amount: BigInt(111111), // Default fallback (111111 satoshis = 0.00111111 BTC)
+      amount: BigInt(100), // Default fallback (100 satoshis)
     };
   }
 }

@@ -44,12 +44,12 @@ export default function SafariOptimizedImage({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Si estamos en Safari/iOS, optimizar la URL
+    // Optimize the URL when running on Safari/iOS
     if (isSafariOrIOS()) {
       const optimized = optimizeIPFSUrl(src, filename || `sbtc-image.png`);
       setOptimizedSrc(optimized);
       
-      // Precargar la imagen con fallback automático
+      // Preload the image with automatic fallback
       preloadImageWithFallback(src, filename)
         .then((workingUrl) => {
           setOptimizedSrc(workingUrl);
@@ -61,7 +61,7 @@ export default function SafariOptimizedImage({
           setIsLoading(false);
         });
     } else {
-      // Para otros navegadores, usar la URL original
+      // Use the original URL for other browsers
       setOptimizedSrc(src);
       setIsLoading(false);
     }
@@ -77,7 +77,7 @@ export default function SafariOptimizedImage({
     setIsLoading(false);
     onError?.();
     
-    // Si falla, intentar con una URL optimizada como último recurso
+    // If it still fails, try an optimized URL as a last resort
     if (optimizedSrc === src) {
       const fallback = optimizeIPFSUrl(src, filename || 'sbtc-image.png');
       setOptimizedSrc(fallback);
@@ -85,7 +85,7 @@ export default function SafariOptimizedImage({
     }
   };
 
-  // Clases CSS optimizadas para Safari/iOS
+  // CSS helpers tuned for Safari/iOS
   const optimizedClassName = `
     ${className}
     ${isLoading ? 'opacity-0' : 'opacity-100'}

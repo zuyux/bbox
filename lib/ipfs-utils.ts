@@ -2,7 +2,7 @@
  * IPFS URL utilities for Safari/iOS compatibility
  */
 
-// Lista de gateways IPFS con buena compatibilidad Safari/iOS
+// List of IPFS gateways with strong Safari/iOS compatibility
 export const IPFS_GATEWAYS = [
   'https://ipfs.io/ipfs/',
   'https://gateway.ipfs.io/ipfs/',
@@ -12,10 +12,10 @@ export const IPFS_GATEWAYS = [
 ] as const;
 
 /**
- * Extrae el hash IPFS de cualquier URL IPFS
+ * Extracts the IPFS hash from any IPFS URL
  */
 export function extractIPFSHash(url: string): string | null {
-  // Patrones para diferentes formatos de URL IPFS
+  // Patterns for the different IPFS URL formats
   const patterns = [
     /\/ipfs\/([a-zA-Z0-9]+)/,
     /ipfs:\/\/([a-zA-Z0-9]+)/,
@@ -33,7 +33,7 @@ export function extractIPFSHash(url: string): string | null {
 }
 
 /**
- * Convierte cualquier URL IPFS a una URL optimizada para Safari/iOS
+ * Converts any IPFS URL into a Safari/iOS-optimized URL
  */
 export function optimizeIPFSUrl(url: string, filename?: string): string {
   const hash = extractIPFSHash(url);
@@ -43,30 +43,26 @@ export function optimizeIPFSUrl(url: string, filename?: string): string {
     return url;
   }
 
-  // Si estamos en Safari/iOS, usar nuestro proxy API como primera opción
+  // Prefer our proxy API first on Safari/iOS
   if (typeof window !== 'undefined' && isSafariOrIOS()) {
     return `/api/ipfs-proxy?hash=${hash}&filename=${filename || 'sbtc-image.png'}`;
   }
 
-  // Para otros navegadores, usar el gateway principal
+  // Use the primary gateway for other browsers
   const baseUrl = `${IPFS_GATEWAYS[0]}${hash}`;
-  
-  // Agregar parámetros para mejorar compatibilidad
-  const params = new URLSearchParams();
-  
-  if (filename) {
-    params.set('filename', filename);
+
+  if (!filename) {
+    return baseUrl;
   }
-  
-  // Agregar parámetros que ayudan con el cache y CORS
-  params.set('format', 'raw');
-  params.set('download', 'false');
-  
+
+  const params = new URLSearchParams();
+  params.set('filename', filename);
+
   return `${baseUrl}?${params.toString()}`;
 }
 
 /**
- * Genera URLs de respaldo para IPFS en caso de que falle el gateway principal
+ * Generates backup IPFS URLs if the primary gateway fails
  */
 export function generateFallbackUrls(url: string, filename?: string): string[] {
   const hash = extractIPFSHash(url);
@@ -77,12 +73,12 @@ export function generateFallbackUrls(url: string, filename?: string): string[] {
 
   const urls: string[] = [];
   
-  // Si estamos en Safari/iOS, priorizar nuestro proxy
+  // Prioritize our proxy on Safari/iOS
   if (typeof window !== 'undefined' && isSafariOrIOS()) {
     urls.push(`/api/ipfs-proxy?hash=${hash}&filename=${filename || 'sbtc-image.png'}`);
   }
 
-  // Agregar URLs de gateways directos
+  // Append direct gateway URLs
   IPFS_GATEWAYS.forEach(gateway => {
     const baseUrl = `${gateway}${hash}`;
     const params = new URLSearchParams();
@@ -98,7 +94,7 @@ export function generateFallbackUrls(url: string, filename?: string): string[] {
 }
 
 /**
- * Preload de imagen con fallback automático para iOS
+ * Image preload with automatic iOS fallback
  */
 export function preloadImageWithFallback(url: string, filename?: string): Promise<string> {
   const fallbackUrls = generateFallbackUrls(url, filename);
@@ -125,7 +121,7 @@ export function preloadImageWithFallback(url: string, filename?: string): Promis
         tryNextUrl();
       };
       
-      // Configurar CORS y otras propiedades para iOS
+      // Configure CORS and other props for iOS
       img.crossOrigin = 'anonymous';
       img.loading = 'eager';
       img.src = currentUrl;
@@ -136,7 +132,7 @@ export function preloadImageWithFallback(url: string, filename?: string): Promis
 }
 
 /**
- * Hook para detectar si estamos en Safari/iOS
+ * Detects whether the user is on Safari/iOS
  */
 export function isSafariOrIOS(): boolean {
   if (typeof navigator === 'undefined') return false;
@@ -149,7 +145,7 @@ export function isSafariOrIOS(): boolean {
 }
 
 /**
- * Convierte todas las URLs de un array para compatibilidad Safari
+ * Converts every URL in an array for Safari compatibility
  */
 export function optimizeImageUrls(urls: string[]): string[] {
   return urls.map((url, index) => 

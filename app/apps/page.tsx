@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import IPFSImage from '@/components/IPFSImage';
+import { extractIPFSHash } from '@/lib/ipfs-utils';
 import { 
   Search, 
   Star, 
@@ -35,6 +38,34 @@ const categoryIcons: { [key: string]: typeof Shield } = {
 };
 
 const CHUNK_SIZE = 10;
+const DEFAULT_APP_IMAGE = '/bbox.png';
+
+const AppLogo = ({ name, imgUrl }: { name: string; imgUrl?: string }) => {
+  const [imageFailed, setImageFailed] = useState(false);
+  const hasValidHash = Boolean(imgUrl && extractIPFSHash(imgUrl));
+  const showRemoteImage = hasValidHash && !imageFailed;
+
+  return (
+    <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[#111] to-[#222] rounded-2xl text-white text-xl sm:text-2xl font-bold shadow-sm overflow-hidden flex items-center justify-center">
+      {showRemoteImage && imgUrl ? (
+        <IPFSImage
+          src={imgUrl}
+          alt={`${name} logo`}
+          className="object-cover"
+          fill
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <Image
+          src={DEFAULT_APP_IMAGE}
+          alt={`Default logo for ${name}`}
+          fill
+          className="object-cover"
+        />
+      )}
+    </div>
+  );
+};
 
 export default function AppsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -153,9 +184,7 @@ export default function AppsPage() {
               <div className="flex gap-4 p-4 rounded-md hover:bg-muted/50 transition-colors cursor-pointer border border-transparent hover:border-border">
                 {/* App Icon */}
                 <div className="flex-shrink-0">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-sm">
-                    {app.name.charAt(0)}
-                  </div>
+                  <AppLogo name={app.name} imgUrl={app.imgUrl} />
                 </div>
                 
                 {/* App Info */}

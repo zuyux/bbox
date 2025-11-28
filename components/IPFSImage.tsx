@@ -102,7 +102,7 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
 
   if (hasError) {
     return (
-      <div className={`flex items-center justify-center bg-gray-800 text-gray-400 ${className}`}>
+      <div className={`flex items-center justify-center bg-background rounded-full text-gray-400 ${className}`}>
         <div className="text-center p-4">
           <div className="text-2xl mb-2">🖼️</div>
           <div className="text-sm">Image failed to load</div>
@@ -113,7 +113,7 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
 
   if (isLoading || !currentSrc) {
     return (
-      <div className={`flex items-center justify-center bg-gray-800 ${className}`}>
+      <div className={`flex items-center justify-center bg-transparent ${className}`}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );

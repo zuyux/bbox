@@ -130,24 +130,24 @@ export async function uploadDirectlyToPinata(
       if (error.response?.status === 413) {
         return {
           success: false,
-          error: `Archivo demasiado grande para Pinata. Tamaño: ${(audioFile.size / 1024 / 1024).toFixed(2)}MB`
+          error: `File too large for Pinata. Size: ${(audioFile.size / 1024 / 1024).toFixed(2)}MB`
         };
       } else if (error.response?.status === 401) {
         return {
           success: false,
-          error: 'Error de autenticación con Pinata. Verifica tu JWT token.'
+          error: 'Authentication error with Pinata. Check your JWT token.'
         };
       } else if (error.response?.status === 429) {
         return {
           success: false,
-          error: 'Límite de rate exceeded en Pinata. Espera un momento e intenta de nuevo.'
+          error: 'Rate limit exceeded on Pinata. Please wait a moment and try again.'
         };
       }
     }
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Error desconocido en la subida directa'
+      error: error instanceof Error ? error.message : 'Unknown error during direct upload'
     };
   }
 }

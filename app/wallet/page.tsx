@@ -1,7 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { retrieveEncryptedWallet } from "@/lib/encryptedStorage";
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
+
+const STACKS_ADDRESS_REGEX = /^(SP|SM|SN|ST|SU|TP|TM|TN|TS)[A-Za-z0-9]{30,40}$/i;
+const MIN_SEND_AMOUNT = 0.000001; // 0.000001 sBTC (~1 satoshi)
+const MAX_MEMO_BYTES = 34;
 
 // Extend the Window interface to include StacksProvider
 declare global {
@@ -13,8 +17,7 @@ declare global {
 import { getSigningNetwork } from "@/lib/encryptedWalletSigning";
 import { makeSTXTokenTransfer, broadcastTransaction } from "@stacks/transactions";
 import { getApiUrl } from "@/lib/stacks-api";
-import { getPersistedNetwork } from "@/lib/network";
-import { getSBTCContract } from "@/lib/contracts";
+import { getPersistedNetwork, inferNetworkFromAddress, persistNetwork, type Network } from "@/lib/network";
 
 import { Copy, X, LoaderCircle, Wallet } from "lucide-react";
 import { toast } from "sonner";
@@ -26,6 +29,8 @@ export default function WalletPage() {
   const address = useCurrentAddress() || "";
   const [sbtcBalance, setSbtcBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentNetwork, setCurrentNetwork] = useState<Network>(() => getPersistedNetwork());
+  const sbtcContractId = "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token";
 
   // Modal states
   const [showReceive, setShowReceive] = useState(false);
@@ -34,7 +39,51 @@ export default function WalletPage() {
   const [sendAmount, setSendAmount] = useState("");
   const [sendPassword, setSendPassword] = useState("");
   const [sendLoading, setSendLoading] = useState(false);
+  const [sendMemo, setSendMemo] = useState("");
   const [extensionAvailable, setExtensionAvailable] = useState(false);
+
+  const trimmedRecipient = sendTo.trim();
+  const parsedAmount = Number(sendAmount);
+  const recipientError = trimmedRecipient && !STACKS_ADDRESS_REGEX.test(trimmedRecipient)
+    ? 'Enter a valid Stacks address (starts with SP, SM, ST, or SN).'
+    : undefined;
+  const amountError = sendAmount
+    ? (!Number.isFinite(parsedAmount) || parsedAmount < MIN_SEND_AMOUNT
+      ? `Enter at least ${MIN_SEND_AMOUNT} sBTC (≈1 sat)`
+      : undefined)
+    : undefined;
+  const memoByteLength = useMemo(() => new TextEncoder().encode(sendMemo || '').length, [sendMemo]);
+  const memoError = memoByteLength > MAX_MEMO_BYTES ? `Memo must be ${MAX_MEMO_BYTES} bytes or fewer` : undefined;
+  const passwordError = !extensionAvailable && sendPassword && sendPassword.length < 8
+    ? 'Password must be at least 8 characters'
+    : undefined;
+  const sendFormValid = Boolean(
+    trimmedRecipient &&
+    sendAmount &&
+    !recipientError &&
+    !amountError &&
+    !memoError &&
+    (extensionAvailable || (!!sendPassword && !passwordError))
+  );
+
+  const resetSendForm = () => {
+    setSendTo("");
+    setSendAmount("");
+    setSendPassword("");
+    setSendMemo("");
+  };
+
+  const closeSendModal = () => {
+    resetSendForm();
+    setShowSend(false);
+  };
+
+  const closeReceiveModal = () => setShowReceive(false);
+
+  const sendMethodTitle = extensionAvailable ? 'Sending sBTC with Extension' : 'Sending sBTC with Local Wallet';
+  const sendMethodDescription = extensionAvailable
+    ? 'Your connected browser wallet will handle signing, fees, and confirmation prompts for this sBTC transfer.'
+    : 'Your encrypted wallet password unlocks the private key locally to sign this sBTC transfer.';
   // Detect if Hiro Wallet extension is available and connected (optional, can remove if not needed)
   useEffect(() => {
     if (typeof window !== 'undefined' && window.StacksProvider) {
@@ -43,6 +92,23 @@ export default function WalletPage() {
       setExtensionAvailable(false);
     }
   }, [showSend]);
+
+  // Stay aligned with the wallet's network (address prefixes reveal it)
+  useEffect(() => {
+    const inferredNetwork = inferNetworkFromAddress(address);
+    if (inferredNetwork && inferredNetwork !== currentNetwork) {
+      persistNetwork(inferredNetwork);
+      setCurrentNetwork(inferredNetwork);
+      return;
+    }
+
+    if (!inferredNetwork) {
+      const persistedNetwork = getPersistedNetwork();
+      if (persistedNetwork !== currentNetwork) {
+        setCurrentNetwork(persistedNetwork);
+      }
+    }
+  }, [address, currentNetwork]);
 
   // Fetch SBTC token balance
   useEffect(() => {
@@ -55,7 +121,6 @@ export default function WalletPage() {
     setLoading(true);
     
     // Get current network and use appropriate API endpoint
-    const currentNetwork = getPersistedNetwork();
     const apiBaseUrl = getApiUrl(currentNetwork);
     
     // Fetch SBTC token balance from the fungible token contract
@@ -69,33 +134,41 @@ export default function WalletPage() {
         // Look for SBTC token in fungible_tokens
         let sbtcTokenBalance = '0';
         
-        // Debug: Log all available tokens
-        console.log('All fungible tokens:', data.fungible_tokens);
-        console.log('Available token keys:', Object.keys(data.fungible_tokens || {}));
+        type FungibleTokenData = {
+          balance: string;
+          total_sent: string;
+          total_received: string;
+          token?: {
+            address: string;
+            contractName: string;
+            symbol?: string;
+          };
+        };
         
-        // The network-aware sBTC token identifier
-        const sbtcTokenKey = getSBTCContract();
-        
-        if (data.fungible_tokens && data.fungible_tokens[sbtcTokenKey]) {
-          const balance = data.fungible_tokens[sbtcTokenKey].balance;
-          // Show raw balance as Satoshis (no division by 1e8)
+        const tokens = (data.fungible_tokens || {}) as Record<string, FungibleTokenData>;
+        console.log('All fungible tokens:', tokens);
+        console.log('Available token keys:', Object.keys(tokens));
+
+        const sbtcTokenEntry = Object.entries(tokens).find(([key, value]) => {
+          if (key === sbtcContractId) return true;
+          if (key.startsWith(`${sbtcContractId}::`)) return true;
+          if (key === `${sbtcContractId}::sbtc-token`) return true;
+          const tokenMeta = value?.token;
+          if (!tokenMeta) return false;
+          const principalId = `${tokenMeta.address}.${tokenMeta.contractName}`;
+          if (principalId === sbtcContractId) return true;
+          const symbol = tokenMeta?.symbol?.toLowerCase();
+          return symbol === 'sbtc';
+        });
+
+        if (sbtcTokenEntry) {
+          const [, sbtcData] = sbtcTokenEntry;
+          const balance = typeof sbtcData === 'object' && sbtcData !== null && 'balance' in sbtcData && typeof (sbtcData as { balance: unknown }).balance === 'string' 
+            ? (sbtcData as { balance: string }).balance 
+            : '0';
           sbtcTokenBalance = Number(balance).toLocaleString();
         } else {
-          // Try to find any token that might be sBTC
-          const allTokenKeys = Object.keys(data.fungible_tokens || {});
-          const sbtcKey = allTokenKeys.find(key => 
-            key.toLowerCase().includes('sbtc') || 
-            key.includes('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRC9VERC') ||
-            key.includes('SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4')
-          );
-          
-          if (sbtcKey) {
-            console.log('Found potential sBTC token with key:', sbtcKey);
-            const balance = data.fungible_tokens[sbtcKey].balance;
-            sbtcTokenBalance = Number(balance).toLocaleString();
-          } else {
-            console.log('No sBTC token found in wallet');
-          }
+          console.warn('No sBTC token found in wallet balances response');
         }
         
         console.log('SBTC Balance data:', data.fungible_tokens);
@@ -109,12 +182,22 @@ export default function WalletPage() {
         setSbtcBalance('--');
         setLoading(false);
       });
-  }, [address]);
+  }, [address, currentNetwork]);
 
   // Send handler
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!sendFormValid) {
+      toast.error('Please fix the highlighted fields before sending.');
+      return;
+    }
+
     setSendLoading(true);
+    const recipient = trimmedRecipient;
+    const amountInMicroStx = Math.round(parsedAmount * 1e6);
+    const memoPayload = memoError ? '' : sendMemo.trim();
+
     try {
       if (extensionAvailable) {
         try {
@@ -135,7 +218,7 @@ export default function WalletPage() {
             provider = (win.StacksProvider ?? null) as { request?: (method: string, params?: unknown) => Promise<unknown> };
           }
           if (!provider) {
-            toast.error('No se encontró una extensión de billetera compatible.');
+            toast.error('No compatible wallet extension found.');
             setSendLoading(false);
             return;
           }
@@ -144,9 +227,9 @@ export default function WalletPage() {
             await provider.request?.(
               "stx_transferStx",
               {
-                recipient: sendTo,
-                amount: String(Math.round(Number(sendAmount) * 1e6)), // microSTX as string
-                memo: '',
+                recipient,
+                amount: String(amountInMicroStx), // microSTX as string
+                memo: memoPayload,
               }
             );
           } catch (err) {
@@ -156,9 +239,9 @@ export default function WalletPage() {
                 await provider.request?.(
                   "stx_requestTransfer",
                   {
-                    recipient: sendTo,
-                    amount: String(Math.round(Number(sendAmount) * 1e6)),
-                    memo: '',
+                    recipient,
+                    amount: String(amountInMicroStx),
+                    memo: memoPayload,
                   }
                 );
               } catch (fallbackErr) {
@@ -168,11 +251,8 @@ export default function WalletPage() {
               throw err;
             }
           }
-          toast.success('¡Transacción enviada vía extensión!');
-          setShowSend(false);
-          setSendTo("");
-          setSendAmount("");
-          setSendPassword("");
+          toast.success('sBTC transfer sent via extension!');
+          closeSendModal();
         } catch (err: unknown) {
           // Log the error object for debugging
           console.error('Extension transaction error:', err);
@@ -199,38 +279,36 @@ export default function WalletPage() {
             toast.error(errorMsg);
           }
         }
-  setSendLoading(false);
-  return;
+        setSendLoading(false);
+        return;
       }
       // 1. Decrypt wallet with password
       const wallet = await retrieveEncryptedWallet(sendPassword);
-      if (!wallet || !wallet.privateKey) throw new Error("Contraseña inválida o billetera no encontrada");
+      if (!wallet || !wallet.privateKey) throw new Error("Invalid password or wallet not found");
 
       // 2. Prepare transaction
       const network = getSigningNetwork();
       const tx = await makeSTXTokenTransfer({
-        recipient: sendTo,
-        amount: Math.round(Number(sendAmount) * 1e6),
+        recipient,
+        amount: amountInMicroStx,
         senderKey: wallet.privateKey,
         network,
+        memo: memoPayload || undefined,
       });
 
       // 3. Broadcast transaction
       const result = await broadcastTransaction({ transaction: tx, network });
       if ('txid' in result) {
-        toast.success(`¡Transacción enviada! TXID: ${result.txid}`);
+        toast.success(`sBTC transfer sent! TXID: ${result.txid}`);
       } else {
-        toast.error(result || 'Fallo al transmitir');
+        toast.error(result || 'Broadcast failed');
       }
-      setShowSend(false);
-      setSendTo("");
-      setSendAmount("");
-      setSendPassword("");
+      closeSendModal();
     } catch (err: unknown) {
       if (err instanceof Error) {
-        toast.error(err.message || 'Error al enviar STX');
+        toast.error(err.message || 'Error sending sBTC');
       } else {
-        toast.error('Error al enviar STX');
+        toast.error('Error sending sBTC');
       }
     } finally {
       setSendLoading(false);
@@ -260,27 +338,26 @@ export default function WalletPage() {
       return;
     }
     setTxLoading(true);
-    const network = getPersistedNetwork();
-    fetchRecentTransactions(address, network, 10)
+    fetchRecentTransactions(address, currentNetwork, 10)
       .then(setTransactions)
       .catch(() => setTransactions([]))
       .finally(() => setTxLoading(false));
-  }, [address, showSend]);
+  }, [address, currentNetwork, showSend]);
 
 
   // If no wallet address, ask to connect wallet
   if (!address) {
     return (
       <div className="max-w-xl mx-auto my-24 p-8 rounded-2xl border shadow flex flex-col items-center justify-center select-none bg-card text-card-foreground border-border">
-        <h1 className="text-3xl font-bold mb-6">Billetera</h1>
+        <h1 className="text-3xl font-bold mb-6">Wallet</h1>
         <p className="mb-8 text-lg text-muted-foreground text-center">
-          Por favor conecta tu billetera para gestionar tus fondos.
+          Please connect your wallet to manage your funds.
         </p>
         <Link
           href="/"
           className="py-3 px-6 rounded-xl border bg-primary text-primary-foreground hover:bg-secondary hover:text-secondary-foreground border-border transition-all duration-200 focus:outline-none cursor-pointer select-none"
         >
-          Conectar Billetera
+          Connect Wallet
         </Link>
       </div>
     );
@@ -292,7 +369,7 @@ export default function WalletPage() {
       <div className="max-w-xl mx-auto p-8 bg-card rounded-2xl border border-border shadow text-card-foreground select-none min-w-[100vw] lg:min-w-1/4">
         <div className="my-2 flex items-center justify-left">
           <Wallet className="w-8 h-8 text-foreground" />
-          <h1 className="title text-lg mx-4 font-bold">Billetera</h1>
+          <h1 className="title text-lg mx-4 font-bold">Wallet</h1>
         </div>        
       <div className="mt-2 flex justify-center">
         <div className="flex items-center gap-3">
@@ -308,10 +385,10 @@ export default function WalletPage() {
       </div>
 
       {/* Network and Address Info - Only show if not mainnet */}
-      {getPersistedNetwork() !== 'mainnet' && (
+      {currentNetwork !== 'mainnet' && (
         <div className="mb-16 p-4 bg-muted rounded-lg">
           <div className="flex items-center justify-center text-sm">
-            <span className="text-primary text-center uppercase">{getPersistedNetwork()}</span>
+            <span className="text-primary text-center uppercase">{currentNetwork}</span>
           </div>
         </div>
       )}
@@ -322,73 +399,167 @@ export default function WalletPage() {
           className="bg-background border border-border text-foreground w-full px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
           onClick={() => setShowSend(true)}
         >
-          Enviar
+          Send
         </button>
         <button
           className="bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
           onClick={() => setShowReceive(true)}
         >
-          Recibir
+          Receive
         </button>
       </div>
 
 
       {/* Send Modal */}
       {showSend && (
-        <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
-          <div className="bg-background text-foreground p-6 rounded-2xl border border-foreground shadow-xl w-full max-w-sm">
-            <div className="flex items-center justify-end">
-                <button onClick={() => setShowSend(false)}
-                    className="bg-none border-none text-[#555] text-xl cursor-pointer" aria-label="Close" type="button">
-                <X className="h-[18px]"/>
-                </button>
-            </div>
-            <form onSubmit={handleSend} className="space-y-6 mt-6">
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+          onClick={() => {
+            if (!sendLoading) closeSendModal();
+          }}
+        >
+          <div
+            className="bg-card text-card-foreground p-6 rounded-2xl border border-border shadow-xl w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
               <div>
+                <h2 className="text-xl font-semibold">Send Sats</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                    {currentNetwork !== 'mainnet' && (
+                    <span className="ml-1 font-mono uppercase">{currentNetwork}</span>
+                    )}
+                </p>
+              </div>
+              <button
+                onClick={closeSendModal}
+                className="bg-none border-none text-muted-foreground hover:text-foreground text-xl cursor-pointer disabled:opacity-40"
+                aria-label="Close"
+                type="button"
+                disabled={sendLoading}
+              >
+                <X className="h-[20px]" />
+              </button>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-border bg-muted/30 p-4 text-sm">
+              <p className="font-medium">{sendMethodTitle}</p>
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{sendMethodDescription}</p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Available balance:
+                <span className="ml-1 font-semibold">{sbtcBalance ?? '--'}</span>
+              </p>
+            </div>
+
+            <form onSubmit={handleSend} className="space-y-5 mt-6">
+              <div>
+                <label className="block text-sm font-medium mb-2" htmlFor="send-recipient">
+                  Recipient Address
+                </label>
                 <input
-                  className="w-full px-6 py-3 rounded-xl border border-foreground bg-background text-foreground focus:outline-none"
+                  id="send-recipient"
+                  className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${recipientError ? 'border-destructive/70' : 'border-border'}`}
                   value={sendTo}
                   onChange={e => setSendTo(e.target.value)}
                   required
-                  placeholder="SP..XYZ"
+                  placeholder="SP3FBR2K..."
                   disabled={sendLoading}
+                  autoComplete="off"
+                  spellCheck={false}
                 />
+                <p className="text-xs text-muted-foreground mt-2">Double-check the destination—sBTC transfers on Stacks are final.</p>
+                {recipientError && (
+                  <p className="text-xs text-destructive mt-2">{recipientError}</p>
+                )}
               </div>
+
               <div>
+                <label className="block text-sm font-medium mb-2" htmlFor="send-amount">
+                  Amount 
+                </label>
                 <input
-                  className="w-full px-6 py-8 rounded-xl border border-foreground bg-background text-foreground focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 text-right text-xl"
+                  id="send-amount"
+                  className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
                   type="number"
-                  min="0"
+                  min={MIN_SEND_AMOUNT}
                   step="any"
                   value={sendAmount}
                   onChange={e => setSendAmount(e.target.value)}
                   required
-                  placeholder="Cantidad"
+                  placeholder="0.0"
                   disabled={sendLoading}
                   style={{ MozAppearance: "textfield" } as React.CSSProperties}
                 />
+                <div className="flex items-center justify-between text-xs mt-2 text-muted-foreground">
+                  <span>Minimum {MIN_SEND_AMOUNT} sBTC (≈1 sat)</span>
+                  <span>Approximately {sbtcBalance ?? '--'} satoshis available</span>
+                </div>
+                {amountError && (
+                  <p className="text-xs text-destructive mt-2">{amountError}</p>
+                )}
               </div>
-              {/* Only show password input if not using extension or extension is not available */}
+
+              <div>
+                <label className="block text-sm font-medium mb-2" htmlFor="send-memo">
+                  Memo (optional)
+                </label>
+                <textarea
+                  id="send-memo"
+                  className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 resize-none ${memoError ? 'border-destructive/70' : 'border-border'}`}
+                  rows={2}
+                  maxLength={120}
+                  value={sendMemo}
+                  onChange={e => setSendMemo(e.target.value)}
+                  placeholder="Add a note for your records"
+                  disabled={sendLoading}
+                />
+                <div className="flex items-center justify-between text-xs mt-2">
+                  <span className={memoError ? 'text-destructive' : 'text-muted-foreground'}>
+                      {memoByteLength}/{MAX_MEMO_BYTES} bytes
+                    </span>
+                    {!memoError && (
+                      <span className="text-muted-foreground">Memo limit enforced by the sBTC contract</span>
+                    )}
+                </div>
+                {memoError && <p className="text-xs text-destructive mt-2">{memoError}</p>}
+              </div>
+
               {!extensionAvailable && (
                 <div>
+                  <label className="block text-sm font-medium mb-2" htmlFor="send-password">
+                    Wallet Password
+                  </label>
                   <input
-                    className="w-full px-6 py-3 rounded-xl border border-foreground bg-background text-foreground focus:outline-none"
+                    id="send-password"
+                    className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${passwordError ? 'border-destructive/70' : 'border-border'}`}
                     type="password"
                     value={sendPassword}
                     onChange={e => setSendPassword(e.target.value)}
                     required
-                    placeholder="Contraseña de billetera"
+                    placeholder="Enter the password you created"
                     disabled={sendLoading}
+                    autoComplete="current-password"
                   />
+                  <p className="text-xs text-muted-foreground mt-2">Required to decrypt and sign with your local wallet.</p>
+                  {passwordError && <p className="text-xs text-destructive mt-2">{passwordError}</p>}
                 </div>
               )}
-              <div>
+
+              <div className="space-y-3">
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 rounded-xl border-[1px] border-foreground bg-background text-foreground transition-all duration-200 focus:outline-none cursor-pointer select-none"
+                  className="w-full py-3 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  disabled={sendLoading || !sendFormValid}
+                >
+                  {sendLoading ? (extensionAvailable ? 'Sending via extension...' : 'Sending...') : 'Send'}
+                </button>
+                <button
+                  type="button"
+                  className="w-full py-3 px-4 rounded-xl border border-border bg-transparent text-foreground hover:bg-muted/60 transition-all cursor-pointer"
+                  onClick={closeSendModal}
                   disabled={sendLoading}
                 >
-                  {sendLoading ? (extensionAvailable ? 'Enviando vía extensión...' : 'Enviando...') : 'Enviar'}
+                  Cancel
                 </button>
               </div>
             </form>
@@ -398,11 +569,17 @@ export default function WalletPage() {
 
       {/* Receive Modal */}
       {showReceive && (
-        <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
-          <div className="bg-background text-foreground p-8 rounded-2xl border border-[#333] shadow-xl w-full max-w-sm text-center">
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+          onClick={closeReceiveModal}
+        >
+          <div
+            className="bg-background text-foreground p-8 rounded-2xl border border-[#333] shadow-xl w-full max-w-sm text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-end">
               <button
-                onClick={() => setShowReceive(false)}
+                onClick={closeReceiveModal}
                 className="bg-none border-none text-[#555] text-xl cursor-pointer"
                 aria-label="Close"
                 type="button"
@@ -410,7 +587,7 @@ export default function WalletPage() {
                 <X className="h-[18px]" />
               </button>
             </div>
-            <h2 className="text-xl font-bold mb-6">Recibir</h2>
+            <h2 className="text-xl font-bold mb-6">Receive</h2>
             <div className="mb-6">
               {address ? (
                 <div className="w-full p-6 flex items-center justify-center rounded-xl bg-background">
@@ -442,7 +619,7 @@ export default function WalletPage() {
                   onClick={() => {
                     if (address) {
                       navigator.clipboard.writeText(address);
-                      toast.success("¡Dirección copiada!");
+                      toast.success("Address copied!");
                     }
                   }}
                   aria-label="Copy address"
@@ -457,14 +634,14 @@ export default function WalletPage() {
 
       {/* Recent Transactions */}
       <div className="mt-10">
-        <h2 className="text-lg font-semibold mb-4">Transacciones Recientes</h2>
+        <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
         <div className="bg-card rounded-xl py-4 max-h-96 overflow-y-auto border border-border">
           {txLoading ? (
             <div className="flex justify-center items-center py-8">
               <LoaderCircle className="animate-spin text-foreground" size={32} />
             </div>
           ) : transactions.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">No se encontraron transacciones recientes.</div>
+            <div className="text-center text-muted-foreground py-8">No recent transactions found.</div>
           ) : (
             <ul className="space-4 mx-4">
               {transactions.map((tx) => (
@@ -472,7 +649,7 @@ export default function WalletPage() {
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="font-mono text-xs text-muted-foreground break-all">
-                        <a href={`https://explorer.hiro.so/txid/${tx.tx_id}?chain=${getPersistedNetwork()}`}
+                        <a href={`https://explorer.hiro.so/txid/${tx.tx_id}?chain=${currentNetwork}`}
                           target="_blank" rel="noopener noreferrer"
                           className="hover:underline text-primary">
                           {tx.tx_id.slice(0, 10)}...{tx.tx_id.slice(-8)}
@@ -481,11 +658,11 @@ export default function WalletPage() {
                       <div className="text-sm mt-1">
                         {tx.tx_type === 'token_transfer' ? (
                           <>
-                            <span className="font-semibold">{tx.sender_address === address ? 'Enviado' : 'Recibido'}</span>
+                            <span className="font-semibold">{tx.sender_address === address ? 'Sent' : 'Received'}</span>
                             {tx.sender_address === address ? (
-                              <> a <span className="font-mono">{tx.token_transfer?.recipient_address?.slice(0, 8)}...{tx.token_transfer?.recipient_address?.slice(-6)}</span></>
+                              <> to <span className="font-mono">{tx.token_transfer?.recipient_address?.slice(0, 8)}...{tx.token_transfer?.recipient_address?.slice(-6)}</span></>
                             ) : (
-                              <> de <span className="font-mono">{tx.sender_address.slice(0, 8)}...{tx.sender_address.slice(-6)}</span></>
+                              <> from <span className="font-mono">{tx.sender_address.slice(0, 8)}...{tx.sender_address.slice(-6)}</span></>
                             )}
                             <span className="ml-2">{tx.token_transfer?.amount ? Number(tx.token_transfer.amount) / 1e6 : ''} STX</span>
                           </>

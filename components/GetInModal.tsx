@@ -154,15 +154,15 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="justify-start bg-none border-none text-muted-foreground text-sm cursor-pointer" aria-label="Ayuda" type="button">
+                <button className="justify-start bg-none border-none text-muted-foreground text-sm cursor-pointer" aria-label="Help" type="button">
                   <CircleHelp className="h-[18px]"/>
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="bg-background text-foreground max-w-xs text-sm z-100">
                                   <div>
-                    Conecta o crea tu cuenta usando tu billetera o frase semilla.<br />
+                    Connect or create your account using your wallet or seed phrase.<br />
                     <span className="text-foreground underline">
-                      <a href="/support" target="_blank" rel="noopener noreferrer">¿Necesitas ayuda? Visita Soporte</a>
+                      <a href="/support" target="_blank" rel="noopener noreferrer">Need help? Visit Support</a>
                     </span>
                   </div>
               </TooltipContent>
@@ -172,7 +172,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
             
           </div>
           <div className="flex items-center justify-end">
-            <button onClick={onClose} className="bg-none border-none text-muted-foreground text-xl cursor-pointer" aria-label="Cerrar" type="button">
+            <button onClick={onClose} className="bg-none border-none text-muted-foreground text-xl cursor-pointer" aria-label="Close" type="button">
               <X className="h-[18px]"/>
             </button>
           </div>
@@ -185,13 +185,13 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
             <div className="space-y-4">
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {encryptedWalletMode === 'create' ? 'Asegura tu Billetera' : 
-                   isSessionLocked ? 'Desbloquea tu Billetera' : 'Accede a tu Billetera'}
+                  {encryptedWalletMode === 'create' ? 'Secure Your Wallet' : 
+                   isSessionLocked ? 'Unlock Your Wallet' : 'Access Your Wallet'}
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {encryptedWalletMode === 'create' 
-                    ? 'Crea una contraseña para cifrar tu billetera localmente'
-                    : 'Ingresa tu contraseña para desbloquear tu billetera cifrada'
+                    ? 'Create a password to encrypt your wallet locally'
+                    : 'Enter your password to unlock your encrypted wallet'
                   }
                 </p>
               </div>
@@ -225,7 +225,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                     className="w-full h-10 rounded-[7px] bg-transparent text-muted-foreground text-sm border border-border cursor-pointer flex items-center px-4 hover:bg-secondary hover:text-destructive mt-2"
                     type="button"
                   >
-                    Limpiar Todas las Sesiones
+                    Clear All Sessions
                   </Button>
                 </div>
               )}
@@ -240,8 +240,8 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                   className="w-full h-12 rounded-[9px] bg-accent-foreground text-background hover:text-background hover:bg-accent-foreground font-semibold text-base border border-foreground cursor-pointer flex items-center px-4"
                   type="button"
                 >
-                  <Image src="/wallet-ico.svg" alt="Billetera" width={18} height={18} className="invert dark:invert-0  mr-2"/>
-                  <span className="text-center flex-1">Conectar Billetera</span>
+                  <Image src="/wallet-ico.svg" alt="Wallet" width={18} height={18} className="invert dark:invert-0  mr-2"/>
+                  <span className="text-center flex-1">Connect Wallet</span>
                 </Button>
                 {walletError && (
                   <div className="text-red-500 text-xs mt-2 text-center">{walletError}</div>
@@ -257,8 +257,8 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                   <Shield className="w-[18px] h-[18px] mx-[5px]"/>
                   <span className="text-center flex-1 text-white">
                     {isWalletEncrypted && walletInfo 
-                      ? `Desbloquear ${formatStxAddress(walletInfo.address)}` 
-                      : 'Crear Cuenta'}
+                      ? `Unlock ${formatStxAddress(walletInfo.address)}` 
+                      : 'Create Account'}
                   </span>
                 </Button>
               </div>

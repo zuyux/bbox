@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Muun Wallet",
+    "name": "Muun",
     "description": "Self-custodial wallet for Bitcoin + Lightning Network",
     "category": "Wallet",
     "tags": ["Bitcoin","Lightning Network","Wallet"],
@@ -9,7 +9,7 @@
     "rating": 4.7,
     "verified": true,
     "link": "https://muun.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-muun}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreiclhwzv2cditvp3muojmhzgp3kfjcjqmrzq2cnmhxdlpm3ectigoa"
   },
   {
     "id": 2,
@@ -21,7 +21,7 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://walletofsatoshi.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-wos}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreigsn3y5ilnewkvbewpv2qeaqxfgglnugz452afuufomx4jkhxnbki"
   },
   {
     "id": 3,
@@ -33,11 +33,11 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://bluewallet.io/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-bluewallet}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreif6knxq5i3zf6nsl4da2k2fjcze5ona2zpv2qofgfddlfyplsxvpm"
   },
   {
     "id": 4,
-    "name": "Speed Wallet",
+    "name": "Speed",
     "description": "Bitcoin & USDT wallet supporting Lightning / USDT-L payments",
     "category": "Wallet",
     "tags": ["Bitcoin","USDT","Lightning"],
@@ -45,7 +45,7 @@
     "rating": 4.4,
     "verified": false,
     "link": "https://www.speed.app/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-speedwallet}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreihnrknuexfoogxr2xgpxmg3knvjfxm4evonurcu46nsuqpnt7n3ry"
   },
   {
     "id": 5,
@@ -57,7 +57,7 @@
     "rating": 4.3,
     "verified": false,
     "link": "https://arkadiko.finance/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-arkadiko}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreiadgtgeqirdpgeg5wq6hzreehe6oe5euecqhvzaxvizmoiinpuucy"
   },
   {
     "id": 6,
@@ -69,7 +69,7 @@
     "rating": 4.2,
     "verified": false,
     "link": "https://alex.exchange/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-alexexchange}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeidjvvdhd7rab5czrtvp4y7wopqr7ebnbyxzwvc65ahzdlaoal4jvm"
   },
   {
     "id": 7,
@@ -81,7 +81,7 @@
     "rating": 4.1,
     "verified": false,
     "link": "https://getalby.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-albyextension}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreidg3cgz4blpars2qltecylttrlrffelbmvijw4mo5texfr7h7rrbm"
   },
   {
     "id": 8,
@@ -93,7 +93,7 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://electrum.org/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-electrum}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeihqicslsykvnryvt3uthbubykhggnzhizweeizzsbsl4d6xeh6jcu"
   },
   {
     "id": 9,
@@ -105,11 +105,11 @@
     "rating": 4.7,
     "verified": true,
     "link": "https://lightningaddress.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-lightningaddress}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreia4nxdrbif6ns7kepj74lamewjfic6q3ebkrv2qwn6upt6e5mu2ru"
   },
   {
     "id": 10,
-    "name": "Stack Wallet",
+    "name": "Stack",
     "description": "Secure Bitcoin and Cryptocurrency wallet",
     "category": "Wallet",
     "tags": ["DeFi","Stacks","Bitcoin"],
@@ -117,7 +117,7 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://stackwallet.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-stackswallet}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreiebiinio6qa7numtghv76yxx5hiy4zgfowkcnjlfehppbw2kejcdq"
   },
   {
     "id": 11,
@@ -129,7 +129,7 @@
     "rating": 4.7,
     "verified": true,
     "link": "https://terminal.lightning.engineering/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-lightningterminal}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreiab2mo5ce6hkitmubcpbhdkz5wxgwlo5isocb5d3gwrxfpyi7ecga"
   },
   {
     "id": 12,
@@ -141,11 +141,11 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://amboss.space/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-amboss}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreid5lrdhi4nxcsw6kpn6fgnrsq3kxysowidsybpbws4sstajahlcqe"
   },
   {
     "id": 13,
-    "name": "Zeus Wallet",
+    "name": "Zeus",
     "description": "Non-custodial mobile wallet for running your own Lightning node",
     "category": "Wallet",
     "tags": ["Lightning","Non-custodial","Mobile"],
@@ -153,7 +153,7 @@
     "rating": 4.8,
     "verified": true,
     "link": "https://zeusln.app/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-zeus}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreihrnn3quxgq2qwkeam64kmi5grlmjshg7tetepesjd2ongaajxcne"
   },
   {
     "id": 14,
@@ -165,7 +165,7 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://thunderhub.io/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-thunderhub}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreid7tnaopgpahyxxlkxbumcyqx4jtjs4amejsooppvvggjpxhoxjtu"
   },
   {
     "id": 15,
@@ -177,7 +177,7 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://github.com/Ride-The-Lightning/RTL",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-rtl}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeigbzrshexis4acszhuyttsrdhth546orq4xpcaklzzbwei5divau4"
   },
   {
     "id": 16,
@@ -189,7 +189,7 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://lnbits.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-lnbits}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreidzzc7ae7ep2d2wqhl2zumegj2heqvf7r3isksb2a6ou2un4s22le"
   },
   {
     "id": 17,
@@ -201,7 +201,7 @@
     "rating": 4.2,
     "verified": false,
     "link": "https://github.com/fiatjaf/nostr-tools",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-nostrtools}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreicip4fxzzzo4gskmzyn3apb6ejsxjzqdmj2zfs3ipeh2pgo44qw5u"
   },
   {
     "id": 18,
@@ -213,7 +213,7 @@
     "rating": 4.4,
     "verified": true,
     "link": "https://coracle.social/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-coracle}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreigsxx2yh6y7e6qamu3fjegt42lbs4bkpemiuw6uw2acnorup56rzm"
   },
   {
     "id": 19,
@@ -225,7 +225,7 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://primal.net/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-primal}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreihbmkein72yzygve3uwweoccd73ricsy5kojrfsexuxtgbbeibsce"
   },
   {
     "id": 20,
@@ -237,7 +237,7 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://ordinals.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-ordinals}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreiazb2afjv4ejm4zqkryatpyyqxqyazxxpzt42rvmnkodmigmcqycu"
   },
   {
     "id": 21,
@@ -249,7 +249,7 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://gamma.io/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-gamma}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeiflxby7rcqdg6vm5l5zdcaqxrabopg2ntndfhsrcqwqsnwm5nouqy"
   },
   {
     "id": 22,
@@ -261,7 +261,7 @@
     "rating": 4.3,
     "verified": false,
     "link": "https://heylayer.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-heylayer}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeiflxby7rcqdg6vm5l5zdcaqxrabopg2ntndfhsrcqwqsnwm5nouqy"
   },
   {
     "id": 23,
@@ -273,7 +273,7 @@
     "rating": 4.1,
     "verified": false,
     "link": "https://magicstx.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-magicstx}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreih4244xmnrqcaty7xo3rfntj6wkkct7n7wvzdv7duaqmda3qktuqm"
   },
   {
     "id": 24,
@@ -285,7 +285,7 @@
     "rating": 4.2,
     "verified": false,
     "link": "https://boom.money/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-boom}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreidtmlm32esm73dqw7uvcjcjm7b4ymfeg67b7katagn4a5xpu2x2oi"
   },
   {
     "id": 25,
@@ -297,11 +297,11 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://sigle.io/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-sigle}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreia2oiuntqeitjolf65erbkt76ggsv5a6odmzo4i73yd5cnnkrr6gu"
   },
   {
     "id": 26,
-    "name": "Unisat Wallet",
+    "name": "Unisat",
     "description": "Browser wallet for Bitcoin Ordinals, BRC-20 and Runes",
     "category": "Wallet",
     "tags": ["Ordinals","Runes","BRC-20"],
@@ -309,11 +309,11 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://unisat.io/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-unisat}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreih5coh4zsqy43mtebnunbnh2rb5iyuhkrkkv7ydjsl67bwoibcg7e"
   },
   {
     "id": 27,
-    "name": "Xverse Wallet",
+    "name": "Xverse",
     "description": "Bitcoin wallet for Ordinals, Runes, and Stacks apps",
     "category": "Wallet",
     "tags": ["Bitcoin","Ordinals","Stacks"],
@@ -321,19 +321,19 @@
     "rating": 4.7,
     "verified": true,
     "link": "https://www.xverse.app/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-xverse}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeidiclse7tewrfdzs6sqnfn5n2zhb3td7qdrposbnnztpecw237yvi"
   },
   {
     "id": 28,
-    "name": "Hiro Wallet",
-    "description": "Official Stacks wallet for Bitcoin-anchored assets",
+    "name": "Leather",
+    "description": "Bitcoin & Stacks wallet tapping into the multilayered Bitcoin economy.",
     "category": "Wallet",
     "tags": ["Stacks","Bitcoin","Web3"],
     "downloads": "200K+",
     "rating": 4.5,
     "verified": true,
-    "link": "https://wallet.hiro.so/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-hiro}"
+    "link": "https://leather.io/",
+    "imgUrl": "https://ipfs.io/ipfs/bafkreiglw7raaycxd45ifj57l5f2xjdrmn332sx2h4vqrrhlm4v665rxqa"
   },
   {
     "id": 29,
@@ -345,7 +345,7 @@
     "rating": 4.3,
     "verified": true,
     "link": "https://ordswap.io/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-ordswap}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreigesbahijmfafstjggb75g7qpicop3fezveenvxhcmhnbckz7a3nm"
   },
   {
     "id": 30,
@@ -357,7 +357,7 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://magiceden.io/ordinals",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-magiceden}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreialvh4cxqs4ar6sf47u6xopqhj7gpssyxteba44yr7tq52rdlk644"
   },
   {
     "id": 31,
@@ -369,7 +369,7 @@
     "rating": 4.4,
     "verified": true,
     "link": "https://ordinalswallet.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-ordwallet}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeic3srominzruo35ey456o2zrrgaxmorzdickqzmgco76eec7uo2o4"
   },
   {
     "id": 32,
@@ -381,7 +381,7 @@
     "rating": 4.2,
     "verified": false,
     "link": "https://bestinslot.io/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-bestinslot}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreicqyw4vonooupj33cvo5sicn7vwvggb7ngkikbxlr2cexorunbkdy"
   },
   {
     "id": 33,
@@ -393,7 +393,7 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://ord.io/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-ordio}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreiahgh2fdrz2xlti6agw566s5i5b3hgrmmcpn5vwzv4irlk4qwtvea"
   },
   {
     "id": 34,
@@ -405,7 +405,7 @@
     "rating": 4.9,
     "verified": true,
     "link": "https://mempool.space/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-mempool}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreicbztoxf7ytyjxfetp3zdudj6n3cg65sxftg7uugelehnzowp36aq"
   },
   {
     "id": 35,
@@ -417,7 +417,7 @@
     "rating": 4.7,
     "verified": true,
     "link": "https://ocean.xyz/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-ocean}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreidfidlb7qnq56vlayf2o235wrl4frfgsfphanp4hgw5zx3xlmkuiq"
   },
   {
     "id": 36,
@@ -429,7 +429,7 @@
     "rating": 4.8,
     "verified": true,
     "link": "https://braiins.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-braiins}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreiamdedgxt5lqxmkmtjbkhxfge7dypf635u3zinpjay3f4k2iomru4"
   },
   {
     "id": 37,
@@ -441,7 +441,7 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://luxor.tech/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-luxor}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreihhab6mu4b7c7nozjx45so2lj5l5wlztd7my57jrwglp4vkl6hykm"
   },
   {
     "id": 38,
@@ -453,7 +453,7 @@
     "rating": 4.3,
     "verified": false,
     "link": "https://github.com/skot/bitaxe",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-bitaxe}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreihfhedjq2jnmwppycnuzjsqfburpnlbx5djgbohsc7mrpqjcw4fmm"
   },
   {
     "id": 39,
@@ -465,7 +465,7 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://cashu.space/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-cashu}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreignkw4ynoji5gmay5baebqqc224fk4m5zwkberl33injp3lq3okoe"
   },
   {
     "id": 40,
@@ -477,11 +477,11 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://fedimint.org/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-fedimint}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeif6ggjbzmwv523hxhezdukdfyooe73dx3he3bc2jl4fwmrzulvvkm"
   },
   {
     "id": 41,
-    "name": "Sparrow Wallet",
+    "name": "Sparrow",
     "description": "Desktop wallet focused on privacy and coin control",
     "category": "Wallet",
     "tags": ["Bitcoin","Privacy","Desktop"],
@@ -489,11 +489,11 @@
     "rating": 4.8,
     "verified": true,
     "link": "https://sparrowwallet.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-sparrow}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreibv5g26siqhmzhuupizexwpcj55rkw5dg3nplg23dtaikh7zwtooi"
   },
   {
     "id": 42,
-    "name": "Phoenix Wallet",
+    "name": "Phoenix",
     "description": "Non-custodial Lightning wallet with automatic channel management",
     "category": "Wallet",
     "tags": ["Lightning","Non-custodial","Mobile"],
@@ -501,7 +501,7 @@
     "rating": 4.7,
     "verified": true,
     "link": "https://phoenix.acinq.co/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-phoenix}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreicqfusxqhirz4jtlyge3rpqvmk67uqfhnkva2bwgtklvy4o7zywce"
   },
   {
     "id": 43,
@@ -513,7 +513,7 @@
     "rating": 4.2,
     "verified": true,
     "link": "https://nip05.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-nip05}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeihdzgt2m45vyjwyq5snwxhdwebso4i4uwgq335endkvg6mi7txeta"
   },
   {
     "id": 44,
@@ -525,7 +525,7 @@
     "rating": 4.4,
     "verified": true,
     "link": "https://sphinx.chat/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-sphinx}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeifczfg5dfanmvebfsv6qmhyiw26xirkjrak4lcy2qqtrzmz2k26cm"
   },
   {
     "id": 45,
@@ -537,7 +537,7 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://lnmarkets.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-lnmarkets}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreibpvfoks2aejoeqn2kkbra5tcby4l74pzheow6gipqa6udkgirbey"
   },
   {
     "id": 46,
@@ -549,7 +549,7 @@
     "rating": 4.3,
     "verified": true,
     "link": "https://bitfeed.live/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-bitfeed}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeidflq5rorza75p76gld4lbxklemi5s2zplbcjvlm4bxeykcbaarji"
   },
   {
     "id": 47,
@@ -561,7 +561,7 @@
     "rating": 4.9,
     "verified": true,
     "link": "https://bitcoinos.build",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-bitcoinos}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreidtxvpxfja2swd35tj2kbbb6xx3f6kt7uxsdx2zughvz2oz54nl4y"
   },
   {
     "id": 48,
@@ -573,7 +573,7 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://explorer.stacks.co/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-stacksexplorer}"
+    "imgUrl": "https://ipfs.io/ipfs/bafybeiegrgc5tz3r4yzjk7gb2eogk5u4qz7fjfagm5wq3jzf5ozsaakrhu"
   },
   {
     "id": 49,
@@ -585,7 +585,7 @@
     "rating": 4.7,
     "verified": true,
     "link": "https://www.hiro.so/tools",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-hirotools}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreiaucjevmvx32y4gxv2tquiz2ojqds3y24oe6i4gpgsrqirx3ovyma"
   },
   {
     "id": 50,
@@ -597,6 +597,42 @@
     "rating": 4.6,
     "verified": true,
     "link": "https://www.opennode.com/",
-    "imgUrl": "https://ipfs.io/ipfs/{cid-opennode}"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreicuodjvf7hci6ec5yhxkpniw5s5d4umdbhagwe7flwmgxjjy6el7y"
+  },
+    {
+    "id": 51,
+    "name": "Club Orange",
+    "description": "Bitcoiners built Club Orange to connect locally during the 2022 bear.",
+    "category": "Community",
+    "tags": ["Bitcoin","Lightning","Merchant", "Community"],
+    "downloads": "N/A",
+    "rating": 4.6,
+    "verified": true,
+    "link": "https://www.cluborange.com/",
+    "imgUrl": "https://ipfs.io/ipfs/bafybeibl4betjrolpbfyfrqvdhsggidj4ogq5ycfq3xpv6yejp6dedgw6a"
+  },
+    {
+    "id": 52,
+    "name": "BitVMX",
+    "description": "BitVMX is a Bitcoin-native platform for secure, off-chain execution with on-chain optimistic verification.",
+    "category": "Infrastructure",
+    "tags": ["Bitcoin","Infrastructure","Off-chain"],
+    "downloads": "N/A",
+    "rating": 4.6,
+    "verified": true,
+    "link": "https://www.bitvmx.org/",
+    "imgUrl": "https://ipfs.io/ipfs/bafkreigsztktyv37l7opzptni7h4kye7s5ofcleyhjynmxseexfjhemepm"
+  },
+  {
+    "id": 53, 
+    "name": "Zaprite",
+    "description": "Zaprite enables seamless Bitcoin and fiat payments with unified tools for businesses.",
+    "category": "Payment",
+    "tags": ["Bitcoin", "Lightning"],
+    "downloads": "N/A",
+    "rating": 4.6,
+    "verified": true,
+    "link": "https://www.zaprite.com/",
+    "imgUrl": "https://ipfs.io/ipfs/bafkreifkkexuy7sbf3iqjxo6jk4kcmtg3x3yd7se7wak6smk6jl6p2luea"
   }
 ]

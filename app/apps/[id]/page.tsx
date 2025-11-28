@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import IPFSImage from '@/components/IPFSImage';
 import { 
   Star, 
   Download, 
@@ -56,7 +57,7 @@ export default function AppDetailPage() {
         {/* Back Button */}
         <Button variant="ghost" className="mb-4" asChild>
           <Link href="/apps">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="-ml-3 mr-2 h-4 w-4" />
           </Link>
         </Button>
 
@@ -65,8 +66,17 @@ export default function AppDetailPage() {
           <div className="flex gap-4 items-start mb-4">
             {/* App Icon */}
             <div className="flex-shrink-0">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-2xl sm:rounded-3xl flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-md">
-                {app.name.charAt(0)}
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#111] to-[#222] rounded-2xl sm:rounded-3xl flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-md overflow-hidden">
+                {app.imgUrl ? (
+                  <IPFSImage
+                    src={app.imgUrl}
+                    alt={`${app.name} logo`}
+                    className="object-cover"
+                    fill
+                  />
+                ) : (
+                  app.name.charAt(0)
+                )}
               </div>
             </div>
             
@@ -75,7 +85,7 @@ export default function AppDetailPage() {
               <div className="flex items-start justify-between gap-2 mb-1">
                 <h1 className="text-xl sm:text-2xl font-bold break-words">{app.name}</h1>
                 {app.verified && (
-                  <Badge className="bg-green-500 text-white hover:bg-green-600 flex-shrink-0 text-xs">
+                  <Badge className="bg-transparent text-foreground hover:bg-green-600 flex-shrink-0 text-xs">
                     Verified
                   </Badge>
                 )}
@@ -104,8 +114,7 @@ export default function AppDetailPage() {
               </div>
 
               <Button 
-                size="sm" 
-                className="bg-green-500 hover:bg-green-600 text-white font-medium"
+                className="h-6 px-4 py-1 bg-green-500 hover:bg-green-600 text-white text-xs"
                 asChild
               >
                 <a href={app.link} target="_blank" rel="noopener noreferrer">
@@ -250,21 +259,28 @@ export default function AppDetailPage() {
               </Button>
             </div>
             
-            {/* Horizontal Scrolling Slider */}
-            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin scroll-smooth snap-x snap-mandatory">
+            {/* Responsive Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {relatedApps.map(relatedApp => (
-                <Link key={relatedApp.id} href={`/apps/${relatedApp.id}`} className="flex-shrink-0 snap-start">
-                  <div className="hover:opacity-80 transition-opacity cursor-pointer">
-                    <div className="w-28 sm:w-32 h-28 sm:h-32 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold mb-2 shadow-sm">
-                      {relatedApp.name.charAt(0)}
+                <Link key={relatedApp.id} href={`/apps/${relatedApp.id}`} className="group">
+                  <div className="h-full rounded-2xl border border-border/50 p-4 hover:border-border transition-colors">
+                    <div className="relative mb-3 aspect-square rounded-2xl bg-background flex items-center justify-center text-white text-2xl font-bold shadow-sm overflow-hidden">
+                      {relatedApp.imgUrl ? (
+                        <IPFSImage
+                          src={relatedApp.imgUrl}
+                          alt={`${relatedApp.name} logo`}
+                          className="object-cover"
+                          fill
+                        />
+                      ) : (
+                        relatedApp.name.charAt(0)
+                      )}
                     </div>
-                    <div className="w-28 sm:w-32">
-                      <h4 className="font-medium text-xs mb-0.5 break-words line-clamp-1">{relatedApp.name}</h4>
-                      <p className="text-[10px] text-muted-foreground line-clamp-1">{relatedApp.category}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                        <span className="text-[10px] font-medium">{relatedApp.rating}</span>
-                      </div>
+                    <h4 className="font-medium text-sm mb-0.5 break-words line-clamp-1">{relatedApp.name}</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{relatedApp.category}</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs">
+                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                      <span className="font-medium">{relatedApp.rating}</span>
                     </div>
                   </div>
                 </Link>

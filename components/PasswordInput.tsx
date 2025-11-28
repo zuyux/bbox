@@ -29,7 +29,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   mode,
   isLoading = false,
   error = null,
-  placeholder = 'Ingresa tu contraseña',
+  placeholder = 'Enter your password',
   showStrengthIndicator = false,
   autoFocus = true,
   onCancel,
@@ -106,10 +106,10 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   };
 
   const getStrengthText = (score: number): string => {
-    if (score <= 2) return 'Débil';
-    if (score <= 4) return 'Regular';
-    if (score <= 6) return 'Buena';
-    return 'Fuerte';
+    if (score <= 2) return 'Weak';
+    if (score <= 4) return 'Fair';
+    if (score <= 6) return 'Good';
+    return 'Strong';
   };
 
   const passwordMatch = !confirmRequired || password === confirmPassword;
@@ -127,21 +127,21 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
               <AlertCircle className="h-4 w-4" />
-              Dirección de Email
+              Email Address
             </Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Ingresa tu dirección de email"
+              placeholder="Enter your email address"
               className="bg-background focus:border-ring border-[1px] border-foreground"
               disabled={isLoading}
               autoComplete="email"
               required
             />
             <p className="text-xs text-gray-400">
-              Tu email será usado para almacenar de forma segura la información cifrada de tu cuenta.
+              Your email will be used to securely store your encrypted account data.
             </p>
           </div>
         )}
@@ -150,8 +150,8 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         <div className="space-y-2">
           <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium">
             <Lock className="h-4 w-4" />
-            {mode === 'unlock' ? 'Ingresa Contraseña' : 
-             mode === 'create' ? 'Crear Contraseña' : 'Nueva Contraseña'}
+            {mode === 'unlock' ? 'Enter Password' : 
+             mode === 'create' ? 'Create Password' : 'New Password'}
           </Label>
           <div className="relative">
             <Input
@@ -184,7 +184,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           <div className="space-y-2">
             <Label htmlFor="confirmPassword" className="flex items-center gap-2 text-sm font-medium">
               <Shield className="h-4 w-4" />
-              Confirmar Contraseña
+              Confirm Password
             </Label>
             <div className="relative">
               <Input
@@ -192,7 +192,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
                 type={showConfirm ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirma tu contraseña"
+                placeholder="Confirm your password"
                 className={`pr-12 bg-background border-[1px] border-foreground focus:border-ring ${
                   confirmPassword && !passwordMatch ? 'border-destructive' : ''
                 }`}
@@ -211,7 +211,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
             {confirmPassword && !passwordMatch && (
               <p className="text-red-400 text-xs flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
-                Las contraseñas no coinciden
+                Passwords do not match
               </p>
             )}
           </div>
@@ -221,7 +221,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         {showStrengthIndicator && strengthInfo && touched && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-400">Fortaleza de la Contraseña:</span>
+              <span className="text-gray-400">Password Strength:</span>
               <span className={`font-medium ${strengthInfo.isValid ? 'text-green-400' : 'text-red-400'}`}>
                 {getStrengthText(strengthInfo.score)}
               </span>
@@ -245,7 +245,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
             {strengthInfo.isValid && (
               <p className="text-green-400 text-xs flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
-                La contraseña cumple con los requisitos de seguridad
+                The password meets the security requirements
               </p>
             )}
           </div>
@@ -271,13 +271,13 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
             {isLoading ? (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                {mode === 'unlock' ? 'Desbloqueando...' : 
-                 mode === 'create' ? 'Creando...' : 'Cambiando...'}
+                {mode === 'unlock' ? 'Unlocking...' : 
+                 mode === 'create' ? 'Creating...' : 'Updating...'}
               </div>
             ) : (
               <>
-                {mode === 'unlock' ? 'Desbloquear Billetera' : 
-                 mode === 'create' ? 'Crear Billetera' : 'Cambiar Contraseña'}
+                {mode === 'unlock' ? 'Unlock Wallet' : 
+                 mode === 'create' ? 'Create Wallet' : 'Change Password'}
               </>
             )}
           </Button>
@@ -290,7 +290,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
               disabled={isLoading}
               className="bg-transparent border-border hover:bg-secondary cursor-pointer"
             >
-              Cancelar
+              Cancel
             </Button>
           )}
         </div>
@@ -302,8 +302,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           <p className="text-primary text-xs flex items-start gap-2">
             <Shield className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <span>
-              Tu contraseña cifra tus claves privadas localmente. Asegúrate de recordarla - 
-              no se puede recuperar si se pierde. Considera usar un administrador de contraseñas.
+              Your password encrypts your private keys locally. Make sure you remember it—it cannot be recovered if lost. Consider using a password manager.
             </span>
           </p>
         </div>
