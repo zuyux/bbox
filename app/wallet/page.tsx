@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { retrieveEncryptedWallet } from "@/lib/encryptedStorage";
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 
@@ -31,6 +31,39 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [currentNetwork, setCurrentNetwork] = useState<Network>(() => getPersistedNetwork());
   const sbtcContractId = "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token";
+
+  type WalletAsset = {
+    id: string;
+    name: string;
+    symbol: string;
+    formattedBalance: string;
+    rawBalance: string;
+    type: 'stx' | 'fungible';
+  };
+
+  const [assets, setAssets] = useState<WalletAsset[]>([]);
+  const [assetsLoading, setAssetsLoading] = useState(true);
+  const [btcAddress, setBtcAddress] = useState<string | null>(null);
+  const [btcAddressLoading, setBtcAddressLoading] = useState(false);
+  const [btcAddressError, setBtcAddressError] = useState<string | null>(null);
+
+  const formatTokenBalance = useCallback((balance: string, decimals = 0) => {
+    if (!balance) return '0';
+    try {
+      if (decimals > 0) {
+        const divisor = Math.pow(10, decimals);
+        const value = Number(balance) / divisor;
+        if (!Number.isFinite(value)) return balance;
+        return value >= 1
+          ? value.toLocaleString(undefined, { maximumFractionDigits: 4 })
+          : value.toPrecision(4);
+      }
+      return Number(balance).toLocaleString();
+    } catch (error) {
+      console.warn('Failed to format token balance', { balance, decimals, error });
+      return balance;
+    }
+  }, []);
 
   // Modal states
   const [showReceive, setShowReceive] = useState(false);
@@ -110,77 +143,104 @@ export default function WalletPage() {
     }
   }, [address, currentNetwork]);
 
-  // Fetch SBTC token balance
+  // Fetch SBTC token balance and asset inventory
   useEffect(() => {
     if (!address) {
       setSbtcBalance(null);
+      setAssets([]);
       setLoading(false);
+      setAssetsLoading(false);
       return;
     }
     
     setLoading(true);
+    setAssetsLoading(true);
     
-    // Get current network and use appropriate API endpoint
     const apiBaseUrl = getApiUrl(currentNetwork);
-    
-    // Fetch SBTC token balance from the fungible token contract
     const apiUrl = `${apiBaseUrl}/extended/v1/address/${address}/balances?unanchored=false`;
     
-    console.log(`Fetching SBTC balance from ${currentNetwork} network:`, apiUrl);
+    console.log(`Fetching balances for ${address} on ${currentNetwork}:`, apiUrl);
     
     fetch(apiUrl)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Balances request failed with ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
-        // Look for SBTC token in fungible_tokens
-        let sbtcTokenBalance = '0';
-        
         type FungibleTokenData = {
           balance: string;
-          total_sent: string;
-          total_received: string;
+          total_sent?: string;
+          total_received?: string;
           token?: {
             address: string;
             contractName: string;
+            name?: string;
             symbol?: string;
+            decimals?: number;
           };
         };
-        
-        const tokens = (data.fungible_tokens || {}) as Record<string, FungibleTokenData>;
+
+        const parsedAssets: WalletAsset[] = [];
+
+        const stxBalanceRaw = data?.stx?.balance;
+        if (typeof stxBalanceRaw === 'string') {
+          parsedAssets.push({
+            id: 'stx',
+            name: 'Stacks',
+            symbol: 'STX',
+            formattedBalance: formatTokenBalance(stxBalanceRaw, 6),
+            rawBalance: stxBalanceRaw,
+            type: 'stx',
+          });
+        }
+
+        const tokens = (data?.fungible_tokens || {}) as Record<string, FungibleTokenData>;
         console.log('All fungible tokens:', tokens);
         console.log('Available token keys:', Object.keys(tokens));
 
-        const sbtcTokenEntry = Object.entries(tokens).find(([key, value]) => {
-          if (key === sbtcContractId) return true;
-          if (key.startsWith(`${sbtcContractId}::`)) return true;
-          if (key === `${sbtcContractId}::sbtc-token`) return true;
-          const tokenMeta = value?.token;
-          if (!tokenMeta) return false;
-          const principalId = `${tokenMeta.address}.${tokenMeta.contractName}`;
-          if (principalId === sbtcContractId) return true;
-          const symbol = tokenMeta?.symbol?.toLowerCase();
-          return symbol === 'sbtc';
+        Object.entries(tokens).forEach(([key, tokenData]) => {
+          const decimals = typeof tokenData?.token?.decimals === 'number' ? tokenData.token.decimals : 0;
+          const rawBalance = tokenData?.balance ?? '0';
+          const symbol = tokenData?.token?.symbol || key.split('::').pop() || 'FT';
+          const name = tokenData?.token?.name || symbol;
+          parsedAssets.push({
+            id: key,
+            name,
+            symbol: symbol.toUpperCase(),
+            formattedBalance: formatTokenBalance(rawBalance, decimals),
+            rawBalance,
+            type: 'fungible',
+          });
         });
 
-        if (sbtcTokenEntry) {
-          const [, sbtcData] = sbtcTokenEntry;
-          const balance = typeof sbtcData === 'object' && sbtcData !== null && 'balance' in sbtcData && typeof (sbtcData as { balance: unknown }).balance === 'string' 
-            ? (sbtcData as { balance: string }).balance 
-            : '0';
-          sbtcTokenBalance = Number(balance).toLocaleString();
-        } else {
+        parsedAssets.sort((a, b) => {
+          const aVal = Number(a.rawBalance || '0');
+          const bVal = Number(b.rawBalance || '0');
+          return bVal - aVal;
+        });
+
+        const sbtcAsset = parsedAssets.find(asset =>
+          asset.id === sbtcContractId || asset.symbol.toLowerCase() === 'sbtc'
+        );
+
+        const sbtcTokenBalance = sbtcAsset ? sbtcAsset.formattedBalance : '0';
+        if (!sbtcAsset) {
           console.warn('No sBTC token found in wallet balances response');
         }
-        
-        console.log('SBTC Balance data:', data.fungible_tokens);
-        console.log('SBTC Balance:', sbtcTokenBalance);
-        
+
+        setAssets(parsedAssets);
         setSbtcBalance(sbtcTokenBalance);
         setLoading(false);
+        setAssetsLoading(false);
       })
       .catch((error) => {
-        console.error('Failed to fetch SBTC balance:', error);
+        console.error('Failed to fetch wallet balances:', error);
+        setAssets([]);
         setSbtcBalance('--');
         setLoading(false);
+        setAssetsLoading(false);
       });
   }, [address, currentNetwork]);
 
@@ -344,6 +404,46 @@ export default function WalletPage() {
       .finally(() => setTxLoading(false));
   }, [address, currentNetwork, showSend]);
 
+  useEffect(() => {
+    if (!address) {
+      setBtcAddress(null);
+      setBtcAddressError(null);
+      setBtcAddressLoading(false);
+      return;
+    }
+
+    setBtcAddressLoading(true);
+    setBtcAddressError(null);
+
+    const apiBaseUrl = getApiUrl(currentNetwork);
+    const accountUrl = `${apiBaseUrl}/v2/accounts/${address}`;
+
+    fetch(accountUrl)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Account lookup failed with ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        const btcInfo = data?.btc_address;
+        const derivedAddress = typeof btcInfo === 'string'
+          ? btcInfo
+          : btcInfo?.p2wpkh || btcInfo?.bech32 || btcInfo?.p2tr || null;
+
+        setBtcAddress(derivedAddress);
+        if (!derivedAddress) {
+          setBtcAddressError('No Bitcoin address reported for this account yet.');
+        }
+      })
+      .catch(error => {
+        console.error('Failed to fetch Bitcoin L1 address:', error);
+        setBtcAddress(null);
+        setBtcAddressError('Unable to derive Bitcoin address. Try again later.');
+      })
+      .finally(() => setBtcAddressLoading(false));
+  }, [address, currentNetwork]);
+
 
   // If no wallet address, ask to connect wallet
   if (!address) {
@@ -407,6 +507,81 @@ export default function WalletPage() {
         >
           Receive
         </button>
+      </div>
+
+      <div className="mt-10 w-full">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Assets</h2>
+          {!assetsLoading && (
+            <span className="text-xs text-muted-foreground">{assets.length} assets</span>
+          )}
+        </div>
+        <div className="mt-4 rounded-xl border border-border bg-card/40">
+          {assetsLoading ? (
+            <div className="p-4 space-y-3">
+              {[0, 1, 2].map((skeleton) => (
+                <div key={skeleton} className="h-10 rounded-lg bg-muted/40 animate-pulse" />
+              ))}
+            </div>
+          ) : assets.length === 0 ? (
+            <div className="p-4 text-sm text-muted-foreground">No assets detected for this wallet yet.</div>
+          ) : (
+            <ul>
+              {assets.map((asset) => (
+                <li
+                  key={asset.id}
+                  className="flex items-center justify-between px-4 py-3 border-b border-border/60 last:border-b-0"
+                >
+                  <div>
+                    <div className="font-semibold tracking-wide">{asset.symbol}</div>
+                    <div className="text-xs text-muted-foreground">{asset.name}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono text-sm">{asset.formattedBalance}</div>
+                    <div className="text-[11px] uppercase text-muted-foreground">
+                      {asset.type === 'stx' ? 'Stacks' : 'Token'}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-8 w-full">
+        <h2 className="text-lg font-semibold mb-3">Bitcoin L1 Address</h2>
+        <div className="rounded-xl border border-border bg-card/40 p-4 flex flex-col gap-3">
+          {btcAddressLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <LoaderCircle className="animate-spin" size={18} />
+              <span>Deriving deposit address…</span>
+            </div>
+          ) : btcAddress ? (
+            <>
+              <code className="font-mono text-sm break-all">{btcAddress}</code>
+              <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground">
+                <span>SegWit bech32 address paired with this Stacks account.</span>
+                <button
+                  type="button"
+                  className="text-primary hover:text-primary/80 font-medium cursor-pointer"
+                  onClick={() => {
+                    if (btcAddress) {
+                      navigator.clipboard.writeText(btcAddress);
+                      toast.success('Bitcoin address copied');
+                    }
+                  }}
+                >
+                  Copy address
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {btcAddressError || 'Connect or unlock your wallet to view the paired Bitcoin address.'}
+            </p>
+          )}
+        </div>
       </div>
 
 

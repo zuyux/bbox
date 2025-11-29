@@ -13,7 +13,7 @@ import ConnectModal from './ConnectModal';
 import { formatStxAddress } from '@/lib/address-utils';
 
 export default function GetInModal({ onClose }: { onClose?: () => void }) {
-  const { address } = useWallet();
+  const { address, setAddress, setWalletType } = useWallet();
   const { 
     isWalletEncrypted, 
     isAuthenticated: isEncryptedAuthenticated,
@@ -30,6 +30,12 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showEncryptedWalletFlow, setShowEncryptedWalletFlow] = useState(false);
   const [encryptedWalletMode, setEncryptedWalletMode] = useState<'unlock' | 'create'>('unlock');
+  const [createWalletError, setCreateWalletError] = useState<string | null>(null);
+  const persistWalletContext = (newAddress: string) => {
+    setAddress(newAddress);
+    setWalletType('imported');
+    console.log('[GetInModal] Persisted wallet session via WalletProvider', { newAddress });
+  };
 
   useEffect(() => {
     if (address && onClose) {
@@ -47,8 +53,32 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const handleEncryptedWalletSubmit = async (password: string, email?: string) => {
     try {
       if (encryptedWalletMode === 'create') {
+        setCreateWalletError(null);
+        const trimmedEmail = email?.trim();
+
+        if (!trimmedEmail) {
+          setCreateWalletError('Email is required to create a wallet.');
+          return;
+        }
+
+        // Check for duplicate emails before creating the wallet
+        try {
+          const duplicateResponse = await fetch('/api/profile/check-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: trimmedEmail })
+          });
+          const duplicateData = await duplicateResponse.json();
+          if (duplicateResponse.ok && duplicateData.exists) {
+            setCreateWalletError('Email is already registered. Try a different email or recover the existing wallet.');
+            return;
+          }
+        } catch (checkError) {
+          console.warn('Email availability check failed:', checkError);
+        }
+
         // Generate new wallet data for encryption
-        const { mnemonic, stxPrivateKey, address } = await createStacksAccount();
+        const { mnemonic, stxPrivateKey, address } = await createStacksAccount('mainnet');
         const walletData = {
           mnemonic,
           privateKey: stxPrivateKey,
@@ -56,9 +86,10 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
           label: 'sumak'
         };
         await createEncryptedWallet(walletData, password);
+        persistWalletContext(walletData.address);
         
         // Save to Supabase if email provided
-        if (email) {
+        if (trimmedEmail) {
           try {
             console.log('Attempting to save account to database...');
             const response = await fetch('/api/save-account', {
@@ -67,9 +98,9 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                email,
+                email: trimmedEmail,
                 passkey: stxPrivateKey, 
-                password,
+                passphrase: password,
                 address
               }),
             });
@@ -77,6 +108,10 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
             const result = await response.json();
             
             if (!response.ok) {
+              if (response.status === 409) {
+                setCreateWalletError(result.error || 'Email is already registered.');
+                return;
+              }
               console.warn('Failed to save account to database:', result);
               console.warn('Account creation will continue without database save');
               // Don't throw error - continue with wallet creation even if DB save fails
@@ -94,7 +129,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
             const mailRes = await fetch('/api/wallet-connect/account-created', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email, address }),
+              body: JSON.stringify({ email: trimmedEmail, address }),
             });
             const mailResult = await mailRes.json();
             if (!mailRes.ok) {
@@ -108,14 +143,31 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         }
         
         // Redirect to welcome page with email
-        const emailParam = email ? `?email=${encodeURIComponent(email)}` : '';
+        const emailParam = trimmedEmail ? `?email=${encodeURIComponent(trimmedEmail)}` : '';
         router.push(`/welcome${emailParam}`);
         if (onClose) onClose();
       } else {
+        setCreateWalletError(null);
         await unlockWallet(password);
-        if (walletInfo) {
+        let unlockedAddress = walletInfo?.address;
+
+        if (!unlockedAddress && typeof window !== 'undefined') {
+          const sessionRaw = localStorage.getItem('bbox_session');
+          try {
+            unlockedAddress = sessionRaw ? JSON.parse(sessionRaw)?.address : null;
+          } catch (error) {
+            console.warn('Failed to parse bbox_session while unlocking wallet:', error);
+          }
+        }
+
+        if (unlockedAddress) {
+          persistWalletContext(unlockedAddress);
+        }
+
+        const destinationAddress = walletInfo?.address || unlockedAddress;
+        if (destinationAddress) {
           // For existing wallets, redirect to the address page
-          router.push(`/${walletInfo.address}`);
+          router.push(`/${destinationAddress}`);
           if (onClose) onClose();
         }
       }
@@ -127,6 +179,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 
   const handleShowEncryptedWallet = () => {
     setEncryptedWalletMode(isWalletEncrypted ? 'unlock' : 'create');
+    setCreateWalletError(null);
     setShowEncryptedWalletFlow(true);
   };
 
@@ -200,7 +253,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 mode={encryptedWalletMode}
                 onSubmit={handleEncryptedWalletSubmit}
                 isLoading={encryptedLoading}
-                error={encryptedAuthError}
+                error={encryptedWalletMode === 'create' ? createWalletError : encryptedAuthError}
                 showStrengthIndicator={encryptedWalletMode === 'create'}
                 confirmRequired={encryptedWalletMode === 'create'}
                 onCancel={() => setShowEncryptedWalletFlow(false)}
@@ -211,11 +264,11 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                   <Button
                     onClick={() => {
                       if (typeof window !== 'undefined') {
-                        localStorage.removeItem('4v4_session');
-                        localStorage.removeItem('4v4_session_config');
-                        localStorage.removeItem('4v4_session_locked');
-                        localStorage.removeItem('4v4_encrypted_session');
-                        localStorage.removeItem('4v4_encrypted_wallet');
+                        localStorage.removeItem('bbox_session');
+                        localStorage.removeItem('bbox_session_config');
+                        localStorage.removeItem('bbox_session_locked');
+                        localStorage.removeItem('bbox_encrypted_session');
+                        localStorage.removeItem('bbox_encrypted_wallet');
                         localStorage.removeItem('blockstack-session');
                         localStorage.removeItem('connect-session');
                         sessionStorage.clear();

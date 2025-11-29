@@ -131,46 +131,46 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
     // Listen for storage events
     const handleStorageEvents = (event: Event) => {
       switch (event.type) {
-        case '4v4-encrypted-session-created':
+        case 'bbox-encrypted-session-created':
           setIsWalletEncrypted(true);
           setWalletInfo(getWalletInfo());
           setIsAuthenticated(true);
           setIsSessionLocked(false);
           break;
-        case '4v4-session-locked':
+        case 'bbox-session-locked':
           setIsSessionLocked(true);
           setIsAuthenticated(false);
           setCurrentWallet(null);
           break;
-        case '4v4-session-unlocked':
+        case 'bbox-session-unlocked':
           setIsSessionLocked(false);
           break;
-        case '4v4-session-deleted':
+        case 'bbox-session-deleted':
           setIsWalletEncrypted(false);
           setWalletInfo(null);
           setIsAuthenticated(false);
           setCurrentWallet(null);
           setIsSessionLocked(false);
           break;
-        case '4v4-session-accessed':
+        case 'bbox-session-accessed':
           // Session activity detected, could update UI indicators
           break;
       }
     };
 
     // Add event listeners
-    window.addEventListener('4v4-encrypted-session-created', handleStorageEvents);
-    window.addEventListener('4v4-session-locked', handleStorageEvents);
-    window.addEventListener('4v4-session-unlocked', handleStorageEvents);
-    window.addEventListener('4v4-session-deleted', handleStorageEvents);
-    window.addEventListener('4v4-session-accessed', handleStorageEvents);
+    window.addEventListener('bbox-encrypted-session-created', handleStorageEvents);
+    window.addEventListener('bbox-session-locked', handleStorageEvents);
+    window.addEventListener('bbox-session-unlocked', handleStorageEvents);
+    window.addEventListener('bbox-session-deleted', handleStorageEvents);
+    window.addEventListener('bbox-session-accessed', handleStorageEvents);
 
     return () => {
-      window.removeEventListener('4v4-encrypted-session-created', handleStorageEvents);
-      window.removeEventListener('4v4-session-locked', handleStorageEvents);
-      window.removeEventListener('4v4-session-unlocked', handleStorageEvents);
-      window.removeEventListener('4v4-session-deleted', handleStorageEvents);
-      window.removeEventListener('4v4-session-accessed', handleStorageEvents);
+      window.removeEventListener('bbox-encrypted-session-created', handleStorageEvents);
+      window.removeEventListener('bbox-session-locked', handleStorageEvents);
+      window.removeEventListener('bbox-session-unlocked', handleStorageEvents);
+      window.removeEventListener('bbox-session-deleted', handleStorageEvents);
+      window.removeEventListener('bbox-session-accessed', handleStorageEvents);
     };
   }, []);
 
@@ -261,7 +261,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
           encrypted: true,
           createdAt: Date.now()
         };
-        localStorage.setItem('4v4_session', JSON.stringify(sessionData));
+        localStorage.setItem('bbox_session', JSON.stringify(sessionData));
       }
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Failed to create encrypted wallet');
@@ -278,9 +278,9 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
     try {
       // Clean up previous session/config before unlocking (robust session logic)
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('4v4_encrypted_session');
-        localStorage.removeItem('4v4_session_config');
-        localStorage.removeItem('4v4_session_locked');
+        localStorage.removeItem('bbox_encrypted_session');
+        localStorage.removeItem('bbox_session_config');
+        localStorage.removeItem('bbox_session_locked');
       }
 
       const walletData = await retrieveEncryptedWallet(passphrase);
@@ -301,7 +301,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
           encrypted: true,
           createdAt: Date.now()
         };
-        localStorage.setItem('4v4_session', JSON.stringify(sessionData));
+        localStorage.setItem('bbox_session', JSON.stringify(sessionData));
       }
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Failed to unlock wallet');

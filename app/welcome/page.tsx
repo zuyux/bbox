@@ -16,8 +16,33 @@ export default function WelcomePage() {
 
   const [showMnemonic, setShowMnemonic] = useState(false);
   const [copiedMnemonic, setCopiedMnemonic] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
   const [acknowledgedBackup, setAcknowledgedBackup] = useState(false);
   const [step, setStep] = useState<'welcome' | 'backup' | 'security'>('welcome');
+
+  const copyToClipboard = async (value: string) => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
+
+      if (typeof document !== 'undefined') {
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return true;
+      }
+    } catch (err) {
+      console.warn('Clipboard copy failed:', err);
+    }
+    return false;
+  };
 
   // Redirect if not authenticated or no wallet
   useEffect(() => {
@@ -29,13 +54,31 @@ export default function WelcomePage() {
   const copyMnemonic = async () => {
     if (currentWallet?.mnemonic) {
       try {
-        await navigator.clipboard.writeText(currentWallet.mnemonic);
+        const copied = await copyToClipboard(currentWallet.mnemonic);
+        if (!copied) {
+          throw new Error('Clipboard unavailable');
+        }
         setCopiedMnemonic(true);
         toast.success('Mnemonic phrase copied to clipboard');
         setTimeout(() => setCopiedMnemonic(false), 3000);
       } catch {
         toast.error('Failed to copy to clipboard');
       }
+    }
+  };
+
+  const copyAddress = async () => {
+    if (!currentWallet?.address) return;
+    try {
+      const copied = await copyToClipboard(currentWallet.address);
+      if (!copied) {
+        throw new Error('Clipboard unavailable');
+      }
+      setCopiedAddress(true);
+      toast.success('Wallet address copied');
+      setTimeout(() => setCopiedAddress(false), 2500);
+    } catch {
+      toast.error('Failed to copy address');
     }
   };
 
@@ -67,7 +110,7 @@ export default function WelcomePage() {
               <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-10 h-10 text-green-400" />
               </div>
-              <CardTitle className="text-3xl text-foreground mb-2">Well done SBTC!</CardTitle>
+              <CardTitle className="text-3xl text-foreground mb-2">Well done!</CardTitle>
               <p className="text-muted-foreground">
                 Your wallet has been created and secured successfully
               </p>
@@ -80,44 +123,35 @@ export default function WelcomePage() {
                   <Wallet className="w-5 h-5 mr-2" />
                   Your Account Details
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-3 text-center">
                   <div>
                     <label className="text-sm text-muted-foreground">Email</label>
-                    <p className="text-foreground font-medium">{email}</p>
+                    <p className="text-foreground text-lg font-bold">{email}</p>
                   </div>
                   <div>
                     <label className="text-sm text-muted-foreground">Wallet Address</label>
-                    <p className="text-foreground font-mono text-sm break-all">{currentWallet.address}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Wallet Label</label>
-                    <p className="text-foreground">{currentWallet.label}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* What's Next */}
-              <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-primary mb-4">What's next?</h3>
-                <div className="space-y-3 text-muted-foreground">
-                  <div className="flex items-start">
-                    <span className="mr-3 text-primary">1.</span>
-                    <span>Back up your recovery phrase (next step)</span>
-                  </div>
-                  <div className="flex items-start">
-                    <span className="mr-3 text-primary">2.</span>
-                    <span>Learn about wallet security</span>
-                  </div>
-                  <div className="flex items-start">
-                    <span className="mr-3 text-primary">3.</span>
-                    <span>Start using your wallet for transactions</span>
+                    <div className="flex items-center gap-1">
+                      <p className="text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.address}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={copyAddress}
+                        className="shrink-0 border-border text-muted-foreground hover:bg-muted cursor-pointer"
+                      >
+                        {copiedAddress ? (
+                          <CheckCircle className="w-4 h-4" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <Button
                 onClick={handleContinue}
-                className="w-full bg-primary hover:bg-primary/80 text-primary-foreground font-semibold py-3 cursor-pointer"
+                className="w-full bg-foreground hover:bg-foreground/80 text-primary-foreground font-semibold py-6 cursor-pointer"
               >
                 Continue to Backup
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -212,7 +246,7 @@ export default function WelcomePage() {
                   id="backup-acknowledge"
                   checked={acknowledgedBackup}
                   onChange={(e) => setAcknowledgedBackup(e.target.checked)}
-                  className="mt-1 h-4 w-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 cursor-pointer"
+                  className="mt-1 h-4 w-4 text-gray-600 bg-gray-700 border-gray-600 rounded focus:ring-gray-500 cursor-pointer"
                 />
                 <label htmlFor="backup-acknowledge" className="text-sm text-muted-foreground cursor-pointer">
                   I understand that I am responsible for backing up my recovery phrase and that losing it means permanently losing access to my wallet.
@@ -222,9 +256,9 @@ export default function WelcomePage() {
               <Button
                 onClick={handleContinue}
                 disabled={!acknowledgedBackup}
-                className="w-full bg-primary hover:bg-primary/80 text-primary-foreground font-semibold py-3 disabled:opacity-50 cursor-pointer"
+                className="w-full bg-foreground hover:bg-foreground/80 text-primary-foreground font-semibold py-6 disabled:opacity-50 cursor-pointer"
               >
-                I've Backed Up My Phrase
+                I&apos;ve Backed Up My Phrase
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </CardContent>
@@ -261,10 +295,10 @@ export default function WelcomePage() {
                   <h4 className="text-red-500 font-medium mb-3">❌ Avoid This</h4>
                   <ul className="text-red-500/80 text-sm space-y-2">
                     <li>• Never enter your seed phrase on suspicious websites</li>
-                    <li>• Don't store your keys in screenshots or the cloud</li>
+                    <li>• Don&apos;t store your keys in screenshots or the cloud</li>
                     <li>• Avoid using public WiFi for wallet transactions</li>
                     <li>• Never share your private keys or seed phrase</li>
-                    <li>• Don't click suspicious links in emails or messages</li>
+                    <li>• Don&apos;t click suspicious links in emails or messages</li>
                   </ul>
                 </div>
               </div>
@@ -273,7 +307,7 @@ export default function WelcomePage() {
               <div className="border border-blue-700/50 rounded-lg p-4">
                 <h4 className="text-blue-500 font-medium mb-3">Ready to Get Started?</h4>
                 <p className="text-blue-500/80 text-sm mb-3">
-                  Your wallet is configured and ready to use. You can start receiving STX tokens, deploy smart contracts, and interact with the Stacks ecosystem.
+                  Your wallet is configured and ready to use. You can start receiving Satoshis and interact with the Bitcoin Layers.
                 </p>
                 <p className="text-blue-500/80 text-sm">
                   Visit your profile to view wallet details and transaction history.
@@ -282,7 +316,7 @@ export default function WelcomePage() {
 
               <Button
                 onClick={handleContinue}
-                className="w-full bg-green-600 hover:bg-green-500 text-primary-foreground font-semibold py-6 cursor-pointer"
+                className="w-full bg-green-600 hover:bg-green-500 text-foreground font-semibold py-6 cursor-pointer"
               >
                 Finish Setup
                 <CheckCircle className="w-4 h-4 ml-2" />

@@ -49,7 +49,7 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
     if (typeof window !== "undefined") {
       const checkSession = () => {
         try {
-          const session = localStorage.getItem('4v4_session');
+          const session = localStorage.getItem('bbox_session');
           const hasSession = !!session;
           console.log('Session check after cleanup:', hasSession, session); // Debug log
           setIsSessionLoggedIn(hasSession);
@@ -69,12 +69,12 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
       window.addEventListener('visibilitychange', handleVisibility);
 
       // Listen for custom event after login
-      window.addEventListener('4v4-session-update', checkSession);
+      window.addEventListener('bbox-session-update', checkSession);
 
       return () => {
         window.removeEventListener('storage', checkSession);
         window.removeEventListener('visibilitychange', handleVisibility);
-        window.removeEventListener('4v4-session-update', checkSession);
+        window.removeEventListener('bbox-session-update', checkSession);
       };
     }
   }, []);
@@ -82,7 +82,7 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
   // Listen for disconnect to update session state
   useEffect(() => {
     if (!isWalletConnected) {
-      const session = localStorage.getItem('4v4_session');
+      const session = localStorage.getItem('bbox_session');
       if (!session) setIsSessionLoggedIn(false);
     }
   }, [isWalletConnected]);

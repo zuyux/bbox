@@ -18,13 +18,33 @@ interface UserModalProps {
 }
 
 export default function UserModal({ onClose }: UserModalProps) {
-  const { address, setAddress, setWalletType } = useWallet();
+  const { address, walletType, setAddress, setWalletType } = useWallet();
   const [sbtcBalance, setSbtcBalance] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [usernameLoader, setUsernameLoader] = useState<boolean>(false);
   const router = useRouter();
   const currentAddress = address;
   const modalRef = useRef<HTMLDivElement>(null);
+  const logSessionSnapshot = (eventLabel: string) => {
+    if (typeof window === 'undefined') return;
+    console.log(`[UserModal] ${eventLabel}`, {
+      contextAddress: address,
+      contextWalletType: walletType,
+      storedWalletAddress: localStorage.getItem('walletAddress'),
+      storedWalletType: localStorage.getItem('walletType'),
+      storedSession: localStorage.getItem('bbox_session')
+    });
+  };
+
+  useEffect(() => {
+    logSessionSnapshot('Mounted with session snapshot');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    logSessionSnapshot('Wallet context updated');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, walletType]);
 
   // Close on outside click
   useEffect(() => {
@@ -146,23 +166,40 @@ export default function UserModal({ onClose }: UserModalProps) {
     }
   };
 
+  const clearAllSessions = () => {
+    const keysToClear = [
+      'bbox_session',
+      'bbox_session_config',
+      'bbox_session_locked',
+      'bbox_encrypted_session',
+      'bbox_encrypted_wallet',
+      'blockstack-session',
+      'connect-session',
+      'walletAddress',
+      'walletType',
+    ];
+    keysToClear.forEach((key) => localStorage.removeItem(key));
+    sessionStorage.clear();
+  };
+
   const handleSignOut = () => {
-    // Clear the sumak session and wallet address
     if (typeof window !== "undefined") {
-      localStorage.removeItem('4v4_session');
-      localStorage.removeItem('walletAddress'); 
-      localStorage.removeItem('walletType');
-      window.dispatchEvent(new Event("4v4-session-update"));
+      clearAllSessions();
+      window.dispatchEvent(new Event("bbox-session-update"));
     }
     setAddress(null); // Also clear in context
     setWalletType(null);
     onClose();
     // Always route to index after disconnect
     if (router) {
-      router.push('/');
+      router.replace('/');
+      router.refresh();
     }
     if (typeof window !== "undefined") {
-      setTimeout(() => window.location.reload(), 200);
+      // Ensure hard navigation as fallback so we always land on index
+      setTimeout(() => {
+        window.location.replace('/');
+      }, 100);
     }
   };
 

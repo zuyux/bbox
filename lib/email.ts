@@ -96,13 +96,37 @@ export const emailTemplates = {
     `
   }),
 
-  accountCreated: (address: string) => ({
+  accountCreated: ({ address, verifyUrl, removeUrl, expiresInHours }: {
+    address: string;
+    verifyUrl: string;
+    removeUrl: string;
+    expiresInHours: number;
+  }) => ({
     subject: "BBOX Account Created Successfully",
     html: `
       <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:Chakra Petch,sans-serif;max-width:600px;margin:auto;">
         <h2 style="color:#ff006a;margin-bottom:20px;">Welcome to BBOX!</h2>
         <p>Your account has been created successfully.</p>
         <p><strong>Address:</strong> <code style="background:#333;padding:4px 8px;border-radius:4px;color:#fff;">${address}</code></p>
+
+        <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#101015;">
+          <h3 style="margin-top:0;color:#ffde91;">Verify your email</h3>
+          <p style="margin:8px 0 18px;color:#e5e5e5;">Click below to confirm this email belongs to you. Verification is optional, but it helps us keep your account safer.</p>
+          <div style="text-align:center;margin-bottom:18px;">
+            <a href="${verifyUrl}" style="display:inline-block;padding:12px 26px;background:#00c2ff;color:#050505;border-radius:8px;font-weight:600;text-decoration:none;">Verify Email</a>
+          </div>
+          <p style="margin:0;font-size:13px;color:#9ca3af;">If you don't verify but also don't remove this email within ${expiresInHours} hours, we'll automatically treat it as verified.</p>
+        </div>
+
+        <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#150b0b;">
+          <h3 style="margin-top:0;color:#ff6b6b;">Didn't create this wallet?</h3>
+          <p style="margin:8px 0 18px;color:#f5d0d0;">Use the link below within ${expiresInHours} hours to remove your email from this wallet so you can register it elsewhere.</p>
+          <div style="text-align:center;margin-bottom:8px;">
+            <a href="${removeUrl}" style="display:inline-block;padding:12px 26px;background:#ff3b3b;color:#050505;border-radius:8px;font-weight:600;text-decoration:none;">Remove My Email</a>
+          </div>
+          <p style="margin:0;font-size:13px;color:#f5d0d0;">After the ${expiresInHours}-hour window, the email is locked to this wallet unless you contact support.</p>
+        </div>
+
         <div style="background:#1a1a1a;padding:16px;border-radius:8px;margin:20px 0;">
           <p style="margin:0;color:#ff6b6b;"><strong>⚠️ Important Security Notice:</strong></p>
           <p style="margin:8px 0 0 0;">Keep your mnemonic/seed phrase safe. Never share it with anyone. This is the only way to recover your wallet.</p>

@@ -1,7 +1,7 @@
 'use client'
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-type WalletType = 'leather' | 'xverse' | 'imported';
+export type WalletType = 'leather' | 'xverse' | 'imported';
 
 interface WalletContextType {
   address: string | null;
@@ -20,13 +20,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // On mount, restore address if present (only run once on mount)
     const saved = localStorage.getItem('walletAddress');
+    const savedType = localStorage.getItem('walletType') as WalletType | null;
+
     if (saved) {
       setAddress(saved);
     }
-    const savedType = localStorage.getItem('walletType') as WalletType | null;
     if (savedType) {
       setWalletType(savedType);
     }
+
+    console.log('[WalletProvider] Restored session from storage', {
+      savedAddress: saved,
+      savedType,
+    });
   }, []); // Intentionally empty - only run on mount to restore saved address
 
   useEffect(() => {
@@ -35,6 +41,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } else {
       localStorage.removeItem('walletAddress');
     }
+    console.log('[WalletProvider] Address state updated', {
+      address,
+      persistedAddress: localStorage.getItem('walletAddress'),
+    });
   }, [address]);
 
   useEffect(() => {
@@ -43,6 +53,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } else {
       localStorage.removeItem('walletType');
     }
+    console.log('[WalletProvider] Wallet type updated', {
+      walletType,
+      persistedType: localStorage.getItem('walletType'),
+    });
   }, [walletType]);
 
   return (

@@ -8,8 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Lock, Shield, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Shield, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { validatePassphraseStrength } from '@/lib/encryptedStorage';
 
 interface PasswordInputProps {
@@ -125,34 +124,23 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         {/* Email Input - Only for create mode */}
         {mode === 'create' && (
           <div className="space-y-2">
-            <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
-              <AlertCircle className="h-4 w-4" />
-              Email Address
-            </Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address"
-              className="bg-background focus:border-ring border-[1px] border-foreground"
+              className="bg-background text-foreground focus:border-ring border-[1px] border-foreground/10 py-6"
               disabled={isLoading}
-              autoComplete="email"
+              autoComplete="off"
+              autoFocus
               required
             />
-            <p className="text-xs text-gray-400">
-              Your email will be used to securely store your encrypted account data.
-            </p>
           </div>
         )}
 
         {/* Main Password Input */}
         <div className="space-y-2">
-          <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium">
-            <Lock className="h-4 w-4" />
-            {mode === 'unlock' ? 'Enter Password' : 
-             mode === 'create' ? 'Create Password' : 'New Password'}
-          </Label>
           <div className="relative">
             <Input
               id="password"
@@ -163,8 +151,8 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
                 if (!touched) setTouched(true);
               }}
               placeholder={placeholder}
-              className="bg-background pr-12 focus:border-ring border-[1px] border-foreground"
-              autoFocus={autoFocus}
+              className="bg-background text-foreground pr-12 focus:border-ring border-[1px] border-foreground/10 py-6"
+              autoFocus={mode !== 'create' && autoFocus}
               disabled={isLoading}
               autoComplete="new-password"
             />
@@ -172,6 +160,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200"
+              tabIndex={-1}
               disabled={isLoading}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -182,10 +171,6 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         {/* Confirm Password Input */}
         {confirmRequired && (
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="flex items-center gap-2 text-sm font-medium">
-              <Shield className="h-4 w-4" />
-              Confirm Password
-            </Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
@@ -193,7 +178,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
-                className={`pr-12 bg-background border-[1px] border-foreground focus:border-ring ${
+                className={`pr-12 bg-background text-foreground border-[1px] border-foreground/10 focus:border-foreground/50 py-6 ${
                   confirmPassword && !passwordMatch ? 'border-destructive' : ''
                 }`}
                 disabled={isLoading}
@@ -203,6 +188,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                tabIndex={-1}
                 disabled={isLoading}
               >
                 {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

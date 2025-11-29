@@ -15,7 +15,7 @@ export default function AccountCreatedPage() {
     if (typeof window !== "undefined") {
       setInitialLoading(true);
       setTimeout(() => {
-        const data = sessionStorage.getItem("4v4_new_wallet");
+        const data = sessionStorage.getItem("bbox_new_wallet");
         if (data) setWallet(JSON.parse(data));
         setInitialLoading(false);
       }, 600); 
@@ -26,14 +26,14 @@ export default function AccountCreatedPage() {
     if (wallet && typeof window !== "undefined") {
       setLoading(true);
       localStorage.setItem(
-        "4v4_session",
+        "bbox_session",
         JSON.stringify({
           stxPrivateKey: wallet.stxPrivateKey,
           address: wallet.address,
           createdAt: Date.now(),
         })
       );
-      window.dispatchEvent(new Event("4v4-session-update"));
+      window.dispatchEvent(new Event("bbox-session-update"));
       router.push(`/${wallet.address}`);
     }
   };

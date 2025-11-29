@@ -22,35 +22,66 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const trimmedEmail = email.trim();
+    const normalizedEmail = trimmedEmail.toLowerCase();
+
     // Hash the private key with the passphrase to create the passkey
     const hashedPasskey = crypto
       .createHash('sha256')
       .update(passkey + passphrase)
       .digest('hex');
 
-    // Check if email already exists
-    const { data: existingAccount, error: checkError } = await supabaseAdmin
-      .from('connected_accounts')
-      .select('email')
-      .eq('email', email)
-      .single();
+    const [existingAccountResult, existingProfileResult] = await Promise.all([
+      supabaseAdmin
+        .from('connected_accounts')
+        .select('email')
+        .ilike('email', trimmedEmail)
+        .limit(1),
+      supabaseAdmin
+        .from('profiles')
+        .select('id, address')
+        .ilike('email', trimmedEmail)
+        .limit(1)
+    ]);
 
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found"
-      console.error('Database check error:', checkError);
-      console.error('Error details:', JSON.stringify(checkError, null, 2));
+    if (existingAccountResult.error) {
+      const err = existingAccountResult.error;
+      if (err.code !== 'PGRST116') {
+        console.error('Database check error (connected_accounts):', err);
+        return NextResponse.json(
+          {
+            error: 'Database connection error',
+            details: err.message,
+            code: err.code
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (existingProfileResult.error && existingProfileResult.error.code !== 'PGRST116') {
+      const err = existingProfileResult.error;
+      console.error('Database check error (profiles):', err);
       return NextResponse.json(
-        { 
+        {
           error: 'Database connection error',
-          details: checkError.message,
-          code: checkError.code 
+          details: err.message,
+          code: err.code
         },
         { status: 500 }
       );
     }
 
-    if (existingAccount) {
+    const hasAccount = Array.isArray(existingAccountResult.data) && existingAccountResult.data.length > 0;
+    const hasProfile = Array.isArray(existingProfileResult.data) && existingProfileResult.data.length > 0;
+
+    if (hasAccount || hasProfile) {
       return NextResponse.json(
-        { error: 'Account with this email already exists' },
+        {
+          error: 'Email is already registered',
+          inProfiles: hasProfile,
+          inConnectedAccounts: hasAccount
+        },
         { status: 409 }
       );
     }
@@ -60,7 +91,7 @@ export async function POST(request: NextRequest) {
       .from('connected_accounts')
       .insert([
         {
-          email,
+          email: normalizedEmail,
           passkey: hashedPasskey,
           address,
           created_at: new Date().toISOString(),
@@ -79,6 +110,44 @@ export async function POST(request: NextRequest) {
         },
         { status: 500 }
       );
+    }
+
+    // Ensure a profile record exists with this email for future lookups
+    try {
+      const now = new Date().toISOString();
+      const { data: existingProfileByAddress } = await supabaseAdmin
+        .from('profiles')
+        .select('id, address')
+        .ilike('address', address)
+        .limit(1);
+
+      if (existingProfileByAddress && existingProfileByAddress.length > 0) {
+        await supabaseAdmin
+          .from('profiles')
+          .update({
+            email: normalizedEmail,
+            email_verified: false,
+            updated_at: now,
+            last_active: now
+          })
+          .eq('id', existingProfileByAddress[0].id);
+      } else {
+        await supabaseAdmin
+          .from('profiles')
+          .insert([
+            {
+              address,
+              email: normalizedEmail,
+              email_verified: false,
+              created_at: now,
+              updated_at: now,
+              last_active: now,
+            }
+          ]);
+      }
+    } catch (profileError) {
+      console.warn('Profile sync warning:', profileError);
+      // Do not fail account creation if profile sync fails
     }
 
     return NextResponse.json({
