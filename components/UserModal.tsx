@@ -59,6 +59,17 @@ export default function UserModal({ onClose }: UserModalProps) {
     };
   }, [onClose]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   // Fetch SBTC token balance from Hiro API
   useEffect(() => {
     if (!currentAddress) {

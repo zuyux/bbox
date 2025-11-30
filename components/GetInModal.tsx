@@ -49,6 +49,18 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     }
   }, [isEncryptedAuthenticated, onClose]);
 
+  useEffect(() => {
+    if (!onClose) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
 
   const handleEncryptedWalletSubmit = async (password: string, email?: string) => {
     try {

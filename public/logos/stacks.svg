@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Stacks logo">
+  <rect width="64" height="64" rx="12" fill="#20124d"/>
+  <path fill="#ffffff" d="M20 18h24v6H20zm0 10h24v6H20zm0 12h24v6H20z" opacity="0.6"/>
+  <path fill="#ffffff" d="M16 16h32v8H16zm0 12h32v8H16zm0 12h32v8H16z"/>
+</svg>

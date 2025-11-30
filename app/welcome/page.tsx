@@ -12,6 +12,8 @@ export default function WelcomePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams?.get('email');
+  const normalizedEmail = email?.trim();
+  const showEmail = Boolean(normalizedEmail);
   const { currentWallet, isAuthenticated } = useEncryptedWallet();
 
   const [showMnemonic, setShowMnemonic] = useState(false);
@@ -124,10 +126,12 @@ export default function WelcomePage() {
                   Your Account Details
                 </h3>
                 <div className="space-y-3 text-center">
-                  <div>
-                    <label className="text-sm text-muted-foreground">Email</label>
-                    <p className="text-foreground text-lg font-bold">{email}</p>
-                  </div>
+                  {showEmail && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">Email</label>
+                      <p className="text-foreground text-lg font-bold">{normalizedEmail}</p>
+                    </div>
+                  )}
                   <div>
                     <label className="text-sm text-muted-foreground">Wallet Address</label>
                     <div className="flex items-center gap-1">

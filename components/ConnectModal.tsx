@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { request as satsRequest } from 'sats-connect';
 import { useWallet, type WalletType } from './WalletProvider';
@@ -70,6 +70,20 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
 
   const { createEncryptedWallet } = useEncryptedWallet();
   const router = useRouter();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
 
   const persistSessionForWallet = useCallback(async (connectedAddress: string, providerType: WalletType) => {
     if (typeof window === 'undefined') return;

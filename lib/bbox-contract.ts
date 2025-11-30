@@ -7,17 +7,26 @@ import {
   PostConditionMode,
   deserializeCV,
   serializeCV,
+  postConditionToHex,
+  type PostCondition,
+  type ClarityValue,
 } from '@stacks/transactions';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { openContractCall } from '@stacks/connect';
-import { getPersistedNetwork } from './network';
+import { getPersistedNetwork, type Network } from './network';
 import { getApiUrl } from './stacks-api';
+import { getSbtcAssetString } from './contracts';
 
 // BBOX Contract addresses per network
 const BBOX_CONTRACTS = {
   mainnet: 'SP000000000000000000002Q6VF78.bbox', // Update with actual mainnet address when deployed
   testnet: 'ST193GXQTNHVV9WSAPHAB89M6R9QSEXZKS3N9P3DZ.bbox',
   devnet: 'ST193GXQTNHVV9WSAPHAB89M6R9QSEXZKS3N9P3DZ.bbox',
+};
+
+export const DEFAULT_LISTING_FEE = {
+  token: 'sBTC',
+  amount: BigInt(100),
 };
 
 export function getBboxContractAddress(): string {
@@ -171,12 +180,8 @@ export async function getListingFee(): Promise<{
       amount: finalAmount,
     };
   } catch (error) {
-    console.warn('Using default listing fee (contract may not be deployed yet):', error);
-    // Return default fallback value
-    return {
-      token: 'sBTC',
-      amount: BigInt(100), // Default fallback (100 satoshis)
-    };
+    console.warn('Failed to fetch listing fee from contract:', error);
+    throw error;
   }
 }
 
@@ -264,22 +269,29 @@ export async function getAppFromContract(appId: number): Promise<Record<string, 
   }
 }
 
+interface SubmitAppContractOptions {
+  ipfsHash: string;
+  listingFee?: { token: string; amount: bigint } | null;
+}
+
 /**
  * Submit an app to the contract using Stacks Connect (for browser wallets)
  * Supports both Leather RPC API and legacy @stacks/connect
  */
 export async function submitAppToContract(
-  ipfsHash: string,
+  params: SubmitAppContractOptions,
   onFinish?: (txId: string) => void,
   onCancel?: () => void
 ): Promise<void> {
+  const { ipfsHash, listingFee } = params;
+  const resolvedNetwork = getPersistedNetwork();
   const network = getStacksNetwork();
   const contractId = getBboxContractAddress();
   const { contractAddress, contractName } = parseContractAddress(contractId);
 
   console.log('🔐 Initiating contract call...');
   console.log('   Network:', network);
-  console.log('   Network type:', getPersistedNetwork());
+  console.log('   Network type:', resolvedNetwork);
   console.log('   Contract:', contractId);
   console.log('   Contract address:', contractAddress);
   console.log('   Contract name:', contractName);
@@ -310,7 +322,7 @@ export async function submitAppToContract(
 
   // Check if contract is deployed by trying to fetch it
   try {
-    const checkUrl = `${getApiUrl(getPersistedNetwork())}/v2/contracts/interface/${contractAddress}/${contractName}`;
+    const checkUrl = `${getApiUrl(resolvedNetwork)}/v2/contracts/interface/${contractAddress}/${contractName}`;
     console.log('🔍 Verifying contract deployment at:', checkUrl);
     const checkResponse = await fetch(checkUrl);
     
@@ -332,59 +344,57 @@ export async function submitAppToContract(
     );
   }
 
-  // Try Leather RPC API first (new method)
-  // TEMPORARILY DISABLED: Leather RPC has issues with Clarity value serialization
-  // Will use @stacks/connect which works with both Leather and Xverse
-  const USE_LEATHER_RPC = false;
-  
-  if (hasLeatherProvider && USE_LEATHER_RPC) {
-    console.log('📱 Using Leather RPC API (new method)...');
+  const listingFeeInfo = await resolveListingFee(listingFee);
+  const postConditions = buildListingFeePostConditions(listingFeeInfo.amount, listingFeeInfo.token, resolvedNetwork);
+  const postConditionMode = postConditions.length > 0 ? PostConditionMode.Deny : PostConditionMode.Allow;
+  console.log('🔒 Listing fee + post-condition summary:', {
+    token: listingFeeInfo.token,
+    amount: listingFeeInfo.amount.toString(),
+    postConditionMode,
+    postConditionCount: postConditions.length,
+  });
+  if (postConditions.length > 0) {
+    console.log('   ↳ First post-condition preview:', postConditions[0]);
+  }
+
+  if (hasLeatherProvider) {
+    console.log('📱 Using Leather RPC API (preferred when available)...');
     try {
-      const leatherProvider = (window as Window & { 
-        LeatherProvider: { 
-          request: (method: string, params: unknown) => Promise<{ result: { txid: string; transaction: string } }> 
-        } 
+      const leatherProvider = (window as Window & {
+        LeatherProvider: {
+          request: (
+            method: string,
+            params: Record<string, unknown>
+          ) => Promise<{ result?: { txid?: string; transaction?: string } }>;
+        };
       }).LeatherProvider;
-      
-      // According to Leather docs, functionArgs should be an array of hex-encoded Clarity values
-      // Each argument is a complete serialized Clarity value (not just the string content)
-      const ipfsHashCV = stringAsciiCV(ipfsHash);
-      const serializedBuffer = serializeCV(ipfsHashCV);
-      
-      // Convert to hex string with 0x prefix
-      // serializeCV returns a Uint8Array or Buffer
-      let ipfsHashHex = '0x';
-      if (typeof serializedBuffer === 'string') {
-        // Already hex string
-        ipfsHashHex = serializedBuffer.startsWith('0x') ? serializedBuffer : '0x' + serializedBuffer;
-      } else {
-        // Convert bytes to hex
-        const bytes = serializedBuffer as ArrayLike<number>;
-        for (let i = 0; i < bytes.length; i++) {
-          const hex = bytes[i].toString(16);
-          ipfsHashHex += hex.length === 1 ? '0' + hex : hex;
-        }
-      }
-      
-      console.log('   Contract:', `${contractAddress}.${contractName}`);
-      console.log('   Function:', 'submit-app');
-      console.log('   IPFS Hash:', ipfsHash);
-      console.log('   Serialized CV hex:', ipfsHashHex);
-      console.log('   Hex length:', ipfsHashHex.length);
-      
-      const requestParams = {
+
+      const functionArgsHex = [clarityValueToHex(stringAsciiCV(ipfsHash))];
+      const postConditionsHex = postConditions.map((pc) => postConditionToHex(pc));
+      const anchorModeName = 'any';
+      const requestParams: Record<string, unknown> = {
         contract: `${contractAddress}.${contractName}`,
         functionName: 'submit-app',
-        functionArgs: [ipfsHashHex],
+        functionArgs: functionArgsHex,
+        anchorMode: anchorModeName,
+        network: resolvedNetwork,
+        postConditionMode: postConditionMode === PostConditionMode.Deny ? 'deny' : 'allow',
       };
-      
-      console.log('   Full request params:', JSON.stringify(requestParams, null, 2));
+      if (postConditionsHex.length > 0) {
+        requestParams.postConditions = postConditionsHex;
+      }
+
+      console.log('   Leather RPC params:', {
+        ...requestParams,
+        functionArgs: functionArgsHex.map((arg) => `${arg.slice(0, 12)}…`),
+        postConditions: postConditionsHex.map((pc) => `${pc.slice(0, 12)}…`),
+      });
       console.log('🔐 Calling Leather RPC API...');
-      
+
       const response = await leatherProvider.request('stx_callContract', requestParams);
-      
+
       console.log('✅ Leather RPC response:', response);
-      
+
       if (response.result?.txid) {
         console.log('✅ Transaction submitted via Leather RPC!');
         console.log('   Transaction ID:', response.result.txid);
@@ -392,19 +402,18 @@ export async function submitAppToContract(
           onFinish(response.result.txid);
         }
         return; // Success, exit function
-      } else {
-        console.warn('⚠️ No txid in Leather response:', response);
-        throw new Error('No transaction ID returned from wallet');
       }
+
+      console.warn('⚠️ Leather RPC returned without txid, falling back to Connect');
     } catch (leatherError) {
       console.error('❌ Leather RPC API error details:', leatherError);
       console.warn('⚠️ Leather RPC API failed, will try fallback method');
-      // Fall through to try @stacks/connect as fallback
     }
   }
 
   // Use @stacks/connect (works with both Leather and Xverse)
-  console.log('📱 Using @stacks/connect (works with Leather & Xverse)...');
+  console.log('📱 Using @stacks/connect (fallback)...');
+
   const contractCallOptions = {
     network,
     anchorMode: AnchorMode.Any,
@@ -412,7 +421,8 @@ export async function submitAppToContract(
     contractName,
     functionName: 'submit-app',
     functionArgs: [stringAsciiCV(ipfsHash)],
-    postConditionMode: PostConditionMode.Allow, // Allow - important for sBTC transfer
+    postConditionMode,
+    postConditions,
     appDetails: {
       name: 'BBOX',
       icon: typeof window !== 'undefined' ? window.location.origin + '/bbox.png' : '',
@@ -443,6 +453,7 @@ export async function submitAppToContract(
     functionName: contractCallOptions.functionName,
     functionArgsCount: contractCallOptions.functionArgs.length,
     postConditionMode: contractCallOptions.postConditionMode,
+    postConditions: contractCallOptions.postConditions?.length || 0,
     hasAppDetails: !!contractCallOptions.appDetails,
   });
 
@@ -658,4 +669,75 @@ export function getExplorerContractUrl(network: string): string {
   const contractId = getBboxContractAddress();
   const [address, name] = contractId.split('.');
   return `https://explorer.hiro.so/address/${address}?chain=${network}#${name}`;
+}
+
+async function resolveListingFee(
+  override?: { token: string; amount: bigint } | null
+): Promise<{ token: string; amount: bigint }> {
+  if (override && typeof override.amount === 'bigint') {
+    console.log('💰 Using provided listing fee override:', {
+      token: override.token,
+      amount: override.amount.toString(),
+    });
+    return override;
+  }
+  try {
+    const fee = await getListingFee();
+    console.log('💰 Resolved listing fee from network:', {
+      token: fee.token,
+      amount: fee.amount.toString(),
+    });
+    return fee;
+  } catch (error) {
+    console.warn('⚠️ Falling back to default listing fee after fetch error:', error);
+    return DEFAULT_LISTING_FEE;
+  }
+}
+
+function buildListingFeePostConditions(
+  amount: bigint,
+  token: string,
+  networkKey: Network
+): PostCondition[] {
+  if (amount <= 0) {
+    console.log('ℹ️ No post conditions needed for zero listing fee');
+    return [];
+  }
+
+  if (token.toLowerCase() !== 'sbtc') {
+    console.warn('Unsupported listing fee token for post conditions:', token);
+    return [];
+  }
+
+  const asset = getSbtcAssetString(networkKey);
+  console.log('🧾 Creating sBTC post-condition:', {
+    amount: amount.toString(),
+    asset,
+    network: networkKey,
+  });
+  const postCondition: PostCondition = {
+    type: 'ft-postcondition',
+    address: 'origin',
+    condition: 'eq',
+    amount: amount.toString(),
+    asset: asset as `${string}.${string}::${string}`,
+  };
+
+  return [postCondition];
+}
+
+function clarityValueToHex(cv: ClarityValue): string {
+  const serialized = serializeCV(cv);
+  if (typeof serialized === 'string') {
+    return serialized.startsWith('0x') ? serialized : `0x${serialized}`;
+  }
+
+  const bytes = (serialized as unknown) instanceof Uint8Array
+    ? (serialized as Uint8Array)
+    : Uint8Array.from(serialized as ArrayLike<number>);
+  let hex = '0x';
+  for (let i = 0; i < bytes.length; i++) {
+    hex += bytes[i].toString(16).padStart(2, '0');
+  }
+  return hex;
 }

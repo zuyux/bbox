@@ -31,7 +31,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
-import { getListingFee, formatListingFee, submitAppToContract } from '@/lib/bbox-contract';
+import { getListingFee, formatListingFee, submitAppToContract, DEFAULT_LISTING_FEE } from '@/lib/bbox-contract';
 import { getPersistedNetwork } from '@/lib/network';
 import { uploadFileToPinata, getIPFSUrl } from '@/lib/pinataUpload';
 import { useWallet } from '@/components/WalletProvider';
@@ -130,6 +130,7 @@ export default function PublishPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [newTag, setNewTag] = useState('');
   const [listingFee, setListingFee] = useState<{ token: string; amount: bigint } | null>(null);
+  const [listingFeeSource, setListingFeeSource] = useState<'network' | 'fallback' | null>(null);
   const [network, setNetwork] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [iconUploadStatus, setIconUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
@@ -140,6 +141,9 @@ export default function PublishPage() {
   const [metadataCid, setMetadataCid] = useState<string | null>(null);
   const [contractTxId, setContractTxId] = useState<string | null>(null);
   const [showGetInModal, setShowGetInModal] = useState(false);
+  const effectiveListingFee = listingFee ?? DEFAULT_LISTING_FEE;
+  const isFallbackListingFee = listingFeeSource === 'fallback';
+  const listingFeeDisplay = formatListingFee(effectiveListingFee.amount, effectiveListingFee.token);
 
   useEffect(() => {
     setSignatureResult(null);
@@ -157,8 +161,30 @@ export default function PublishPage() {
 
   // Fetch listing fee and network on mount
   useEffect(() => {
-    getListingFee().then(setListingFee);
+    let cancelled = false;
+
+    const fetchListingFee = async () => {
+      try {
+        const fee = await getListingFee();
+        if (!cancelled) {
+          setListingFee(fee);
+          setListingFeeSource('network');
+        }
+      } catch (error) {
+        console.warn('Failed to fetch listing fee, using fallback:', error);
+        if (!cancelled) {
+          setListingFee(DEFAULT_LISTING_FEE);
+          setListingFeeSource('fallback');
+        }
+      }
+    };
+
+    fetchListingFee();
     setNetwork(getPersistedNetwork());
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const [formData, setFormData] = useState<AppFormData>({
@@ -365,10 +391,20 @@ export default function PublishPage() {
       const ipfsHash = await uploadAppMetadataToIPFS(metadataPayload);
       setMetadataCid(ipfsHash);
 
+      const feeForTx = listingFee ?? DEFAULT_LISTING_FEE;
+      if (!listingFee) {
+        console.warn('Listing fee unavailable at submit time. Using fallback default.');
+        setListingFee(feeForTx);
+        setListingFeeSource('fallback');
+      }
+
       const awaitContractTx = async (): Promise<string> =>
         new Promise((resolve, reject) => {
           submitAppToContract(
-            ipfsHash,
+            {
+              ipfsHash,
+              listingFee: feeForTx,
+            },
             (txId) => resolve(txId),
             () => reject(new Error('Contract call cancelled by user'))
           ).catch((error) => reject(error));
@@ -524,7 +560,8 @@ export default function PublishPage() {
                   </span>
                 </div>
                 <p className="text-xs text-orange-800 dark:text-orange-200 mt-2 ml-7">
-                  Pay {listingFee ? formatListingFee(listingFee.amount, listingFee.token) : 'the required fee'} in sBTC plus STX gas to submit on-chain
+                  Pay {listingFeeDisplay} in sBTC plus STX gas to submit on-chain
+                  {isFallbackListingFee && ' (estimate)'}
                 </p>
               </CardContent>
             </Card>
@@ -1098,7 +1135,7 @@ export default function PublishPage() {
                   variant="secondary"
                   onClick={handleSignSubmission}
                   disabled={!currentAddress || signatureStatus === 'signing' || isSubmitting}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto cursor-pointer"
                 >
                   {signatureStatus === 'signing' ? (
                     <>
@@ -1188,13 +1225,25 @@ export default function PublishPage() {
                   <Coins className="w-5 h-5 text-orange-600" />
                   <div>
                     <div className="font-semibold text-orange-900 dark:text-orange-100">
-                      Listing Fee: {formatListingFee(listingFee.amount, listingFee.token)}
+                      Listing Fee: {listingFeeDisplay}
                     </div>
                     <div className="text-xs text-orange-800 dark:text-orange-200">
                       Pay this in sBTC plus the STX gas required to interact with bbox.clar
+                      {isFallbackListingFee && ' • Using default estimate until the network fee loads'}
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {isFallbackListingFee && (
+            <Card className="mb-4 border-yellow-200 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-950/30">
+              <CardContent className="py-3 px-4">
+                <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                  Couldn&apos;t confirm the latest listing fee from the contract. Using the default {listingFeeDisplay} estimate so you can continue.
+                  Your wallet will still show the exact transfer before you approve.
+                </p>
               </CardContent>
             </Card>
           )}

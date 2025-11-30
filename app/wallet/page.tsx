@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { fetchRecentTransactions } from "@/lib/fetchRecentTransactions";
+import Image from "next/image";
 
 export default function WalletPage() {
   const address = useCurrentAddress() || "";
@@ -511,12 +512,53 @@ export default function WalletPage() {
 
       <div className="mt-10 w-full">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Assets</h2>
+          <div className="flex items-center gap-2">
+            <Image src="/logos/stacks.svg" alt="Stacks" width={28} height={28} className="rounded-full" />
+            <h2 className="text-lg font-semibold">Assets</h2>
+          </div>
           {!assetsLoading && (
             <span className="text-xs text-muted-foreground">{assets.length} assets</span>
           )}
         </div>
         <div className="mt-4 rounded-xl border border-border bg-card/40">
+
+      <div className="mt-8 w-full">
+        <div className="flex items-center gap-2 mb-3">
+          <Image src="/logos/bitcoin.svg" alt="Bitcoin" width={28} height={28} />
+          <h2 className="text-lg font-semibold">Bitcoin L1</h2>
+        </div>
+        <div className="rounded-xl border border-border bg-card/40 p-4 flex flex-col gap-3">
+          {btcAddressLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <LoaderCircle className="animate-spin" size={18} />
+              <span>Deriving Bitcoin address...</span>
+            </div>
+          ) : btcAddress ? (
+            <>
+              <code className="font-mono text-sm break-all">{btcAddress}</code>
+              <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground">
+                <span>SegWit bech32 address paired with this Stacks account.</span>
+                <button
+                  type="button"
+                  className="text-primary hover:text-primary/80 font-medium cursor-pointer"
+                  onClick={() => {
+                    if (btcAddress) {
+                      navigator.clipboard.writeText(btcAddress);
+                      toast.success('Bitcoin address copied');
+                    }
+                  }}
+                >
+                  Copy address
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {btcAddressError || 'Connect or unlock your wallet to view the paired Bitcoin address.'}
+            </p>
+          )}
+        </div>
+      </div>
           {assetsLoading ? (
             <div className="p-4 space-y-3">
               {[0, 1, 2].map((skeleton) => (
@@ -549,40 +591,6 @@ export default function WalletPage() {
         </div>
       </div>
 
-      <div className="mt-8 w-full">
-        <h2 className="text-lg font-semibold mb-3">Bitcoin L1 Address</h2>
-        <div className="rounded-xl border border-border bg-card/40 p-4 flex flex-col gap-3">
-          {btcAddressLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <LoaderCircle className="animate-spin" size={18} />
-              <span>Deriving deposit address…</span>
-            </div>
-          ) : btcAddress ? (
-            <>
-              <code className="font-mono text-sm break-all">{btcAddress}</code>
-              <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground">
-                <span>SegWit bech32 address paired with this Stacks account.</span>
-                <button
-                  type="button"
-                  className="text-primary hover:text-primary/80 font-medium cursor-pointer"
-                  onClick={() => {
-                    if (btcAddress) {
-                      navigator.clipboard.writeText(btcAddress);
-                      toast.success('Bitcoin address copied');
-                    }
-                  }}
-                >
-                  Copy address
-                </button>
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {btcAddressError || 'Connect or unlock your wallet to view the paired Bitcoin address.'}
-            </p>
-          )}
-        </div>
-      </div>
 
 
       {/* Send Modal */}
