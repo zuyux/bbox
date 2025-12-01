@@ -18,6 +18,7 @@ import { getSigningNetwork } from "@/lib/encryptedWalletSigning";
 import { makeSTXTokenTransfer, broadcastTransaction } from "@stacks/transactions";
 import { getApiUrl } from "@/lib/stacks-api";
 import { getPersistedNetwork, inferNetworkFromAddress, persistNetwork, type Network } from "@/lib/network";
+import { getSBTCContract } from "@/lib/contracts";
 
 import { Copy, X, LoaderCircle, Wallet } from "lucide-react";
 import { toast } from "sonner";
@@ -31,7 +32,7 @@ export default function WalletPage() {
   const [sbtcBalance, setSbtcBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentNetwork, setCurrentNetwork] = useState<Network>(() => getPersistedNetwork());
-  const sbtcContractId = "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token";
+  const sbtcContractId = useMemo(() => getSBTCContract(currentNetwork), [currentNetwork]);
 
   type WalletAsset = {
     id: string;
@@ -159,6 +160,7 @@ export default function WalletPage() {
     
     const apiBaseUrl = getApiUrl(currentNetwork);
     const apiUrl = `${apiBaseUrl}/extended/v1/address/${address}/balances?unanchored=false`;
+    const normalizedSbtcId = sbtcContractId?.toLowerCase();
     
     console.log(`Fetching balances for ${address} on ${currentNetwork}:`, apiUrl);
     
@@ -184,6 +186,7 @@ export default function WalletPage() {
         };
 
         const parsedAssets: WalletAsset[] = [];
+        let detectedSbtcBalance: string | null = null;
 
         const stxBalanceRaw = data?.stx?.balance;
         if (typeof stxBalanceRaw === 'string') {
@@ -206,6 +209,19 @@ export default function WalletPage() {
           const rawBalance = tokenData?.balance ?? '0';
           const symbol = tokenData?.token?.symbol || key.split('::').pop() || 'FT';
           const name = tokenData?.token?.name || symbol;
+          const lowerKey = key.toLowerCase();
+          const lowerSymbol = symbol.toLowerCase();
+          const lowerName = name.toLowerCase();
+          const isSbtcToken = Boolean(
+            (normalizedSbtcId && lowerKey.startsWith(`${normalizedSbtcId}::`)) ||
+            lowerSymbol.includes('sbtc') ||
+            lowerName.includes('sbtc')
+          );
+          if (isSbtcToken) {
+            detectedSbtcBalance = formatTokenBalance(rawBalance, decimals);
+            return;
+          }
+
           parsedAssets.push({
             id: key,
             name,
@@ -222,16 +238,14 @@ export default function WalletPage() {
           return bVal - aVal;
         });
 
-        const sbtcAsset = parsedAssets.find(asset =>
-          asset.id === sbtcContractId || asset.symbol.toLowerCase() === 'sbtc'
-        );
-
-        const sbtcTokenBalance = sbtcAsset ? sbtcAsset.formattedBalance : '0';
-        if (!sbtcAsset) {
+        const sbtcTokenBalance = detectedSbtcBalance ?? '0';
+        if (!detectedSbtcBalance) {
           console.warn('No sBTC token found in wallet balances response');
         }
 
-        setAssets(parsedAssets);
+        const stxOnlyAssets = parsedAssets.filter((asset) => asset.symbol === 'STX');
+
+        setAssets(stxOnlyAssets);
         setSbtcBalance(sbtcTokenBalance);
         setLoading(false);
         setAssetsLoading(false);
@@ -243,7 +257,7 @@ export default function WalletPage() {
         setLoading(false);
         setAssetsLoading(false);
       });
-  }, [address, currentNetwork]);
+  }, [address, currentNetwork, sbtcContractId, formatTokenBalance]);
 
   // Send handler
   const handleSend = async (e: React.FormEvent) => {
@@ -465,7 +479,7 @@ export default function WalletPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+    <div className="my-20 flex flex-col items-center justify-center bg-background">
 
       <div className="max-w-xl mx-auto p-8 bg-card rounded-2xl border border-border shadow text-card-foreground select-none min-w-[100vw] lg:min-w-1/4">
         <div className="my-2 flex items-center justify-left">
@@ -522,43 +536,30 @@ export default function WalletPage() {
         </div>
         <div className="mt-4 rounded-xl border border-border bg-card/40">
 
-      <div className="mt-8 w-full">
-        <div className="flex items-center gap-2 mb-3">
-          <Image src="/logos/bitcoin.svg" alt="Bitcoin" width={28} height={28} />
-          <h2 className="text-lg font-semibold">Bitcoin L1</h2>
-        </div>
-        <div className="rounded-xl border border-border bg-card/40 p-4 flex flex-col gap-3">
-          {btcAddressLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <LoaderCircle className="animate-spin" size={18} />
-              <span>Deriving Bitcoin address...</span>
+      {btcAddress && (
+        <div className="mt-8 w-full">
+          <div className="flex items-center gap-2 mb-3">
+            <Image src="/logos/bitcoin.svg" alt="Bitcoin" width={28} height={28} />
+            <h2 className="text-lg font-semibold">Bitcoin L1</h2>
+          </div>
+          <div className="rounded-xl border border-border bg-card/40 p-4 flex flex-col gap-3">
+            <code className="font-mono text-sm break-all">{btcAddress}</code>
+            <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground">
+              <span>SegWit bech32 address paired with this Stacks account.</span>
+              <button
+                type="button"
+                className="text-primary hover:text-primary/80 font-medium cursor-pointer"
+                onClick={() => {
+                  navigator.clipboard.writeText(btcAddress);
+                  toast.success('Bitcoin address copied');
+                }}
+              >
+                Copy address
+              </button>
             </div>
-          ) : btcAddress ? (
-            <>
-              <code className="font-mono text-sm break-all">{btcAddress}</code>
-              <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground">
-                <span>SegWit bech32 address paired with this Stacks account.</span>
-                <button
-                  type="button"
-                  className="text-primary hover:text-primary/80 font-medium cursor-pointer"
-                  onClick={() => {
-                    if (btcAddress) {
-                      navigator.clipboard.writeText(btcAddress);
-                      toast.success('Bitcoin address copied');
-                    }
-                  }}
-                >
-                  Copy address
-                </button>
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {btcAddressError || 'Connect or unlock your wallet to view the paired Bitcoin address.'}
-            </p>
-          )}
+          </div>
         </div>
-      </div>
+      )}
           {assetsLoading ? (
             <div className="p-4 space-y-3">
               {[0, 1, 2].map((skeleton) => (

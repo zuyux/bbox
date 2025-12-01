@@ -481,9 +481,16 @@ export async function sendSbtcDonation(options: SendSbtcDonationOptions): Promis
   }
 
   const network = getStacksNetwork();
+  const resolvedNetwork = getPersistedNetwork();
   const contractId = getSBTCContract();
   const { contractAddress, contractName } = parseContractAddress(contractId);
   const memoCV = memo && memo.length > 0 ? someCV(bufferCVFromString(memo.slice(0, 34))) : noneCV();
+  const functionArgs = [
+    uintCV(amount),
+    standardPrincipalCV(senderAddress),
+    standardPrincipalCV(recipientAddress),
+    memoCV,
+  ];
 
   const donationPostCondition: PostCondition = {
     type: 'ft-postcondition',
@@ -493,18 +500,58 @@ export async function sendSbtcDonation(options: SendSbtcDonationOptions): Promis
     asset: getSbtcAssetString() as `${string}.${string}::${string}`,
   };
 
+  if (typeof window !== 'undefined' && (window as Window & { LeatherProvider?: { request: (method: string, params: Record<string, unknown>) => Promise<{ result?: { txid?: string } }> } }).LeatherProvider) {
+    try {
+      const leatherProvider = (window as Window & {
+        LeatherProvider: {
+          request: (method: string, params: Record<string, unknown>) => Promise<{ result?: { txid?: string } }>;
+        };
+      }).LeatherProvider;
+
+      const functionArgsHex = functionArgs.map((arg) => clarityValueToHex(arg));
+      const postConditionsHex = [postConditionToHex(donationPostCondition)];
+
+      const requestParams: Record<string, unknown> = {
+        contract: `${contractAddress}.${contractName}`,
+        functionName: 'transfer',
+        functionArgs: functionArgsHex,
+        anchorMode: 'any',
+        network: resolvedNetwork,
+        postConditionMode: 'deny',
+        postConditions: postConditionsHex,
+      };
+
+      console.log('📱 Using Leather RPC for sBTC donation', {
+        contract: requestParams.contract,
+        network: resolvedNetwork,
+        amount: amount.toString(),
+        senderAddress,
+        recipientAddress,
+      });
+
+      const response = await leatherProvider.request('stx_callContract', requestParams);
+
+      if (response.result?.txid) {
+        console.log('✅ Leather donation broadcast:', response.result.txid);
+        if (onFinish) {
+          onFinish(response.result.txid);
+        }
+        return;
+      }
+
+      console.warn('⚠️ Leather RPC returned without txid, falling back to Connect');
+    } catch (error) {
+      console.error('❌ Leather RPC donation failed, falling back to Connect:', error);
+    }
+  }
+
   openContractCall({
     network,
     anchorMode: AnchorMode.Any,
     contractAddress,
     contractName,
     functionName: 'transfer',
-    functionArgs: [
-      uintCV(amount),
-      standardPrincipalCV(senderAddress),
-      standardPrincipalCV(recipientAddress),
-      memoCV,
-    ],
+    functionArgs,
     postConditionMode: PostConditionMode.Deny,
     postConditions: [donationPostCondition],
     appDetails: {

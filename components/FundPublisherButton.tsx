@@ -2,12 +2,13 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Coins, ExternalLink, Wallet, Shield, Loader2, X } from 'lucide-react';
+import { Coins, ExternalLink, Wallet, Shield, Loader2, X, AlertTriangle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { PasswordSigningModal } from '@/components/PasswordSigningModal';
+import ConnectModal from '@/components/ConnectModal';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 import { retrieveEncryptedWallet } from '@/lib/encryptedStorage';
@@ -32,14 +33,20 @@ export function FundPublisherButton({ appName, publisherName, publisherAddress }
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [amountInput, setAmountInput] = useState('1000');
 	const [memoInput, setMemoInput] = useState('');
-	const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('extension');
 	const [formError, setFormError] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 	const [pendingDonation, setPendingDonation] = useState<{ amount: bigint; memo: string } | null>(null);
 	const [isInternalSigning, setIsInternalSigning] = useState(false);
+	const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
 
 	const hasInternalWallet = Boolean(walletInfo?.address || isWalletEncrypted);
+	const extensionConnected = Boolean(currentAddress);
+	const activeMethod: PaymentMethod | null = extensionConnected
+		? 'extension'
+		: hasInternalWallet
+			? 'internal'
+			: null;
 
 	const shortPublisherAddress = useMemo(() => {
 		if (!publisherAddress) {
@@ -80,7 +87,6 @@ export function FundPublisherButton({ appName, publisherName, publisherAddress }
 		}
 		setIsModalOpen(false);
 		setFormError(null);
-		setPaymentMethod('extension');
 		setPendingDonation(null);
 		setIsPasswordModalOpen(false);
 	}, [isSubmitting, isInternalSigning]);
@@ -185,13 +191,19 @@ export function FundPublisherButton({ appName, publisherName, publisherAddress }
 
 		const memo = (memoInput?.trim() || defaultMemo).slice(0, 34);
 
-		if (paymentMethod === 'internal') {
+		if (activeMethod === 'internal') {
 			if (!hasInternalWallet) {
 				setFormError('Add an encrypted wallet in Settings first');
 				return;
 			}
 			setPendingDonation({ amount, memo });
 			setIsPasswordModalOpen(true);
+			return;
+		}
+
+		if (activeMethod !== 'extension') {
+			setFormError('Connect a wallet to continue');
+			setIsConnectModalOpen(true);
 			return;
 		}
 
@@ -262,59 +274,40 @@ export function FundPublisherButton({ appName, publisherName, publisherAddress }
 
 							<div>
 								<p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
-									Choose wallet
+									Wallet
 								</p>
-								<div className="grid gap-2">
-									<button
-										type="button"
-										onClick={() => setPaymentMethod('extension')}
-										className={`rounded-xl border p-3 text-left transition focus-visible:outline-none ${
-											paymentMethod === 'extension'
-												? 'border-foreground bg-foreground/5'
-												: 'border-border'
-										}`}
-									>
-										<div className="flex items-center justify-between">
-											<div className="flex items-center gap-2">
-												<Wallet className="h-4 w-4" />
-												<div>
-													<p className="font-semibold">Wallet extension</p>
-													<p className="text-xs text-muted-foreground">Leather, Xverse, Hiro Wallet</p>
-												</div>
-											</div>
-											{paymentMethod === 'extension' && <Shield className="h-4 w-4 text-foreground" />}
+								<div className={`rounded-xl border p-4 flex flex-col gap-3 ${activeMethod ? 'border-border' : 'border-red-200 bg-red-50/70'}`}>
+									<div className="flex gap-3">
+										<div className="h-10 w-10 rounded-full border border-border flex items-center justify-center">
+											{activeMethod === 'extension' && <Wallet className="h-4 w-4" />}
+											{activeMethod === 'internal' && <Shield className="h-4 w-4" />}
+											{!activeMethod && <AlertTriangle className="h-4 w-4 text-red-500" />}
 										</div>
-									</button>
-
-									<button
-										type="button"
-										onClick={() => hasInternalWallet && setPaymentMethod('internal')}
-										disabled={!hasInternalWallet}
-										className={`rounded-xl border p-3 text-left transition focus-visible:outline-none ${
-											paymentMethod === 'internal'
-												? 'border-foreground bg-foreground/5'
-												: 'border-border'
-										} ${!hasInternalWallet ? 'opacity-50 cursor-not-allowed' : ''}`}
-									>
-										<div className="flex items-center justify-between">
-											<div className="flex items-center gap-2">
-												<Shield className="h-4 w-4" />
-												<div>
-													<p className="font-semibold">Encrypted internal wallet</p>
-													<p className="text-xs text-muted-foreground">
-														Sign with your BBOX wallet password
-													</p>
-												</div>
-											</div>
-											{paymentMethod === 'internal' && <Shield className="h-4 w-4 text-foreground" />}
+										<div>
+											<p className="text-sm font-semibold">
+												{activeMethod === 'extension' && 'Wallet extension connected'}
+												{activeMethod === 'internal' && (walletInfo?.label ? `Encrypted wallet: ${walletInfo.label}` : 'Encrypted wallet ready')}
+												{!activeMethod && 'No wallet detected'}
+											</p>
+											<p className="text-xs text-muted-foreground">
+												{activeMethod === 'extension' && (currentAddress ? `Address ${currentAddress.slice(0, 6)}…${currentAddress.slice(-4)}` : 'Awaiting address')}
+												{activeMethod === 'internal' && 'Enter your password on continue to sign with your BBOX wallet.'}
+												{!activeMethod && 'Connect a wallet extension or set up an encrypted wallet in Settings.'}
+											</p>
 										</div>
-									</button>
+									</div>
+									{!activeMethod && (
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											onClick={() => setIsConnectModalOpen(true)}
+											className="self-start cursor-pointer"
+										>
+											Connect wallet
+										</Button>
+									)}
 								</div>
-								{!hasInternalWallet && (
-									<p className="text-xs text-muted-foreground mt-1">
-										Configure an encrypted wallet in Settings to enable internal transfers.
-									</p>
-								)}
 							</div>
 
 							{formError && (
@@ -337,7 +330,7 @@ export function FundPublisherButton({ appName, publisherName, publisherAddress }
 									type="button"
 									onClick={submitDonation}
 									className="flex-1 bg-foreground hover:bg-foreground cursor-pointer"
-									disabled={isSubmitting || isInternalSigning}
+									disabled={!activeMethod || isSubmitting || isInternalSigning}
 								>
 									{isSubmitting || isInternalSigning ? (
 										<>
@@ -374,6 +367,17 @@ export function FundPublisherButton({ appName, publisherName, publisherAddress }
 				actionText="Send"
 				isLoading={isInternalSigning}
 			/>
+
+			{isConnectModalOpen && (
+				<ConnectModal
+					onClose={() => setIsConnectModalOpen(false)}
+					onSuccess={() => {
+						setIsConnectModalOpen(false);
+						setFormError(null);
+					}}
+					onError={(message) => setFormError(message)}
+				/>
+			)}
 		</>
 	);
 }
