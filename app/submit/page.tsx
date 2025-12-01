@@ -194,7 +194,7 @@ export default function PublishPage() {
     tags: ['bitcoin', 'stacks', 'directory', 'funding', 'open-source', 'dao'],
     icon_cid: '',
     version: '0.2.0',
-    website_url: 'https://bbox.app',
+    website_url: 'https://bbox.lol',
     github_url: 'https://github.com/zuyux/bbox',
     documentation_url: 'https://github.com/zuyux/bbox#readme',
     platforms: ['Web Application'],
@@ -426,10 +426,7 @@ export default function PublishPage() {
           publisher_address: currentAddress,
           metadata_cid: ipfsHash,
           contract_txid: txId,
-          signature: submissionSignature.signature,
-          signature_payload: submissionSignature.signedPayload,
-          signature_wallet_type: submissionSignature.walletType,
-          signature_public_key: submissionSignature.publicKey ?? '',
+          contract_network: network,
         }),
       });
 
@@ -481,7 +478,16 @@ export default function PublishPage() {
       setSubmitStatus('success');
       setIsSubmitting(false);
       setTimeout(() => {
-        router.push('/submit/success');
+        const query = new URLSearchParams();
+        if (txId) {
+          query.set('txid', txId);
+        }
+        const redirectNetwork = network || getPersistedNetwork();
+        if (redirectNetwork) {
+          query.set('network', redirectNetwork);
+        }
+        const path = query.size > 0 ? `/submit/success?${query.toString()}` : '/submit/success';
+        router.push(path);
       }, 1000);
 
     } catch (error: unknown) {
@@ -714,6 +720,7 @@ export default function PublishPage() {
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
                       placeholder="Bitcoin Wallet"
+                      className='bg-background text-foreground'
                       required
                     />
                   </div>
@@ -724,6 +731,7 @@ export default function PublishPage() {
                       value={formData.version}
                       onChange={(e) => handleInputChange('version', e.target.value)}
                       placeholder="1.0.0"
+                      className='bg-background text-foreground'
                     />
                   </div>
                 </div>
@@ -740,6 +748,7 @@ export default function PublishPage() {
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     placeholder="A secure, self-custodial Bitcoin wallet with Lightning Network support..."
+                    className='bg-background text-foreground'
                     rows={4}
                     required
                   />
@@ -773,6 +782,7 @@ export default function PublishPage() {
                       value={newTag}
                       onChange={(e) => setNewTag(e.target.value)}
                       placeholder="Add a tag..."
+                      className='bg-background text-foreground'
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                     />
                     <Button type="button" onClick={addTag} size="sm">
@@ -827,6 +837,7 @@ export default function PublishPage() {
                         accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
                         onChange={handleIconUpload}
                         disabled={iconUploadStatus === 'uploading' || isSubmitting}
+                        className='bg-background text-foreground cursor-pointer'
                       />
                       {iconUploadStatus === 'uploading' && (
                         <p className="text-xs text-muted-foreground flex items-center gap-2">
@@ -865,7 +876,7 @@ export default function PublishPage() {
                       value={formData.website_url}
                       onChange={(e) => handleInputChange('website_url', e.target.value)}
                       placeholder="https://your-app.com"
-                      className="pl-10"
+                      className='bg-background text-foreground pl-10'
                     />
                   </div>
                 </div>
@@ -880,7 +891,7 @@ export default function PublishPage() {
                       value={formData.github_url}
                       onChange={(e) => handleInputChange('github_url', e.target.value)}
                       placeholder="https://github.com/username/repo"
-                      className="pl-10"
+                      className='bg-background text-foreground pl-10'
                     />
                   </div>
                 </div>
@@ -895,7 +906,7 @@ export default function PublishPage() {
                       value={formData.documentation_url}
                       onChange={(e) => handleInputChange('documentation_url', e.target.value)}
                       placeholder="https://docs.your-app.com"
-                      className="pl-10"
+                      className='bg-background text-foreground pl-10'
                     />
                   </div>
                 </div>
@@ -994,6 +1005,7 @@ export default function PublishPage() {
                       value={formData.price_usd}
                       onChange={(e) => handleInputChange('price_usd', parseFloat(e.target.value))}
                       placeholder="9.99"
+                      className='bg-background text-foreground'
                     />
                   </div>
                 )}
@@ -1018,6 +1030,7 @@ export default function PublishPage() {
                       value={formData.lightning_address}
                       onChange={(e) => handleInputChange('lightning_address', e.target.value)}
                       placeholder="you@getalby.com"
+                      className='bg-background text-foreground'
                     />
                   </div>
                 )}
@@ -1038,6 +1051,7 @@ export default function PublishPage() {
                       value={formData.publisher_name}
                       onChange={(e) => handleInputChange('publisher_name', e.target.value)}
                       placeholder="Your Name or Company"
+                      className='bg-background text-foreground'
                     />
                   </div>
                   <div>
@@ -1048,6 +1062,7 @@ export default function PublishPage() {
                       value={formData.publisher_email}
                       onChange={(e) => handleInputChange('publisher_email', e.target.value)}
                       placeholder="contact@yourapp.com"
+                      className='bg-background text-foreground'
                     />
                   </div>
                 </div>
@@ -1103,6 +1118,7 @@ export default function PublishPage() {
                       value={formData.privacy_policy_url}
                       onChange={(e) => handleInputChange('privacy_policy_url', e.target.value)}
                       placeholder="https://yourapp.com/privacy"
+                      className='bg-background text-foreground'
                     />
                   </div>
                   <div>
@@ -1113,6 +1129,7 @@ export default function PublishPage() {
                       value={formData.terms_of_service_url}
                       onChange={(e) => handleInputChange('terms_of_service_url', e.target.value)}
                       placeholder="https://yourapp.com/terms"
+                      className='bg-background text-foreground'
                     />
                   </div>
                 </div>
@@ -1167,16 +1184,8 @@ export default function PublishPage() {
             {/* Submit Button */}
             <div className="flex justify-end gap-4">
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push('/apps')}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
                 type="submit"
-                className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 cursor-pointer"
+                className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 cursor-pointer"
                 disabled={isSubmitting || !currentAddress || iconUploadStatus === 'uploading' || signatureStatus === 'signing'}
               >
                 {isSubmitting ? (

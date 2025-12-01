@@ -1,3 +1,5 @@
+import { getIPFSUrl } from './pinataUpload';
+
 /**
  * IPFS Metadata Upload Utilities for BBOX App Submissions
  * Handles uploading app metadata JSON to IPFS via Pinata
@@ -37,6 +39,10 @@ interface AppMetadata {
   publisher_name: string;
   publisher_email: string;
   publisher_address: string;
+
+  // Media
+  icon_cid?: string;
+  icon_url?: string;
 
   // Metadata
   created_at: string;
@@ -212,6 +218,8 @@ export function createMetadataFromFormData(
   formData: Record<string, unknown>,
   publisherAddress: string
 ): Omit<AppMetadata, 'created_at' | 'updated_at'> {
+  const iconCid = typeof formData.icon_cid === 'string' ? formData.icon_cid : '';
+
   return {
     name: String(formData.name || ''),
     description: String(formData.description || ''),
@@ -235,6 +243,8 @@ export function createMetadataFromFormData(
     publisher_name: String(formData.publisher_name || ''),
     publisher_email: String(formData.publisher_email || ''),
     publisher_address: publisherAddress,
+    icon_cid: iconCid || undefined,
+    icon_url: iconCid ? getIPFSUrl(iconCid) : undefined,
   };
 }
 

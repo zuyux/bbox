@@ -13,7 +13,7 @@ const CONTRACTS = {
   },
 };
 
-const DEFAULT_SBTC_ASSET_NAME = (process.env.NEXT_PUBLIC_SBTC_ASSET_NAME?.trim() || 'sbtc') as const;
+const DEFAULT_SBTC_ASSET_NAME = process.env.NEXT_PUBLIC_SBTC_ASSET_NAME?.trim() || 'sbtc';
 
 export function getSBTCContract(networkOverride?: Network): string {
   const network = networkOverride ?? getPersistedNetwork();

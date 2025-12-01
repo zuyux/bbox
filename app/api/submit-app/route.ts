@@ -20,9 +20,13 @@ export async function POST(request: NextRequest) {
     const signaturePayload = typeof body.signature_payload === 'string' ? body.signature_payload.trim() : '';
     const signatureWalletType = typeof body.signature_wallet_type === 'string' ? body.signature_wallet_type.trim() : '';
     const signaturePublicKey = typeof body.signature_public_key === 'string' ? body.signature_public_key.trim() : '';
+    const metadataCid = typeof body.metadata_cid === 'string' ? body.metadata_cid.trim() : '';
+    const contractTxId = typeof body.contract_txid === 'string' ? body.contract_txid.trim() : '';
+    const contractNetwork = typeof body.contract_network === 'string' ? body.contract_network.trim() : '';
+    const contractAppId = typeof body.contract_app_id === 'number' ? body.contract_app_id : null;
 
     // Prepare the app data
-    const appData = {
+    const appData: Record<string, unknown> = {
       name: body.name,
       description: body.description,
       category: body.category,
@@ -54,6 +58,20 @@ export async function POST(request: NextRequest) {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+
+    if (metadataCid) {
+      appData.metadata_cid = metadataCid;
+    }
+    if (contractTxId) {
+      appData.contract_txid = contractTxId;
+    }
+    if (contractAppId !== null) {
+      appData.contract_app_id = contractAppId;
+    }
+    if (contractNetwork) {
+      appData.contract_network = contractNetwork;
+    }
+    // Signatures are logged for debugging only; they are no longer stored on the apps table
 
     // Insert the app into the database
     const { data, error } = await supabaseAdmin

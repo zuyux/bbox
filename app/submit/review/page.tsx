@@ -204,7 +204,7 @@ export default function SubmittedAppsPage() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
               Refresh
             </Button>
-            <Button asChild className="cursor-pointer">
+            <Button asChild className="bg-foreground hover:bg-foreground cursor-pointer">
               <Link href="/submit" className="flex items-center gap-2">
                 <ArrowRight className="h-4 w-4" />
                 New Submission
@@ -253,17 +253,17 @@ export default function SubmittedAppsPage() {
                 placeholder="Search by app, publisher, address, or tag"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                className="h-11"
+                className="bg-background text-foreground h-11"
               />
             </div>
             <div className="w-full md:w-64">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-11">
+                <SelectTrigger className="h-11 cursor-pointer">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem key={option.value} value={option.value} className="cursor-pointer">
                       {option.label}
                     </SelectItem>
                   ))}

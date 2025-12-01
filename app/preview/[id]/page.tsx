@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabaseAdmin } from "@/lib/supabaseClient";
 import { SubmissionComments } from "@/components/SubmissionComments";
+import FundPublisherButton from "@/components/FundPublisherButton";
 
 const statusMeta: Record<
   string,
@@ -265,6 +266,22 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
                     {app.publisher_email}
                   </a>
                 </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-dashed border-border/60 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold">Fuel this builder</p>
+                  <p className="text-xs text-muted-foreground">
+                    Send sBTC directly to support {app.publisher_name || app.name}.
+                  </p>
+                </div>
+                <FundPublisherButton
+                  appName={app.name}
+                  publisherName={app.publisher_name}
+                  publisherAddress={app.publisher_address || ""}
+                />
               </div>
             </div>
 

@@ -1,13 +1,21 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, ArrowRight, Home, ExternalLink, Sparkles } from 'lucide-react';
+import { getExplorerTxUrl } from '@/lib/bbox-contract';
+import { getPersistedNetwork } from '@/lib/network';
 
 export default function SubmitSuccessPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const txId = searchParams.get('txid');
+  const networkParam = searchParams.get('network');
+  const resolvedNetwork = networkParam || getPersistedNetwork();
+  const explorerUrl = txId ? getExplorerTxUrl(txId, resolvedNetwork || 'testnet') : null;
+  const shortTxId = txId ? `${txId.slice(0, 6)}…${txId.slice(-4)}` : null;
 
   return (
     <div className="bg-background min-h-screen">
@@ -31,9 +39,21 @@ export default function SubmitSuccessPage() {
                 Submission Successful!
               </h1>
               
-              <p className="text-xl text-muted-foreground mb-8">
+              <p className="text-xl text-muted-foreground mb-6">
                 Your app has been submitted to BBOX for review
               </p>
+
+              {explorerUrl && (
+                <div className="w-full mb-8 inline-flex flex-col items-center gap-3 rounded-lg border border-green-200 bg-white/80 px-6 py-4 text-center shadow-sm dark:border-green-900/40 dark:bg-green-950/30">
+                  <p className="text-sm text-muted-foreground">View your on-chain submission</p>
+                  <Button asChild variant="outline" className="w-full cursor-pointer">
+                    <a href={explorerUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2">
+                      <ExternalLink className="w-4 h-4" />
+                      {shortTxId}
+                    </a>
+                  </Button>
+                </div>
+              )}
 
               {/* What's Next Section */}
               <div className="bg-white dark:bg-gray-900 rounded-lg p-8 mb-8 text-left shadow-sm">
@@ -116,6 +136,14 @@ export default function SubmitSuccessPage() {
                 >
                   <Home className="w-5 h-5 mr-2" />
                   Browse Apps
+                </Button>
+                <Button
+                  onClick={() => router.push('/submit/review')}
+                  size="lg"
+                  className="cursor-pointer bg-foreground text-background hover:bg-foreground/90"
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Review Submissions
                 </Button>
                 <Button
                   onClick={() => router.push('/')}
