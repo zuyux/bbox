@@ -28,11 +28,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (savedType) {
       setWalletType(savedType);
     }
-
-    console.log('[WalletProvider] Restored session from storage', {
-      savedAddress: saved,
-      savedType,
-    });
   }, []); // Intentionally empty - only run on mount to restore saved address
 
   useEffect(() => {
@@ -41,10 +36,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } else {
       localStorage.removeItem('walletAddress');
     }
-    console.log('[WalletProvider] Address state updated', {
-      address,
-      persistedAddress: localStorage.getItem('walletAddress'),
-    });
   }, [address]);
 
   useEffect(() => {
@@ -53,10 +44,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } else {
       localStorage.removeItem('walletType');
     }
-    console.log('[WalletProvider] Wallet type updated', {
-      walletType,
-      persistedType: localStorage.getItem('walletType'),
-    });
   }, [walletType]);
 
   return (

@@ -101,7 +101,6 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
       };
       localStorage.setItem('bbox_session', JSON.stringify(sessionPayload));
       window.dispatchEvent(new Event('bbox-session-update'));
-      console.log('Persisted wallet session from ConnectModal', sessionPayload);
     } catch (error) {
       console.warn('Failed to fetch connected account info, storing minimal session.', error);
       const fallbackPayload = {
@@ -349,10 +348,8 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
                       <Button
                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-lg text-sm font-semibold cursor-pointer"
                         onClick={async () => {
-                          console.log('Connect button clicked:', w);
                           try {
                             if (w.id === 'leather' && window.LeatherProvider) {
-                              console.log('LeatherProvider found:', window.LeatherProvider);
                               const provider = window.LeatherProvider;
                               if (
                                 provider &&
@@ -362,12 +359,10 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
                               ) {
                                 // Use the latest Leather API: getAddresses
                                 const response = await (provider as { request: (method: string, params?: unknown) => Promise<unknown> }).request('getAddresses');
-                                console.log('Leather getAddresses response:', response);
                                 const stxAddress = Array.isArray((response as { result?: { addresses?: { symbol: string; address: string }[] } })?.result?.addresses)
                                   ? ((response as { result: { addresses: { symbol: string; address: string }[] } }).result.addresses.find(addr => addr.symbol === 'STX')?.address)
                                   : undefined;
                                 if (stxAddress) {
-                                  console.log('Leather connect success, STX address:', stxAddress);
                                   setAddress(stxAddress);
                                   setWalletType('leather');
                                   await persistSessionForWallet(stxAddress, 'leather');

@@ -162,8 +162,6 @@ export default function WalletPage() {
     const apiUrl = `${apiBaseUrl}/extended/v1/address/${address}/balances?unanchored=false`;
     const normalizedSbtcId = sbtcContractId?.toLowerCase();
     
-    console.log(`Fetching balances for ${address} on ${currentNetwork}:`, apiUrl);
-    
     fetch(apiUrl)
       .then(res => {
         if (!res.ok) {
@@ -201,8 +199,6 @@ export default function WalletPage() {
         }
 
         const tokens = (data?.fungible_tokens || {}) as Record<string, FungibleTokenData>;
-        console.log('All fungible tokens:', tokens);
-        console.log('Available token keys:', Object.keys(tokens));
 
         Object.entries(tokens).forEach(([key, tokenData]) => {
           const decimals = typeof tokenData?.token?.decimals === 'number' ? tokenData.token.decimals : 0;
@@ -239,10 +235,6 @@ export default function WalletPage() {
         });
 
         const sbtcTokenBalance = detectedSbtcBalance ?? '0';
-        if (!detectedSbtcBalance) {
-          console.warn('No sBTC token found in wallet balances response');
-        }
-
         const stxOnlyAssets = parsedAssets.filter((asset) => asset.symbol === 'STX');
 
         setAssets(stxOnlyAssets);
@@ -536,27 +528,37 @@ export default function WalletPage() {
         </div>
         <div className="mt-4 rounded-xl border border-border bg-card/40">
 
-      {btcAddress && (
+      {(btcAddress || btcAddressLoading || btcAddressError) && (
         <div className="mt-8 w-full">
           <div className="flex items-center gap-2 mb-3">
             <Image src="/logos/bitcoin.svg" alt="Bitcoin" width={28} height={28} />
             <h2 className="text-lg font-semibold">Bitcoin L1</h2>
           </div>
           <div className="rounded-xl border border-border bg-card/40 p-4 flex flex-col gap-3">
-            <code className="font-mono text-sm break-all">{btcAddress}</code>
-            <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground">
-              <span>SegWit bech32 address paired with this Stacks account.</span>
-              <button
-                type="button"
-                className="text-primary hover:text-primary/80 font-medium cursor-pointer"
-                onClick={() => {
-                  navigator.clipboard.writeText(btcAddress);
-                  toast.success('Bitcoin address copied');
-                }}
-              >
-                Copy address
-              </button>
-            </div>
+            {btcAddressLoading ? (
+              <div className="flex justify-center py-4">
+                <LoaderCircle className="animate-spin text-foreground" size={24} />
+              </div>
+            ) : btcAddressError ? (
+              <div className="text-sm text-muted-foreground">{btcAddressError}</div>
+            ) : btcAddress ? (
+              <>
+                <code className="font-mono text-sm break-all">{btcAddress}</code>
+                <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground">
+                  <span>SegWit bech32 address paired with this Stacks account.</span>
+                  <button
+                    type="button"
+                    className="text-primary hover:text-primary/80 font-medium cursor-pointer"
+                    onClick={() => {
+                      navigator.clipboard.writeText(btcAddress);
+                      toast.success('Bitcoin address copied');
+                    }}
+                  >
+                    Copy address
+                  </button>
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
       )}

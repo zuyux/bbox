@@ -188,28 +188,28 @@ export default function PublishPage() {
   }, []);
 
   const [formData, setFormData] = useState<AppFormData>({
-    name: 'BBOX',
-    description: 'A decentralized app directory and funding layer for Bitcoin and its Layer-2 ecosystems (Stacks, Lightning, Runes, etc.). BBOX helps users discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and smart contracts.',
-    category: 'Infrastructure',
-    tags: ['bitcoin', 'stacks', 'directory', 'funding', 'open-source', 'dao'],
+    name: '',
+    description: '',
+    category: '',
+    tags: [],
     icon_cid: '',
-    version: '0.2.0',
-    website_url: 'https://bbox.lol',
-    github_url: 'https://github.com/zuyux/bbox',
-    documentation_url: 'https://github.com/zuyux/bbox#readme',
-    platforms: ['Web Application'],
-    supported_networks: ['Bitcoin', 'Stacks', 'Lightning Network'],
-    license: 'MIT',
-    pricing_model: 'free',
-    price_usd: 0, 
-    accepts_lightning: true,
-    lightning_address: 'zuyux@getalby.com',
+    version: '',
+    website_url: '',
+    github_url: '',
+    documentation_url: '',
+    platforms: [],
+    supported_networks: [],
+    license: '',
+    pricing_model: '',
+    price_usd: 0,
+    accepts_lightning: false,
+    lightning_address: '',
     privacy_policy_url: '',
     terms_of_service_url: '',
-    data_collection_summary: 'BBOX collects minimal data: wallet addresses for authentication, IPFS metadata for app listings, and on-chain transaction data for funding milestones. No personal information is required.',
-    open_source: true,
-    publisher_name: 'Zuyux DAO',
-    publisher_email: 'hello@zuyux.xyz'
+    data_collection_summary: '',
+    open_source: false,
+    publisher_name: '',
+    publisher_email: ''
   });
 
   const clearSignatureState = () => {
@@ -436,7 +436,6 @@ export default function PublishPage() {
         throw new Error(submitData.error || 'Failed to submit app to database');
       }
 
-      console.log('✅ App submitted to database:', submitData.app.id);
 
       // Step 2: Send confirmation emails
       setSubmitStatus('email');
@@ -471,7 +470,6 @@ export default function PublishPage() {
       if (!emailResponse.ok) {
         console.error('⚠️ Failed to send emails, but app was submitted successfully');
       } else {
-        console.log('✅ Confirmation emails sent');
       }
 
       // Step 3: Success! Redirect to success page
@@ -816,16 +814,18 @@ export default function PublishPage() {
                     Upload a square image (PNG, JPG, GIF, or WebP) under 10MB to host on IPFS.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 items-start">
-                    <div className="relative h-20 w-20 rounded-lg border border-dashed flex items-center justify-center bg-muted overflow-hidden">
+                    <div className="relative flex h-20 w-20 items-center justify-center rounded-lg border border-dashed bg-muted">
                       {formData.icon_cid ? (
-                        <Image
-                          src={getIPFSUrl(formData.icon_cid)}
-                          alt="App icon preview"
-                          fill
-                          sizes="80px"
-                          className="object-cover"
-                          unoptimized
-                        />
+                        <div className="absolute inset-1 rounded-md overflow-hidden bg-background">
+                          <Image
+                            src={getIPFSUrl(formData.icon_cid)}
+                            alt="App icon preview"
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
                       ) : (
                         <ImageIcon className="h-6 w-6 text-muted-foreground" />
                       )}

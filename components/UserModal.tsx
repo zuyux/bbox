@@ -18,34 +18,13 @@ interface UserModalProps {
 }
 
 export default function UserModal({ onClose }: UserModalProps) {
-  const { address, walletType, setAddress, setWalletType } = useWallet();
+  const { address, setAddress, setWalletType } = useWallet();
   const [sbtcBalance, setSbtcBalance] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [usernameLoader, setUsernameLoader] = useState<boolean>(false);
   const router = useRouter();
   const currentAddress = address;
   const modalRef = useRef<HTMLDivElement>(null);
-  const logSessionSnapshot = (eventLabel: string) => {
-    if (typeof window === 'undefined') return;
-    console.log(`[UserModal] ${eventLabel}`, {
-      contextAddress: address,
-      contextWalletType: walletType,
-      storedWalletAddress: localStorage.getItem('walletAddress'),
-      storedWalletType: localStorage.getItem('walletType'),
-      storedSession: localStorage.getItem('bbox_session')
-    });
-  };
-
-  useEffect(() => {
-    logSessionSnapshot('Mounted with session snapshot');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    logSessionSnapshot('Wallet context updated');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, walletType]);
-
   // Close on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -83,16 +62,11 @@ export default function UserModal({ onClose }: UserModalProps) {
     
     const fetchBalance = async () => {
       try {
-        console.log(`Fetching SBTC balance for ${currentAddress} on ${network}:`, apiUrl);
         const res = await fetch(apiUrl, { method: "GET" });
         const data = await res.json();
         
         // Look for SBTC token in fungible_tokens
         let sbtcTokenBalance = '0';
-        
-        // Debug: Log all available tokens
-        console.log('UserModal - All fungible tokens:', data.fungible_tokens);
-        console.log('UserModal - Available token keys:', Object.keys(data.fungible_tokens || {}));
         
         // The network-aware sBTC token identifier
         const sbtcTokenKey = getSBTCContract();
@@ -111,17 +85,12 @@ export default function UserModal({ onClose }: UserModalProps) {
           );
           
           if (sbtcKey) {
-            console.log('UserModal - Found potential sBTC token with key:', sbtcKey);
             const balance = data.fungible_tokens[sbtcKey].balance;
             sbtcTokenBalance = Number(balance).toLocaleString();
           } else {
-            console.log('UserModal - No sBTC token found in wallet');
+            // No sBTC token found; fall through with zero balance
           }
         }
-        
-        console.log('UserModal - SBTC Balance data:', data.fungible_tokens);
-        console.log('UserModal - SBTC Balance:', sbtcTokenBalance);
-        
         setSbtcBalance(sbtcTokenBalance);
       } catch (error) {
         console.error('Failed to fetch SBTC balance:', error);

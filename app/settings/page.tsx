@@ -84,12 +84,9 @@ export default function SettingsPage() {
     
     const loadData = async () => {
       try {
-        console.log('Loading profile data for address:', address);
-        
         // Load profile
         const profile = await getProfile(address);
         if (profile) {
-          console.log('Profile loaded, setting form fields...');
           setUsername(profile.username || '');
           setEmail(profile.email || '');
           setDisplayName(profile.display_name || '');
@@ -122,15 +119,11 @@ export default function SettingsPage() {
           setEmailNotifications(profile.email_notifications ?? true);
           setPushNotifications(profile.push_notifications ?? true);
           setMarketingEmails(profile.marketing_emails ?? false);
-        } else {
-          console.log('No existing profile found, using defaults');
         }
-        
+
         // Load skill categories
-        console.log('Loading skill categories...');
         const categories = await getSkillCategories();
         setSkillCategories(categories || []);
-        console.log('Skill categories loaded:', categories?.length || 0);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
         console.error('Error loading profile data:', {

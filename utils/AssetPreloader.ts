@@ -92,21 +92,17 @@ export class AssetPreloader {
         loadedCount++;
         onAssetLoaded?.(asset);
         onProgress?.(loadedCount, total);
-        
-        console.log(`✓ Loaded: ${asset}`);
       } catch (error) {
         loadedCount++;
         const errorObj = error instanceof Error ? error : new Error(String(error));
         onAssetError?.(asset, errorObj);
         onProgress?.(loadedCount, total);
         
-        console.warn(`✗ Failed to load: ${asset}`, errorObj);
         // Continue with other assets even if one fails
       }
     });
 
     await Promise.all(promises);
-    console.log(`Asset preloading completed: ${loadedCount}/${total} assets processed`);
   }
 
   /**
@@ -177,9 +173,7 @@ export class AssetPreloader {
       this.preloadAssets(secondaryAssets, {
         ...preloadOptions,
         timeout: 5000 // Shorter timeout for secondary assets
-      }).catch(() => {
-        console.log('Secondary assets loading completed with some failures');
-      });
+      }).catch(() => undefined);
     }
   }
 }

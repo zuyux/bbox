@@ -194,7 +194,6 @@ export default function FundingDashboardPage() {
     setApprovingId(app.contractAppId);
     try {
       await approveAppOnChain(app.contractAppId, () => {
-        console.log('Approve-app tx broadcast');
         fetchApps();
       });
     } catch (err) {
@@ -217,7 +216,6 @@ export default function FundingDashboardPage() {
     setVotingId(app.contractAppId);
     try {
       await voteOnApp(app.contractAppId, 'upvote', () => {
-        console.log('Vote tx broadcast');
       });
     } catch (err) {
       console.error('Vote failed', err);
@@ -250,7 +248,6 @@ export default function FundingDashboardPage() {
         recipientAddress: app.publisherAddress,
         memo: donationNotes[app.id]?.trim() || `bbox-funding-${app.contractAppId ?? app.id}`,
         onFinish: () => {
-          console.log('Donation tx broadcast');
         },
       });
     } catch (err) {

@@ -11,7 +11,6 @@ export default function GlobalErrorHandler() {
           errorMessage.includes('user cancelled') ||
           errorMessage.includes('JsonRpcError: User canceled the request')) {
         
-        console.log('Wallet connection canceled by user - suppressing error');
         event.preventDefault();
         return;
       }
@@ -25,7 +24,6 @@ export default function GlobalErrorHandler() {
           errorMessage.includes('user cancelled') ||
           errorMessage.includes('JsonRpcError: User canceled the request')) {
         
-        console.log('Wallet connection promise rejected by user - suppressing error');
         event.preventDefault();
         return;
       }

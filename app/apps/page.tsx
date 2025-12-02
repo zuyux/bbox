@@ -17,7 +17,8 @@ import {
   Zap, 
   Coins, 
   Code, 
-  Globe
+  Globe,
+  ArrowRight
 } from 'lucide-react';
 import { getAppsByCategory, getCategoryStats, searchApps } from '@/lib/appsUtils';
 
@@ -189,7 +190,7 @@ export default function AppsPage() {
                 
                 {/* App Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="flex items-stretch justify-between gap-2 mb-1">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-base sm:text-lg break-words line-clamp-1">{app.name}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2 break-words mb-2">
@@ -198,9 +199,9 @@ export default function AppsPage() {
                     </div>
                     <Button 
                       size="sm" 
-                      className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md px-6 flex-shrink-0 cursor-pointer"
+                      className="bg-green-500 hover:bg-green-600 text-white rounded-md px-3 flex-shrink-0 cursor-pointer self-stretch flex items-center justify-center"
                     >
-                      GET
+                      <ArrowRight className="w-4 h-4" />
                     </Button>
                   </div>
                   

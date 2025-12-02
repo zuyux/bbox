@@ -101,7 +101,6 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
         // Try to restore active session without passphrase
         const restoredWallet = tryRestoreSession();
         if (restoredWallet && isSessionActive()) {
-          console.log('Restored encrypted wallet session:', { address: restoredWallet.address });
           setCurrentWallet(restoredWallet);
           setIsAuthenticated(true);
           setIsSessionLocked(false);
@@ -177,8 +176,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
   const extendSessionHandler = useCallback(() => {
     if (isAuthenticated && currentWallet) {
       // Update last accessed time by extending session
-      const result = libExtendSession();
-      console.log('Session extension result:', result);
+      libExtendSession();
     }
   }, [isAuthenticated, currentWallet]);
 
@@ -189,7 +187,6 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
     const interval = setInterval(() => {
       const expired = autoLockIfExpired();
       if (expired) {
-        console.log('Session expired, locking wallet');
         setIsSessionLocked(true);
         setIsAuthenticated(false);
         setCurrentWallet(null);

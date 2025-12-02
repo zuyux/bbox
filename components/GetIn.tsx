@@ -51,7 +51,6 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
         try {
           const session = localStorage.getItem('bbox_session');
           const hasSession = !!session;
-          console.log('Session check after cleanup:', hasSession, session); // Debug log
           setIsSessionLoggedIn(hasSession);
         } catch {
           setIsSessionLoggedIn(false);
@@ -104,7 +103,6 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   // Just show fallback icon on error
-                  console.log('IPFS image failed to load, showing fallback icon');
                   e.currentTarget.style.display = 'none';
                   const parent = e.currentTarget.parentElement;
                   if (parent) {
