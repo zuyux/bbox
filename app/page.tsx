@@ -1,17 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Shield, ArrowRight, Star, Download } from 'lucide-react';
-import { getFeaturedApps, getCategoryStats, getAppStats, BitcoinApp } from '@/lib/appsUtils';
-
-// Get featured apps using the utility function
-const featuredApps = getFeaturedApps(8);
+import { Card, CardContent } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ArrowRight } from 'lucide-react';
+import { allApps, getCategoryStats, getAppStats } from '@/lib/appsUtils';
 
 // Calculate actual categories from the data
 const calculateCategories = () => {
@@ -45,60 +42,17 @@ const categories = calculateCategories();
 const appStats = getAppStats();
 const duplicatedCategories = [...categories, ...categories];
 
-function AppCard({ app }: { app: BitcoinApp }) {
-  return (
-    <Card className="flex flex-col h-full hover:shadow-lg transition-shadow cursor-pointer">
-      <CardHeader className="pb-3 flex-shrink-0">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <CardTitle className="text-lg">{app.name}</CardTitle>
-              {app.verified && (
-                <Badge variant="secondary" className="text-xs">
-                  <Shield className="w-3 h-3 mr-1" />
-                  Verified
-                </Badge>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
-              {app.description}
-            </p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0 flex-1 flex flex-col">
-        <div className="flex-1 min-h-[60px]">
-          <div className="flex flex-wrap gap-1 mb-3">
-            {app.tags.slice(0, 3).map(tag => (
-              <Badge key={tag} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center justify-between text-sm text-muted-foreground pt-3 border-t">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <Download className="w-4 h-4" />
-              <span className="text-xs">{app.downloads}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span className="text-xs">{app.rating}</span>
-            </div>
-          </div>
-          <Button size="sm" variant="outline" asChild>
-            <Link href={`/apps/${app.id}`}>
-              View App
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function HomePage() {
+  const INITIAL_VISIBLE = 24;
+  const LOAD_STEP = 24;
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const visibleApps = allApps.slice(0, visibleCount);
+  const canLoadMore = visibleCount < allApps.length;
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => Math.min(prev + LOAD_STEP, allApps.length));
+  };
+
   return (
     <div className="bg-background l-dotted-grid-background min-h-screen">
       <Navbar />
@@ -172,11 +126,45 @@ export default function HomePage() {
               </Link>
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredApps.map(app => (
-              <AppCard key={app.id} app={app} />
-            ))}
-          </div>
+          <TooltipProvider delayDuration={150}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {visibleApps.map(app => (
+                <Tooltip key={app.id}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={`/apps/${app.id}`}
+                      aria-label={`View ${app.name}`}
+                      className="flex items-center justify-center"
+                    >
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-transparent transition-transform duration-200 hover:scale-105">
+                        <Image
+                          src={app.imgUrl}
+                          alt={`${app.name} logo`}
+                          width={112}
+                          height={112}
+                          loading="lazy"
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" sideOffset={8} className="bg-background text-foreground max-w-xs text-center border-1 border-foreground/20">
+                    <p className="font-semibold text-sm leading-tight">{app.name}</p>
+                    <p className="text-xs text-foreground leading-snug mt-1">
+                      {app.description}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          </TooltipProvider>
+          {canLoadMore && (
+            <div className="flex justify-center mt-6">
+              <Button variant="outline" onClick={handleLoadMore} className='cursor-pointer'>
+                Load More
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Stats Section */}

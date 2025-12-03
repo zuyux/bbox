@@ -18,8 +18,9 @@ export const Navbar = () => {
           <div className="grid grid-cols-3 items-center">
             {/* Left: Logo */}
             <div className="flex justify-start">
-              <Link href="/">
+              <Link href="/" className="flex items-center gap-2">
                 <Image src="/bbox.png" alt="bbox Logo" width={27} height={27} className="-mt-4 object-contain"/>
+                <span className="title text-3xl -mt-3 ml-1">BBOX</span>
               </Link>
             </div>
             
@@ -30,7 +31,7 @@ export const Navbar = () => {
                 <input
                   type="text"
                   placeholder="SEARCH APPS..."
-                  className="title-chakra-light w-full pl-10 pr-4 py-2 bg-background/50 border border-foreground/10 rounded-md text-xs text-foreground/20 placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all mobile-hide-placeholder"
+                  className="title-jersey-light w-full pl-10 pr-4 py-2 bg-background/50 border border-foreground/10 rounded-md text-xs text-foreground/20 placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all mobile-hide-placeholder"
                   onClick={() => setSearchOpen(true)}
                   readOnly
                 />

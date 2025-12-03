@@ -61,7 +61,7 @@
   --card-foreground: oklch(0.09 0.005 264.52);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.09 0.005 264.52);
-  --primary: oklch(0.41 0.196 264.52);
+  --primary: oklch(0.75 0.2 55);
   --primary-foreground: oklch(0.98 0.002 264.52);
   --secondary: oklch(0.96 0.006 264.52);
   --secondary-foreground: oklch(0.15 0.006 264.52);
@@ -73,7 +73,7 @@
   --destructive-foreground: oklch(0.98 0.013 264.52);
   --border: oklch(0.92 0.005 264.52);
   --input: oklch(0.92 0.005 264.52);
-  --ring: oklch(0.41 0.196 264.52);
+  --ring: oklch(0.75 0.2 55);
   
   /* Chart colors - accessible and harmonious */
   --chart-1: oklch(0.55 0.15 264.52);
@@ -85,12 +85,12 @@
   /* Sidebar colors */
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.09 0.005 264.52);
-  --sidebar-primary: oklch(0.41 0.196 264.52);
+  --sidebar-primary: oklch(0.75 0.2 55);
   --sidebar-primary-foreground: oklch(0.98 0.002 264.52);
   --sidebar-accent: oklch(0.96 0.006 264.52);
   --sidebar-accent-foreground: oklch(0.15 0.006 264.52);
   --sidebar-border: oklch(0.92 0.005 264.52);
-  --sidebar-ring: oklch(0.41 0.196 264.52);
+  --sidebar-ring: oklch(0.75 0.2 55);
   
   /* Custom app colors */
   --surface-primary: oklch(1 0 0);
@@ -104,7 +104,7 @@
   
   /* Fonts */
   --font-work-sans: 'Work Sans', sans-serif;
-  --font-chakra-petch: 'Chakra Petch', sans-serif;
+  --font-jersey-10: 'Jersey 10', cursive;
   --font-lacquer: 'Lacquer', cursive;
 }
 
@@ -116,7 +116,7 @@
   --card-foreground: oklch(0.98 0.002 264.52);
   --popover: oklch(0.12 0.006 264.52);
   --popover-foreground: oklch(0.98 0.002 264.52);
-  --primary: oklch(0.70 0.14 264.52);
+  --primary: oklch(0.68 0.18 55);
   --primary-foreground: oklch(0.09 0.005 264.52);
   --secondary: oklch(0.16 0.006 264.52);
   --secondary-foreground: oklch(0.98 0.002 264.52);
@@ -128,7 +128,7 @@
   --destructive-foreground: oklch(0.98 0.013 264.52);
   --border: oklch(0.18 0.006 264.52);
   --input: oklch(0.18 0.006 264.52);
-  --ring: oklch(0.70 0.14 264.52);
+  --ring: oklch(0.68 0.18 55);
   
   /* Chart colors - accessible dark variants */
   --chart-1: oklch(0.65 0.15 264.52);
@@ -140,12 +140,12 @@
   /* Sidebar colors */
   --sidebar: oklch(0.12 0.006 264.52);
   --sidebar-foreground: oklch(0.98 0.002 264.52);
-  --sidebar-primary: oklch(0.70 0.14 264.52);
+  --sidebar-primary: oklch(0.68 0.18 55);
   --sidebar-primary-foreground: oklch(0.09 0.005 264.52);
   --sidebar-accent: oklch(0.16 0.006 264.52);
   --sidebar-accent-foreground: oklch(0.98 0.002 264.52);
   --sidebar-border: oklch(0.18 0.006 264.52);
-  --sidebar-ring: oklch(0.70 0.14 264.52);
+  --sidebar-ring: oklch(0.68 0.18 55);
   
   /* Custom app colors for dark theme */
   --surface-primary: oklch(0.09 0.005 264.52);
@@ -187,15 +187,15 @@ html, body {
   }
 }
 
-/* Apply Chakra Petch to specific titles */
+/* Apply Jersey 10 to specific titles */
 .title {
-  font-family: var(--font-chakra-petch);
+  font-family: var(--font-jersey-10);
   font-weight: 700;
   letter-spacing: 0.05em;
 }
 
-.title-chakra-light {
-  font-family: var(--font-chakra-petch);
+.title-jersey-light {
+  font-family: var(--font-jersey-10);
   font-weight: 300;
   letter-spacing: 0.04em;
 }

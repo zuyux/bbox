@@ -115,9 +115,6 @@ export class AssetPreloader {
       '/LOGO.png',
       '/loader.gif',
       '/loaderb.gif',
-      // Add fonts if they're critical
-      '/fonts/ChakraPetch-Regular.woff2',
-      '/fonts/ChakraPetch-Bold.woff2',
     ];
   }
 

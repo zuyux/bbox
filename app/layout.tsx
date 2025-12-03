@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Chakra_Petch, Lacquer } from "next/font/google";
+import { Inter, Jersey_10, Lacquer } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { GetInButton } from "@/components/GetIn";
 import Footer from "@/components/Footer";
@@ -24,10 +24,10 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const chakraPetch = Chakra_Petch({
-  variable: "--font-chakra-petch",
+const jersey10 = Jersey_10({
+  variable: "--font-jersey-10",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400"],
 });
 
 const lacquer = Lacquer({
@@ -66,7 +66,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${chakraPetch.variable} ${lacquer.variable} antialiased`}>
+      <body className={`${inter.variable} ${jersey10.variable} ${lacquer.variable} antialiased`}>
         <GlobalErrorHandler />
         <WalletProvider>
           <Providers>

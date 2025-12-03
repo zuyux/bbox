@@ -103,7 +103,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
     
     switch (activeTab) {
       case 'apps':
-        searchApps(query);
+        handleSearchApps(query);
         break;
       case 'developers':
         searchDevelopers(query);
@@ -120,7 +120,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
     
     switch (tabId) {
       case 'apps':
-        searchApps(searchQuery);
+        handleSearchApps(searchQuery);
         break;
       case 'developers':
         searchDevelopers(searchQuery);
@@ -236,8 +236,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                         className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 cursor-pointer group transition-all duration-200"
                         onClick={onClose}
                       >
-                        <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-yellow-500 rounded flex-shrink-0 flex items-center justify-center">
-                          <Code size={16} className="text-foreground" />
+                        <div className="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden bg-foreground/10">
+                          {app.imgUrl ? (
+                            <SafariOptimizedImage
+                              src={app.imgUrl}
+                              alt={`${app.name} logo`}
+                              width={40}
+                              height={40}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-500 to-yellow-500">
+                              <Code size={16} className="text-background" />
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">

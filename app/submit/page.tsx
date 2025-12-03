@@ -718,7 +718,6 @@ export default function PublishPage() {
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
                       placeholder="Bitcoin Wallet"
-                      className='bg-background text-foreground'
                       required
                     />
                   </div>
@@ -729,7 +728,6 @@ export default function PublishPage() {
                       value={formData.version}
                       onChange={(e) => handleInputChange('version', e.target.value)}
                       placeholder="1.0.0"
-                      className='bg-background text-foreground'
                     />
                   </div>
                 </div>
@@ -746,7 +744,6 @@ export default function PublishPage() {
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     placeholder="A secure, self-custodial Bitcoin wallet with Lightning Network support..."
-                    className='bg-background text-foreground'
                     rows={4}
                     required
                   />
@@ -780,7 +777,6 @@ export default function PublishPage() {
                       value={newTag}
                       onChange={(e) => setNewTag(e.target.value)}
                       placeholder="Add a tag..."
-                      className='bg-background text-foreground'
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                     />
                     <Button type="button" onClick={addTag} size="sm">
@@ -837,7 +833,7 @@ export default function PublishPage() {
                         accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
                         onChange={handleIconUpload}
                         disabled={iconUploadStatus === 'uploading' || isSubmitting}
-                        className='bg-background text-foreground cursor-pointer'
+                        className='cursor-pointer'
                       />
                       {iconUploadStatus === 'uploading' && (
                         <p className="text-xs text-muted-foreground flex items-center gap-2">
@@ -876,7 +872,7 @@ export default function PublishPage() {
                       value={formData.website_url}
                       onChange={(e) => handleInputChange('website_url', e.target.value)}
                       placeholder="https://your-app.com"
-                      className='bg-background text-foreground pl-10'
+                      className='pl-10'
                     />
                   </div>
                 </div>
@@ -891,7 +887,7 @@ export default function PublishPage() {
                       value={formData.github_url}
                       onChange={(e) => handleInputChange('github_url', e.target.value)}
                       placeholder="https://github.com/username/repo"
-                      className='bg-background text-foreground pl-10'
+                      className='pl-10'
                     />
                   </div>
                 </div>
@@ -906,7 +902,7 @@ export default function PublishPage() {
                       value={formData.documentation_url}
                       onChange={(e) => handleInputChange('documentation_url', e.target.value)}
                       placeholder="https://docs.your-app.com"
-                      className='bg-background text-foreground pl-10'
+                      className='pl-10'
                     />
                   </div>
                 </div>
@@ -928,6 +924,7 @@ export default function PublishPage() {
                           id={platform}
                           checked={formData.platforms.includes(platform)}
                           onCheckedChange={() => handleArrayToggle('platforms', platform)}
+                          className="cursor-pointer bg-foreground/50"
                         />
                         <Label htmlFor={platform} className="text-sm">
                           {platform}
@@ -946,6 +943,7 @@ export default function PublishPage() {
                           id={network}
                           checked={formData.supported_networks.includes(network)}
                           onCheckedChange={() => handleArrayToggle('supported_networks', network)}
+                          className="cursor-pointer bg-foreground/50"
                         />
                         <Label htmlFor={network} className="text-sm">
                           {network}
@@ -1005,7 +1003,6 @@ export default function PublishPage() {
                       value={formData.price_usd}
                       onChange={(e) => handleInputChange('price_usd', parseFloat(e.target.value))}
                       placeholder="9.99"
-                      className='bg-background text-foreground'
                     />
                   </div>
                 )}
@@ -1015,6 +1012,7 @@ export default function PublishPage() {
                     id="accepts_lightning"
                     checked={formData.accepts_lightning}
                     onCheckedChange={(checked) => handleInputChange('accepts_lightning', checked)}
+                    className="cursor-pointer bg-foreground/50"
                   />
                   <Label htmlFor="accepts_lightning" className="flex items-center gap-2">
                     <Zap className="w-4 h-4" />
@@ -1030,7 +1028,6 @@ export default function PublishPage() {
                       value={formData.lightning_address}
                       onChange={(e) => handleInputChange('lightning_address', e.target.value)}
                       placeholder="you@getalby.com"
-                      className='bg-background text-foreground'
                     />
                   </div>
                 )}
@@ -1051,7 +1048,6 @@ export default function PublishPage() {
                       value={formData.publisher_name}
                       onChange={(e) => handleInputChange('publisher_name', e.target.value)}
                       placeholder="Your Name or Company"
-                      className='bg-background text-foreground'
                     />
                   </div>
                   <div>
@@ -1062,7 +1058,6 @@ export default function PublishPage() {
                       value={formData.publisher_email}
                       onChange={(e) => handleInputChange('publisher_email', e.target.value)}
                       placeholder="contact@yourapp.com"
-                      className='bg-background text-foreground'
                     />
                   </div>
                 </div>
@@ -1072,7 +1067,6 @@ export default function PublishPage() {
                   <Input
                     value={currentAddress}
                     disabled
-                    className="bg-muted"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     This address will be used to verify ownership of the app.
@@ -1092,6 +1086,7 @@ export default function PublishPage() {
                     id="open_source"
                     checked={formData.open_source}
                     onCheckedChange={(checked) => handleInputChange('open_source', checked)}
+                    className="cursor-pointer bg-foreground/50"
                   />
                   <Label htmlFor="open_source">
                     This is an open-source project
@@ -1118,7 +1113,6 @@ export default function PublishPage() {
                       value={formData.privacy_policy_url}
                       onChange={(e) => handleInputChange('privacy_policy_url', e.target.value)}
                       placeholder="https://yourapp.com/privacy"
-                      className='bg-background text-foreground'
                     />
                   </div>
                   <div>
@@ -1129,7 +1123,6 @@ export default function PublishPage() {
                       value={formData.terms_of_service_url}
                       onChange={(e) => handleInputChange('terms_of_service_url', e.target.value)}
                       placeholder="https://yourapp.com/terms"
-                      className='bg-background text-foreground'
                     />
                   </div>
                 </div>
@@ -1185,7 +1178,7 @@ export default function PublishPage() {
             <div className="flex justify-end gap-4">
               <Button
                 type="submit"
-                className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 cursor-pointer"
+                className="w-full py-6 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 cursor-pointer"
                 disabled={isSubmitting || !currentAddress || iconUploadStatus === 'uploading' || signatureStatus === 'signing'}
               >
                 {isSubmitting ? (

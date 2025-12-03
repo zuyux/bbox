@@ -82,7 +82,7 @@ export const emailTemplates = {
   waitlistWelcome: (email: string) => ({
     subject: "Welcome to the BBOX Waitlist!",
     html: `
-      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:Chakra Petch,sans-serif;text-align:center;max-width:480px;margin:auto;">
+      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:'Jersey 10',cursive;text-align:center;max-width:480px;margin:auto;">
         <h1 style="font-size:2rem;font-weight:700;margin-bottom:12px;letter-spacing:1px;">Welcome to the BBOX Waitlist!</h1>
         <p style="font-size:1.1rem;margin-bottom:18px;">Hey <b>${email}</b>,</p>
         <p style="font-size:1rem;margin-bottom:18px;">We're excited to have you join the revolution in Bitcoin applications and digital innovation.<br />
@@ -104,7 +104,7 @@ export const emailTemplates = {
   }) => ({
     subject: "BBOX Account Created Successfully",
     html: `
-      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:Chakra Petch,sans-serif;max-width:600px;margin:auto;">
+      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:'Jersey 10',cursive;max-width:600px;margin:auto;">
         <h2 style="color:#ff006a;margin-bottom:20px;">Welcome to BBOX!</h2>
         <p>Your account has been created successfully.</p>
         <p><strong>Address:</strong> <code style="background:#333;padding:4px 8px;border-radius:4px;color:#fff;">${address}</code></p>

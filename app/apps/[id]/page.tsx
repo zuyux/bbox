@@ -11,10 +11,6 @@ import {
   Star, 
   Download, 
   ArrowLeft,
-  Smartphone,
-  Monitor,
-  Globe,
-  Lock,
   ArrowRight
 } from 'lucide-react';
 import { allApps } from '@/lib/appsUtils';
@@ -132,57 +128,6 @@ export default function AppDetailPage() {
               </Badge>
             ))}
           </div>
-        </div>
-
-        {/* Screenshots */}
-        <div className="mb-6">
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin">
-            <div className="w-56 sm:w-64 h-40 sm:h-48 bg-muted rounded-xl flex items-center justify-center flex-shrink-0 border">
-              <Smartphone className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="w-56 sm:w-64 h-40 sm:h-48 bg-muted rounded-xl flex items-center justify-center flex-shrink-0 border">
-              <Monitor className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="w-56 sm:w-64 h-40 sm:h-48 bg-muted rounded-xl flex items-center justify-center flex-shrink-0 border">
-              <Globe className="w-10 h-10 text-muted-foreground" />
-            </div>
-          </div>
-        </div>
-
-        {/* Description Section */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-3">
-            The Bitcoin.com Wallet: Your Self-Custody Bitcoin & Crypto DeFi Wallet
-          </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-            The most secure, easy-to-use multichain crypto wallet that gives you full control of your assets.
-          </p>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-            Buy, sell, send, receive, and swap major cryptocurrencies:
-          </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Bitcoin (BTC), Bitcoin Cash (BCH), Ethereum (ETH), Avalanche (AVAX), Polygon (MATIC), BNB Smart...
-          </p>
-          <Button variant="link" className="p-0 h-auto text-sm text-blue-500 hover:text-blue-600">
-            more
-          </Button>
-        </div>
-
-        {/* App Privacy Section */}
-        <div className="mb-6 pb-6 border-b">
-          <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-            <Lock className="w-4 h-4" />
-            App Privacy
-          </h3>
-          <div className="space-y-1.5 text-sm text-muted-foreground">
-            <p>• No data is sent outside the network</p>
-            <p>• Data exchange does not depend on external servers</p>
-            <p>• Open-source Bitcoin application</p>
-          </div>
-          <Button variant="link" className="p-0 h-auto mt-2 text-sm text-blue-500 hover:text-blue-600">
-            See Details
-            <ArrowRight className="ml-1 h-3 w-3" />
-          </Button>
         </div>
 
         {/* Ratings & Reviews */}
