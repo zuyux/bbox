@@ -34,89 +34,84 @@ function ProfileDisplay({ profile, isOwnProfile }: {
   isOwnProfile: boolean;
 }) {
   return (
-    <div className="mx-auto max-w-4xl bg-background/95 p-4 mt-16 md:p-6 rounded-lg border border-border">
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-        <div className="flex-shrink-0">
-          <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center overflow-hidden">
-            {profile?.avatar_cid ? (
-              <SafariOptimizedImage
-                src={getIPFSUrl(profile.avatar_cid)}
-                alt={profile.display_name || profile.username || 'Profile'}
-                width={128}
-                height={128}
-                className="w-full h-full object-cover"
-                filename="user-avatar.jpg"
-              />
-            ) : profile?.avatar_url ? (
-              <Image
-                src={profile.avatar_url}
-                alt={profile.display_name || profile.username || 'Profile'}
-                width={128}
-                height={128}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User size={48} className="text-white" />
-            )}
-          </div>
+    <div className="mx-auto max-w-4xl bg-background/95 p-6 mt-16 md:p-10 rounded-2xl border border-border text-center">
+      <div className="flex flex-col items-center gap-6">
+        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center overflow-hidden">
+          {profile?.avatar_cid ? (
+            <SafariOptimizedImage
+              src={getIPFSUrl(profile.avatar_cid)}
+              alt={profile.display_name || profile.username || 'Profile'}
+              width={128}
+              height={128}
+              className="w-full h-full object-cover"
+              filename="user-avatar.jpg"
+            />
+          ) : profile?.avatar_url ? (
+            <Image
+              src={profile.avatar_url}
+              alt={profile.display_name || profile.username || 'Profile'}
+              width={128}
+              height={128}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <User size={48} className="text-white" />
+          )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-            <h1 className="text-xl md:text-2xl font-bold text-foreground truncate">
-              {profile?.display_name || profile?.username || 'anon'}
-            </h1>
-            {isOwnProfile && (
-              <Link
-                href="/settings"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border-border text-foreground rounded-md transition-colors"
-              >
-                <Pen size={14} />
-              </Link>
-            )}
-          </div>
-
+        <div className="flex flex-col items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            {profile?.display_name || profile?.username || 'anon'}
+          </h1>
           {profile?.username && (
-            <p className="text-muted-foreground mb-3">@{profile.username}</p>
+            <p className="text-muted-foreground">@{profile.username}</p>
           )}
-
           {profile?.tagline && (
-            <p className="text-foreground/80 mb-4">{profile.tagline}</p>
+            <p className="text-foreground/80 max-w-2xl">{profile.tagline}</p>
           )}
+          {isOwnProfile && (
+            <Link
+              href="/settings"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-border text-foreground rounded-full transition-colors hover:bg-accent"
+            >
+              <Pen size={14} />
+              Edit Profile
+            </Link>
+          )}
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-muted-foreground">
-            {profile?.location && (
-              <div className="flex items-center gap-2">
-                <MapPin size={16} />
-                <span>{profile.location}</span>
-              </div>
-            )}
-            {profile?.occupation && (
-              <div className="flex items-center gap-2">
-                <Briefcase size={16} />
-                <span>{profile.occupation}</span>
-              </div>
-            )}
-            {profile?.website && (
-              <div className="flex items-center gap-2">
-                <Globe size={16} />
-                <a 
-                  href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline truncate"
-                >
-                  {profile.website.replace(/^https?:\/\//, '')}
-                </a>
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <Calendar size={16} />
-              <span>Joined {new Date(profile?.created_at || '').toLocaleDateString('en-US', { 
-                month: 'long', 
-                year: 'numeric' 
-              })}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-1 gap-3 w-full text-sm text-muted-foreground">
+          {profile?.location && (
+            <div className="flex items-center justify-center gap-2">
+              <MapPin size={16} />
+              <span>{profile.location}</span>
             </div>
+          )}
+          {profile?.occupation && (
+            <div className="flex items-center justify-center gap-2">
+              <Briefcase size={16} />
+              <span>{profile.occupation}</span>
+            </div>
+          )}
+          {profile?.website && (
+            <div className="flex items-center justify-center gap-2">
+              <Globe size={16} />
+              <a 
+                href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline truncate"
+              >
+                {profile.website.replace(/^https?:\/\//, '')}
+              </a>
+            </div>
+          )}
+          <div className="flex items-center justify-center gap-2 col-span-1 sm:col-span-2">
+            <Calendar size={16} />
+            <span>Joined {new Date(profile?.created_at || '').toLocaleDateString('en-US', {
+              month: 'long',
+              year: 'numeric'
+            })}</span>
           </div>
         </div>
       </div>
