@@ -49,6 +49,7 @@ export default function HomePage() {
   const LOAD_STEP = 24;
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [isDragging, setIsDragging] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastTimestampRef = useRef<number | null>(null);
@@ -60,6 +61,14 @@ export default function HomePage() {
   const prefersReducedMotionRef = useRef(false);
   const visibleApps = allApps.slice(0, visibleCount);
   const canLoadMore = visibleCount < allApps.length;
+  const markImageLoaded = useCallback((appId: number) => {
+    setLoadedImages(prev => {
+      if (prev[appId]) {
+        return prev;
+      }
+      return { ...prev, [appId]: true };
+    });
+  }, []);
 
   const applyWrappedPosition = useCallback((value: number) => {
     const track = sliderTrackRef.current;
@@ -385,34 +394,44 @@ export default function HomePage() {
           </div>
           <TooltipProvider delayDuration={150}>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {visibleApps.map(app => (
-                <Tooltip key={app.id}>
-                  <TooltipTrigger asChild>
-                    <Link
-                      href={`/apps/${app.id}`}
-                      aria-label={`View ${app.name}`}
-                      className="flex items-center justify-center"
-                    >
-                      <div className="w-24 h-24 my-12 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-transparent transition-transform duration-200 hover:scale-105">
-                        <Image
-                          src={app.imgUrl}
-                          alt={`${app.name} logo`}
-                          width={112}
-                          height={112}
-                          loading="lazy"
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" sideOffset={8} className="bg-background text-foreground max-w-xs text-center border-1 border-foreground/20">
-                    <p className="font-semibold text-sm leading-tight">{app.name}</p>
-                    <p className="text-xs text-foreground leading-snug mt-1">
-                      {app.description}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+              {visibleApps.map(app => {
+                const isLoaded = loadedImages[app.id];
+
+                return (
+                  <Tooltip key={app.id}>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={`/apps/${app.id}`}
+                        aria-label={`View ${app.name}`}
+                        className="flex flex-col items-center justify-center text-center"
+                      >
+                        <div className="relative w-24 h-24 my-8 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-transparent transition-transform duration-200 hover:scale-105">
+                          {!isLoaded && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+                              <span className="h-6 w-6 border-2 border-muted-foreground/30 border-t-orange-500 rounded-full animate-spin" aria-hidden="true" />
+                            </div>
+                          )}
+                          <Image
+                            src={app.imgUrl}
+                            alt={`${app.name} logo`}
+                            width={112}
+                            height={112}
+                            loading="lazy"
+                            onLoadingComplete={() => markImageLoaded(app.id)}
+                            className={`object-cover w-full h-full transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                          />
+                        </div>
+                        <p className="text-sm font-medium text-foreground max-w-[8rem] truncate">{app.name}</p>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" sideOffset={8} className="bg-background text-foreground max-w-xs text-center border-1 border-foreground/20">
+                      <p className="text-xs text-foreground leading-snug mt-1">
+                        {app.description}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
             </div>
           </TooltipProvider>
           {canLoadMore && (
