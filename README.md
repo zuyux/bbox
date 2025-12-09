@@ -107,7 +107,7 @@ clarinet deploy --network=testnet
 
 ## 👥 Contributors
 
-BBOX is developed by **Zuyux** — a research & development collective in Lima, Peru.
+BBOX is developed by **ZUYUX** — a research & development collective based in Earth.
 Lead: [@fabohax](https://github.com/fabohax)
 Contributors: [@ronoelc](https://github.com/ronoelc), [@stackslabs](https://stackslabs.com)
 
@@ -122,10 +122,5 @@ Free to use, modify, and distribute under open-source terms.
 
 ## 🌐 Links
 
-* Website: [bbox.app](https://bbox.app) *(coming soon)*
-* Twitter/X: [@zuyuxdao](https://x.com/zuyuxdao)
-* Docs: `/docs`
-* Telegram: [t.me/zuyuxdao](https://t.me/zuyuxdao)
-
-```
-
+* Website: [bbox.app](https://bbox.lol)
+* Twitter/X: [@zuyuxxyz](https://x.com/zuyuxxyz)
