@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     console.log('🔗 Connection URL created:', connectionUrl);
 
-    // Send email using nodemailer
+    // Send email using Resend
     try {
       console.log('� Sending connection email...');
       const emailTemplate = emailTemplates.walletConnectionLink(connectionUrl);

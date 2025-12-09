@@ -72,6 +72,20 @@ npm install
 npm run dev
 ````
 
+### Email configuration
+
+Set the following variables in `.env.local` (or your deployment provider) so transactional emails go through Resend:
+
+```
+RESEND_API_KEY="your_resend_key"
+RESEND_FROM_EMAIL="BBOX <noreply@bbox.app>"
+```
+
+**Important:**
+- Use a **Live** Resend API key (`re_live_…`). Test keys (`re_test_…`) never deliver to real inboxes even though the API returns success.
+- `RESEND_FROM_EMAIL` must match a domain you have verified inside Resend (or use an `@yourdomain.onresend.com` address while testing). If it’s missing, the app will skip sending and log a warning.
+- When either value is missing during development, the app logs the email contents instead of sending so you can still test the flow.
+
 ### Deploy contracts
 
 ```bash

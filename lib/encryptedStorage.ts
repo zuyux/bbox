@@ -24,6 +24,16 @@ export interface WalletData {
   label: string;
 }
 
+export interface PortableEncryptedWalletData {
+  encryptedMnemonic: string;
+  encryptedPrivateKey: string;
+  address: string;
+  label: string;
+  salt: string;
+  iv: string;
+  version?: string;
+}
+
 export interface SessionConfig {
   sessionTimeout: number; // in minutes
   autoLock: boolean;
@@ -91,6 +101,27 @@ function decryptData(encryptedData: string, key: string, iv: string): string {
   return decrypted.toString(CryptoJS.enc.Utf8);
 }
 
+function buildEncryptedWalletData(walletData: WalletData, passphrase: string): EncryptedWalletData {
+  const salt = generateSalt();
+  const iv = generateIV();
+  const key = deriveKey(passphrase, salt);
+  const encryptedMnemonic = encryptData(walletData.mnemonic, key, iv);
+  const encryptedPrivateKey = encryptData(walletData.privateKey, key, iv);
+  const timestamp = Date.now();
+
+  return {
+    encryptedMnemonic,
+    encryptedPrivateKey,
+    address: walletData.address,
+    label: walletData.label,
+    salt,
+    iv,
+    createdAt: timestamp,
+    lastAccessed: timestamp,
+    version: CURRENT_VERSION,
+  };
+}
+
 /**
  * Validate passphrase strength
  */
@@ -146,25 +177,7 @@ export async function storeEncryptedWallet(
     throw new Error(`Weak passphrase: ${feedback.join(', ')}`);
   }
 
-  const salt = generateSalt();
-  const iv = generateIV();
-  const key = deriveKey(passphrase, salt);
-
-  // Encrypt sensitive data
-  const encryptedMnemonic = encryptData(walletData.mnemonic, key, iv);
-  const encryptedPrivateKey = encryptData(walletData.privateKey, key, iv);
-
-  const encryptedWalletData: EncryptedWalletData = {
-    encryptedMnemonic,
-    encryptedPrivateKey,
-    address: walletData.address, // Address is public, no need to encrypt
-    label: walletData.label,
-    salt,
-    iv,
-    createdAt: Date.now(),
-    lastAccessed: Date.now(),
-    version: CURRENT_VERSION,
-  };
+  const encryptedWalletData = buildEncryptedWalletData(walletData, passphrase);
 
   // Delete any previous session before creating a new one
   localStorage.removeItem(STORAGE_KEY);
@@ -430,6 +443,55 @@ export async function changeWalletPassphrase(
   await storeEncryptedWallet(walletData, newPassphrase);
   
   window.dispatchEvent(new Event('bbox-passphrase-changed'));
+}
+
+export function getStoredEncryptedWallet(): EncryptedWalletData | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const encryptedDataStr = localStorage.getItem(STORAGE_KEY);
+  if (!encryptedDataStr) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(encryptedDataStr) as EncryptedWalletData;
+  } catch {
+    return null;
+  }
+}
+
+export function toPortableEncryptedWalletData(data: EncryptedWalletData): PortableEncryptedWalletData {
+  return {
+    encryptedMnemonic: data.encryptedMnemonic,
+    encryptedPrivateKey: data.encryptedPrivateKey,
+    address: data.address,
+    label: data.label,
+    salt: data.salt,
+    iv: data.iv,
+    version: data.version,
+  };
+}
+
+export function decryptPortableEncryptedWallet(
+  payload: PortableEncryptedWalletData,
+  passphrase: string
+): WalletData {
+  const key = deriveKey(passphrase, payload.salt);
+  const mnemonic = decryptData(payload.encryptedMnemonic, key, payload.iv);
+  const privateKey = decryptData(payload.encryptedPrivateKey, key, payload.iv);
+
+  if (!mnemonic || !privateKey) {
+    throw new Error('Failed to decrypt wallet data');
+  }
+
+  return {
+    mnemonic,
+    privateKey,
+    address: payload.address,
+    label: payload.label,
+  };
 }
 
 /**

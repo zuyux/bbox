@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -69,13 +70,31 @@ const AppLogo = ({ name, imgUrl }: { name: string; imgUrl?: string }) => {
 };
 
 export default function AppsPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [visibleCount, setVisibleCount] = useState(CHUNK_SIZE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   
-  const categoryStats = getCategoryStats();
-  const categories = Object.keys(categoryStats);
+  const categoryStats = useMemo(() => getCategoryStats(), []);
+  const categories = useMemo(() => Object.keys(categoryStats), [categoryStats]);
+
+  const updateCategorySelection = useCallback((nextCategory: string) => {
+    setSelectedCategory(nextCategory);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextCategory === 'all') {
+      params.delete('category');
+    } else {
+      params.set('category', nextCategory);
+    }
+
+    const queryString = params.toString();
+    const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [pathname, router, searchParams]);
   
   const filteredApps = selectedCategory === 'all' 
     ? searchApps(searchQuery)
@@ -95,6 +114,37 @@ export default function AppsPage() {
   const handleLoadMore = useCallback(() => {
     setVisibleCount(prev => Math.min(prev + CHUNK_SIZE, filteredApps.length));
   }, [filteredApps.length]);
+
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+
+    if (!categoryParam) {
+      if (selectedCategory !== 'all') {
+        setSelectedCategory('all');
+      }
+      return;
+    }
+
+    const normalizedParam = categoryParam.toLowerCase();
+
+    if (normalizedParam === 'all') {
+      if (selectedCategory !== 'all') {
+        setSelectedCategory('all');
+      }
+      return;
+    }
+
+    const matchedCategory = categories.find(
+      category => category.toLowerCase() === normalizedParam
+    );
+
+    if (matchedCategory && matchedCategory !== selectedCategory) {
+      setSelectedCategory(matchedCategory);
+    }
+    if (!matchedCategory && selectedCategory !== 'all') {
+      setSelectedCategory('all');
+    }
+  }, [searchParams, categories, selectedCategory]);
 
   useEffect(() => {
     if (!hasMoreApps) {
@@ -147,7 +197,7 @@ export default function AppsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSelectedCategory('all')}
+              onClick={() => updateCategorySelection('all')}
               className={`rounded-full whitespace-nowrap text-xs cursor-pointer border border-green-500 transition-colors ${
                 selectedCategory === 'all'
                   ? 'bg-green-500 text-white hover:bg-green-600'
@@ -163,7 +213,7 @@ export default function AppsPage() {
                   key={category}
                   variant="outline"
                   size="sm"
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => updateCategorySelection(category)}
                   className={`rounded-md whitespace-nowrap flex items-center justify-center gap-1 text-xs cursor-pointer border border-green-500 transition-colors ${
                     selectedCategory === category
                       ? 'bg-green-500 text-white hover:bg-green-600'

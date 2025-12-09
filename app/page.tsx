@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,7 +28,7 @@ const calculateCategories = () => {
     Identity: '/icons/id.svg',
     Developer: '/icons/dev.svg',
     Creator: '/icons/creator.svg',
-    Nostr: '/icons/network.svg'
+    Nostr: '/icons/nostr.svg'
   };
   const defaultCategoryIcon = '/icons/explore.svg';
 
@@ -43,15 +44,258 @@ const appStats = getAppStats();
 const duplicatedCategories = [...categories, ...categories];
 
 export default function HomePage() {
+  const router = useRouter();
   const INITIAL_VISIBLE = 24;
   const LOAD_STEP = 24;
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
+  const [isDragging, setIsDragging] = useState(false);
+  const sliderTrackRef = useRef<HTMLDivElement | null>(null);
+  const animationFrameRef = useRef<number | undefined>(undefined);
+  const lastTimestampRef = useRef<number | null>(null);
+  const pointerStateRef = useRef({ pointerId: null as number | null, startX: 0, startPosition: 0, hasCapture: false });
+  const pointerCaptureTargetRef = useRef<HTMLDivElement | null>(null);
+  const positionRef = useRef(0);
+  const isDraggingRef = useRef(false);
+  const suppressClickRef = useRef(false);
+  const prefersReducedMotionRef = useRef(false);
   const visibleApps = allApps.slice(0, visibleCount);
   const canLoadMore = visibleCount < allApps.length;
+
+  const applyWrappedPosition = useCallback((value: number) => {
+    const track = sliderTrackRef.current;
+    if (!track) {
+      positionRef.current = value;
+      return value;
+    }
+
+    const limit = track.scrollWidth / 2;
+    let nextValue = value;
+
+    if (limit > 0) {
+      while (nextValue <= -limit) {
+        nextValue += limit;
+      }
+
+      while (nextValue > 0) {
+        nextValue -= limit;
+      }
+    }
+
+    track.style.transform = `translate3d(${nextValue}px, 0, 0)`;
+    positionRef.current = nextValue;
+    return nextValue;
+  }, []);
+
+  const getAutoScrollSpeed = useCallback(() => {
+    const track = sliderTrackRef.current;
+    if (!track) {
+      return 40;
+    }
+
+    const limit = track.scrollWidth / 2;
+    if (!limit) {
+      return 40;
+    }
+
+    return limit / 28;
+  }, []);
+
+  const stopDragging = useCallback(() => {
+    if (!isDraggingRef.current) {
+      return;
+    }
+
+    isDraggingRef.current = false;
+    setIsDragging(false);
+
+    const { pointerId } = pointerStateRef.current;
+    const captureTarget = pointerCaptureTargetRef.current;
+
+    if (pointerId !== null && captureTarget && captureTarget.hasPointerCapture(pointerId)) {
+      captureTarget.releasePointerCapture(pointerId);
+    }
+
+    pointerStateRef.current.pointerId = null;
+    pointerCaptureTargetRef.current = null;
+    pointerStateRef.current.startPosition = positionRef.current;
+    pointerStateRef.current.hasCapture = false;
+    lastTimestampRef.current = null;
+
+    if (suppressClickRef.current) {
+      requestAnimationFrame(() => {
+        suppressClickRef.current = false;
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    applyWrappedPosition(positionRef.current);
+  }, [applyWrappedPosition]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const handleResize = () => {
+      applyWrappedPosition(positionRef.current);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [applyWrappedPosition]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const animate = (timestamp: number) => {
+      if (lastTimestampRef.current === null) {
+        lastTimestampRef.current = timestamp;
+      }
+
+      const previousTimestamp = lastTimestampRef.current ?? timestamp;
+      const delta = timestamp - previousTimestamp;
+      lastTimestampRef.current = timestamp;
+
+      if (!isDraggingRef.current && !prefersReducedMotionRef.current) {
+        const speed = getAutoScrollSpeed();
+        const distance = (delta / 1000) * speed;
+        applyWrappedPosition(positionRef.current - distance);
+      }
+
+      animationFrameRef.current = window.requestAnimationFrame(animate);
+    };
+
+    animationFrameRef.current = window.requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+      }
+      lastTimestampRef.current = null;
+    };
+  }, [applyWrappedPosition, getAutoScrollSpeed]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const handlePointerEnd = () => {
+      stopDragging();
+    };
+
+    window.addEventListener('pointerup', handlePointerEnd);
+    window.addEventListener('pointercancel', handlePointerEnd);
+
+    return () => {
+      window.removeEventListener('pointerup', handlePointerEnd);
+      window.removeEventListener('pointercancel', handlePointerEnd);
+    };
+  }, [stopDragging]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = () => {
+      prefersReducedMotionRef.current = mediaQuery.matches;
+    };
+
+    updatePreference();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', updatePreference);
+      return () => {
+        mediaQuery.removeEventListener('change', updatePreference);
+      };
+    }
+
+    if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(updatePreference);
+      return () => {
+        mediaQuery.removeListener(updatePreference);
+      };
+    }
+  }, []);
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
+      return;
+    }
+
+    pointerStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startPosition: positionRef.current,
+      hasCapture: false
+    };
+
+    pointerCaptureTargetRef.current = event.currentTarget;
+
+    isDraggingRef.current = true;
+    suppressClickRef.current = false;
+    setIsDragging(true);
+    lastTimestampRef.current = null;
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+    const delta = event.clientX - pointerStateRef.current.startX;
+    const hasReachedDragThreshold = Math.abs(delta) > 8;
+
+    if (hasReachedDragThreshold && !pointerStateRef.current.hasCapture) {
+      const captureTarget = pointerCaptureTargetRef.current;
+      const activePointerId = pointerStateRef.current.pointerId ?? event.pointerId;
+
+      if (captureTarget?.setPointerCapture) {
+        try {
+          captureTarget.setPointerCapture(activePointerId);
+          pointerStateRef.current.hasCapture = true;
+        } catch {
+          pointerStateRef.current.hasCapture = false;
+        }
+      }
+    }
+
+    if (!suppressClickRef.current && hasReachedDragThreshold) {
+      suppressClickRef.current = true;
+    }
+
+    applyWrappedPosition(pointerStateRef.current.startPosition + delta);
+  };
+
+  const handleClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (suppressClickRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
 
   const handleLoadMore = () => {
     setVisibleCount(prev => Math.min(prev + LOAD_STEP, allApps.length));
   };
+
+  const handleCategoryClick = useCallback((categoryName: string) => {
+    router.push(`/apps?category=${encodeURIComponent(categoryName)}`);
+  }, [router]);
+
+  const handleCategoryKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>, categoryName: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCategoryClick(categoryName);
+    }
+  }, [handleCategoryClick]);
 
   return (
     <div className="bg-background l-dotted-grid-background min-h-screen">
@@ -59,7 +303,7 @@ export default function HomePage() {
       
       <div className="container mx-auto px-4 pt-20 pb-12">
         {/* Hero Section */}
-        <div className="flex flex-col items-center justify-center text-center mb-16 h-[80vh]">
+        <div className="flex flex-col items-center justify-center text-center mb-16 h-[36vh]">
           <h1 className="title text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent select-text">
             Our Open App Store
           </h1>
@@ -87,16 +331,29 @@ export default function HomePage() {
           <div className="relative overflow-hidden">
             <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent z-10" aria-hidden="true" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent z-10" aria-hidden="true" />
-            <div className="category-slider-mask">
-              <div className="category-slider-track" role="list" aria-label="Bitcoin app categories">
+            <div
+              className={`category-slider-mask${isDragging ? ' category-slider-mask--dragging' : ''}`}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onClickCapture={handleClickCapture}
+            >
+              <div
+                ref={sliderTrackRef}
+                className="category-slider-track"
+                role="list"
+                aria-label="Bitcoin app categories"
+              >
                 {duplicatedCategories.map((category, index) => (
                   <Card
                     key={`${category.name}-${index}`}
                     role="listitem"
                     tabIndex={0}
-                    className="category-card">
+                    className="category-card"
+                    onClick={() => handleCategoryClick(category.name)}
+                    onKeyDown={(event) => handleCategoryKeyDown(event, category.name)}
+                  >
                     <CardContent className="p-4 text-center">
-                      <div className="w-14 h-14 mx-auto mb-3 flex items-center justify-center rounded-full bg-muted/30">
+                      <div className="w-36 h-36 mx-auto mb-3 flex items-center justify-center rounded-full bg-muted/30">
                         <Image
                           src={category.iconSrc}
                           alt={`${category.name} icon`}
@@ -116,7 +373,7 @@ export default function HomePage() {
         </div>
 
         {/* Featured Apps */}
-        <div className="mb-12">
+        <div className="my-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="title text-2xl font-bold">Featured Apps</h2>
             <Button variant="ghost" asChild>
@@ -136,7 +393,7 @@ export default function HomePage() {
                       aria-label={`View ${app.name}`}
                       className="flex items-center justify-center"
                     >
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-transparent transition-transform duration-200 hover:scale-105">
+                      <div className="w-24 h-24 my-12 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-transparent transition-transform duration-200 hover:scale-105">
                         <Image
                           src={app.imgUrl}
                           alt={`${app.name} logo`}

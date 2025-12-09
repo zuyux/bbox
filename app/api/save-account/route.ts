@@ -4,11 +4,27 @@ import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, passkey, passphrase, address } = await request.json();
+    const { email, passkey, passphrase, address, encryptedWallet } = await request.json();
 
-    if (!email || !passkey || !passphrase || !address) {
+    if (!email || !passkey || !passphrase || !address || !encryptedWallet) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    const {
+      encryptedMnemonic,
+      encryptedPrivateKey,
+      salt,
+      iv,
+      version,
+      label: walletLabel,
+    } = encryptedWallet || {};
+
+    if (!encryptedMnemonic || !encryptedPrivateKey || !salt || !iv) {
+      return NextResponse.json(
+        { error: 'Invalid encrypted wallet payload' },
         { status: 400 }
       );
     }
@@ -94,6 +110,12 @@ export async function POST(request: NextRequest) {
           email: normalizedEmail,
           passkey: hashedPasskey,
           address,
+          encrypted_private_key: encryptedPrivateKey,
+          encrypted_mnemonic: encryptedMnemonic,
+          encryption_salt: salt,
+          encryption_iv: iv,
+          encryption_version: version || '1.0.0',
+          wallet_label: walletLabel || 'BBOX Wallet',
           created_at: new Date().toISOString(),
         }
       ])

@@ -10,6 +10,7 @@ import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
 import { upsertConnectedAccountPasskey, getConnectedAccountByEmail, getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
+import { decryptPortableEncryptedWallet } from '@/lib/encryptedStorage';
 // Password verification utility for settings changes
 // Usage: await verifyPassphraseForSettings(address, passphrase, privateKey)
 export async function verifyPassphraseForSettings(address: string, passphrase: string, privateKey: string): Promise<boolean> {
@@ -47,6 +48,20 @@ interface ConnectModalProps {
 
 type ConnectMode = 'wallets' | 'email' | 'mnemonic';
 
+interface EmailAccountPayload {
+  account: {
+    email: string;
+    address: string;
+    passkey: string;
+    encryptedPrivateKey: string;
+    encryptedMnemonic: string;
+    encryptionSalt: string;
+    encryptionIv: string;
+    encryptionVersion?: string;
+    walletLabel?: string;
+  };
+}
+
 // Destructure props at the top of your component
 export default function ConnectModal({ onClose, onSuccess, onError }: ConnectModalProps) {
   const [connectMode, setConnectMode] = useState<ConnectMode>('wallets');
@@ -56,8 +71,9 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
   }, []);
   const [mnemonic, setMnemonic] = useState('');
   const [email, setEmail] = useState('');
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [emailMessage, setEmailMessage] = useState('');
+  const [password, setPassword] = useState('');
   const [passphrase, setPassphrase] = useState('');
   const [confirmPassphrase, setConfirmPassphrase] = useState('');
   const [walletLabel, setWalletLabel] = useState('');
@@ -202,7 +218,7 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
           setIsLoading(false);
           setError('Email is already registered. A connection link has been sent to your email.');
           try {
-            await fetch('/api/wallet-recovery/send-link', {
+            await fetch('/api/wallet-connect/send-link', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: email.trim() }),
@@ -251,7 +267,8 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
   };
 
   const handleEmailConnect = async () => {
-    if (!email.trim()) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
       setEmailStatus('error');
       setEmailMessage('Please enter your email address');
       onError?.('Please enter your email address');
@@ -259,41 +276,81 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(trimmedEmail)) {
       setEmailStatus('error');
       setEmailMessage('Please enter a valid email address');
       onError?.('Please enter a valid email address');
       return;
     }
 
+    if (!password) {
+      setEmailStatus('error');
+      setEmailMessage('Please enter your password');
+      onError?.('Please enter your password');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      setEmailStatus('sending');
+      setEmailStatus('loading');
       setEmailMessage('');
 
-      const response = await fetch('/api/wallet-recovery/send-link', {
+      const response = await fetch('/api/wallet-connect/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: trimmedEmail }),
       });
 
-      const data = await response.json();
+      const payload = await response.json();
 
-      if (!response.ok) {
-        setEmailStatus('error');
-        setEmailMessage(data.error || 'Failed to send connection link');
-        onError?.(data.error || 'Failed to send connection link');
-        setIsLoading(false);
-        return;
+      if (!response.ok || !payload?.account) {
+        const message =
+          payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
+            ? payload.error
+            : 'Failed to authenticate account';
+        throw new Error(message);
       }
 
-      setEmailStatus('sent');
-      setEmailMessage('Connection link sent! Please check your email.');
+      const account = (payload as EmailAccountPayload).account;
+
+      const walletPayload = {
+        encryptedMnemonic: account.encryptedMnemonic,
+        encryptedPrivateKey: account.encryptedPrivateKey,
+        address: account.address,
+        label: account.walletLabel || 'BBOX Wallet',
+        salt: account.encryptionSalt,
+        iv: account.encryptionIv,
+        version: account.encryptionVersion,
+      };
+
+      let decryptedWallet;
+      try {
+        decryptedWallet = decryptPortableEncryptedWallet(walletPayload, password);
+      } catch {
+        throw new Error('Invalid email or password');
+      }
+
+      const passkeyHash = CryptoJS.SHA256(decryptedWallet.privateKey + password).toString();
+      if (passkeyHash !== account.passkey) {
+        throw new Error('Invalid email or password');
+      }
+
+      await createEncryptedWallet(decryptedWallet, password);
+      setAddress(decryptedWallet.address);
+      setWalletType('imported');
+      await persistSessionForWallet(decryptedWallet.address, 'imported');
+
+      setPassword('');
+      setEmailStatus('success');
+      setEmailMessage('Wallet unlocked. Redirecting...');
+      onSuccess?.();
+      onClose();
+      router.push(`/${decryptedWallet.address}`);
     } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to authenticate account';
       setEmailStatus('error');
-      const msg = (err as Error).message || 'Failed to send email.';
       setEmailMessage(msg);
       onError?.(msg);
     } finally {
@@ -494,15 +551,25 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
-                    className="bg-white text-black border border-border cursor-pointer"
+                    className="bg-white text-black focus:bg-white ring-0 border border-border cursor-pointer"
+                  />
+              </div>
+              <div>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your wallet password"
+                    className="bg-white text-black focus:bg-white ring-0 border border-border cursor-pointer"
                   />
               </div>
               <Button 
                 onClick={handleEmailConnect} 
-                disabled={!email || isLoading} 
+                disabled={!email || !password || isLoading} 
                 className="w-full cursor-pointer bg-foreground text-background hover:bg-foreground hover:text-black transition-colors border border-[#555]"
               >
-                {isLoading ? 'Sending...' : 'Send Connection Link'}
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
               {emailMessage && (
                 <div style={{ color: emailStatus === 'error' ? 'red' : 'green', marginTop: 8 }} className="text-sm">

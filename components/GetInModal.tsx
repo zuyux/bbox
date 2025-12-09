@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { PasswordInput } from '@/components/PasswordInput';
 import ConnectModal from './ConnectModal';
 import { formatStxAddress } from '@/lib/address-utils';
+import { getStoredEncryptedWallet } from '@/lib/encryptedStorage';
 
 export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const { address, setAddress, setWalletType } = useWallet();
@@ -99,6 +100,12 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         };
         await createEncryptedWallet(walletData, password);
         persistWalletContext(walletData.address);
+
+        const encryptedSnapshot = getStoredEncryptedWallet();
+        if (!encryptedSnapshot) {
+          setCreateWalletError('Failed to capture encrypted wallet snapshot. Please try again.');
+          return;
+        }
         
         // Save to Supabase if email provided
         if (trimmedEmail) {
@@ -113,7 +120,15 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 email: trimmedEmail,
                 passkey: stxPrivateKey, 
                 passphrase: password,
-                address
+                address,
+                encryptedWallet: {
+                  encryptedMnemonic: encryptedSnapshot.encryptedMnemonic,
+                  encryptedPrivateKey: encryptedSnapshot.encryptedPrivateKey,
+                  salt: encryptedSnapshot.salt,
+                  iv: encryptedSnapshot.iv,
+                  version: encryptedSnapshot.version,
+                  label: encryptedSnapshot.label,
+                }
               }),
             });
             

@@ -228,11 +228,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                   </h3>
                   <div className="space-y-1">
                     {filteredApps.map((app) => (
-                      <a
+                      <Link
                         key={app.id}
-                        href={app.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/apps/${app.id}`}
                         className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 cursor-pointer group transition-all duration-200"
                         onClick={onClose}
                       >
@@ -275,7 +273,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                             </div>
                           </div>
                         </div>
-                      </a>
+                      </Link>
                     ))}
                     {filteredApps.length === 0 && (
                       <div className="text-foreground text-center py-8">

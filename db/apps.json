@@ -261,7 +261,7 @@
     "rating": 4.3,
     "verified": false,
     "link": "https://heylayer.com/",
-    "imgUrl": "https://ipfs.io/ipfs/bafybeiflxby7rcqdg6vm5l5zdcaqxrabopg2ntndfhsrcqwqsnwm5nouqy"
+    "imgUrl": "https://ipfs.io/ipfs/bafkreia2oylxknsillirxqrwunxcrty6wpvjxwcveyu7bf6fb3nsb3r6hq"
   },
   {
     "id": 23,
@@ -634,5 +634,29 @@
     "verified": true,
     "link": "https://www.zaprite.com/",
     "imgUrl": "https://ipfs.io/ipfs/bafkreifkkexuy7sbf3iqjxo6jk4kcmtg3x3yd7se7wak6smk6jl6p2luea"
+  },
+  {
+    "id": 54,
+    "name": "BTC Map",
+    "description": "Find places to spend sats wherever you are.",
+    "category": "Infrastructure",
+    "tags": ["Bitcoin", "Infrastructure"],
+    "downloads": "N/A",
+    "rating": 4.6,
+    "verified": true,
+    "link": "https://www.btcmap.org/",
+    "imgUrl": "https://ipfs.io/ipfs/bafkreigkwcq5ildffojx2htarm4mbdlc4erejoiujm4g5c7v4jali7n4am"
+  },
+  {
+    "id": 55,
+    "name": "NostrApps",
+    "description": "Directory covering the newest Nostr clients, relays, and tooling.",
+    "category": "Nostr",
+    "tags": ["Nostr", "Directory", "Apps"],
+    "downloads": "N/A",
+    "rating": 4.5,
+    "verified": true,
+    "link": "https://nostrapps.com/",
+    "imgUrl": "https://ipfs.io/ipfs/bafkreibid2mmntqv5n5z25j2b6hg4d3rg2qqzh7gy34bjxivo4qkfaev7m"
   }
 ]

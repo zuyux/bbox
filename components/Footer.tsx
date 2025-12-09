@@ -8,12 +8,12 @@ export default function Footer() {
         <div className="flex justify-between items-center h-full">
           <Link href="/" className='flex items-center gap-1'>
             <span className="title text-left truncate">
-              BBOX <span className="hover:text-[#fff] text-[#555]">Our Open App Store</span>
+              BBOX <span className="hover:text-[#fff] text-[#555] ml-2">Our Open App Store</span>
             </span>
           </Link>
           <div>
-            <Link href="/privacy-policy" className="hover:text-[#fff] text-[#555] mr-8">Privacy Policy</Link>
-            <Link href="/terms-of-service" className="hover:text-[#fff] text-[#555]">Terms of Service</Link>
+            <Link href="/privacy-policy" className="hover:text-[#fff] text-[#555] mr-8">Privacy</Link>
+            <Link href="/terms-of-service" className="hover:text-[#fff] text-[#555]">Terms</Link>
           </div>
           <div className="flex items-center gap-2 h-full">
             <ModeToggle />

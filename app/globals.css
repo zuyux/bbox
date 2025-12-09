@@ -420,18 +420,19 @@ html, body {
 @layer components {
   .category-slider-mask {
     overflow: hidden;
+    cursor: grab;
+    touch-action: pan-y pinch-zoom;
   }
 
   .category-slider-track {
     display: flex;
     gap: 1rem;
     width: max-content;
-    animation: category-marquee 28s linear infinite;
+    will-change: transform;
   }
 
-  .category-slider-track:hover,
-  .category-slider-track:focus-within {
-    animation-play-state: paused;
+  .category-slider-mask--dragging {
+    cursor: grabbing;
   }
 
   .category-card {
@@ -455,21 +456,6 @@ html, body {
   .category-card:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 3px;
-  }
-}
-
-@keyframes category-marquee {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .category-slider-track {
-    animation: none;
   }
 }
 

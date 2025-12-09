@@ -7,6 +7,14 @@ const STACKS_ADDRESS_REGEX = /^(SP|SM|SN|ST|SU|TP|TM|TN|TS)[A-Za-z0-9]{30,40}$/i
 const MIN_SEND_AMOUNT = 0.000001; // 0.000001 sBTC (~1 satoshi)
 const MAX_MEMO_BYTES = 34;
 
+const FEATURED_TOKEN_CONTRACTS = new Set([
+  'SP193GXQTNHVV9WSAPHAB89M6R9QSEXZKS3774CMD::cholo',
+]);
+
+const FEATURED_TOKEN_SYMBOLS = new Set([
+  'cholo',
+]);
+
 // Extend the Window interface to include StacksProvider
 declare global {
   interface Window {
@@ -235,9 +243,14 @@ export default function WalletPage() {
         });
 
         const sbtcTokenBalance = detectedSbtcBalance ?? '0';
-        const stxOnlyAssets = parsedAssets.filter((asset) => asset.symbol === 'STX');
+        const featuredAssets = parsedAssets.filter((asset) => {
+          if (asset.symbol === 'STX') return true;
+          const assetId = typeof asset.id === 'string' ? asset.id.toLowerCase() : '';
+          const assetSymbol = typeof asset.symbol === 'string' ? asset.symbol.toLowerCase() : '';
+          return FEATURED_TOKEN_CONTRACTS.has(assetId) || FEATURED_TOKEN_SYMBOLS.has(assetSymbol);
+        });
 
-        setAssets(stxOnlyAssets);
+        setAssets(featuredAssets);
         setSbtcBalance(sbtcTokenBalance);
         setLoading(false);
         setAssetsLoading(false);

@@ -1,38 +1,18 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Email configuration
-const createTransporter = () => {
-  // Check if we have SMTP configuration
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-  }
+const resendApiKey = process.env.RESEND_API_KEY;
+const resendFromAddress = process.env.RESEND_FROM_EMAIL;
+const isTestApiKey = Boolean(resendApiKey?.startsWith('re_test_'));
+const resendClient = resendApiKey ? new Resend(resendApiKey) : null;
 
-  // Fallback to Gmail if configured
-  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-    });
-  }
-
-  // Development/test mode - use Ethereal (fake SMTP)
-  if (process.env.NODE_ENV === 'development') {
-    console.warn('⚠️ No email configuration found. Using test mode.');
-    return null; // Will be handled in sendEmail function
-  }
-
-  throw new Error('No email configuration found. Please set SMTP or Gmail environment variables.');
+const simulateEmailSend = (options: EmailOptions, reason: string) => {
+  console.warn(`📧 Email delivery skipped (${reason}).`);
+  console.log('📧 [SIMULATED SEND]', {
+    to: options.to,
+    subject: options.subject,
+    from: options.from || resendFromAddress || 'Configure RESEND_FROM_EMAIL',
+  });
+  return { success: true, messageId: `${reason}-${Date.now()}` };
 };
 
 interface EmailOptions {
@@ -46,31 +26,48 @@ interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions) {
   try {
-    const transporter = createTransporter();
-    
-    // In development, just log the email instead of sending
-    if (!transporter || process.env.NODE_ENV === 'development') {
-      console.log('📧 [DEV MODE] Email would be sent:', {
-        to: options.to,
-        subject: options.subject,
-        from: options.from || process.env.SMTP_FROM || process.env.GMAIL_USER || 'noreply@bbox.app',
-      });
-      return { success: true, messageId: 'dev-mode-' + Date.now() };
+    if (!resendFromAddress) {
+      const message = 'RESEND_FROM_EMAIL is not configured. Set it to a verified domain or an onresend.com address.';
+      if (process.env.NODE_ENV !== 'production') {
+        return simulateEmailSend(options, 'missing-from-address');
+      }
+      throw new Error(message);
     }
 
-    const mailOptions = {
-      from: options.from || process.env.SMTP_FROM || process.env.GMAIL_USER || 'noreply@bbox.app',
-      to: Array.isArray(options.to) ? options.to.join(', ') : options.to,
+    if (!resendClient) {
+      if (process.env.NODE_ENV !== 'production') {
+        return simulateEmailSend(options, 'missing-api-key');
+      }
+      throw new Error('Resend API key is not configured. Set RESEND_API_KEY to send emails.');
+    }
+
+    if (isTestApiKey) {
+      const warning = 'RESEND_API_KEY starts with re_test_. Test keys do not deliver real emails. Create a Live API key in the Resend dashboard.';
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(warning);
+        return simulateEmailSend(options, 'test-api-key');
+      }
+      throw new Error(warning);
+    }
+
+    const to = Array.isArray(options.to) ? options.to : [options.to];
+
+    const { data, error } = await resendClient.emails.send({
+      from: options.from || resendFromAddress,
+      to,
       subject: options.subject,
       html: options.html,
-      ...(options.cc && { cc: Array.isArray(options.cc) ? options.cc.join(', ') : options.cc }),
-      ...(options.bcc && { bcc: Array.isArray(options.bcc) ? options.bcc.join(', ') : options.bcc }),
-    };
+      cc: options.cc,
+      bcc: options.bcc,
+    });
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully:', info.messageId);
-    
-    return { success: true, messageId: info.messageId };
+    if (error) {
+      throw new Error(error.message ?? 'Resend failed to send email');
+    }
+
+    const messageId = data?.id ?? 'resend-' + Date.now();
+    console.log('✅ Email sent successfully:', messageId);
+    return { success: true, messageId };
   } catch (error) {
     console.error('❌ Failed to send email:', error);
     throw new Error('Failed to send email: ' + (error instanceof Error ? error.message : 'Unknown error'));
