@@ -122,5 +122,5 @@ Free to use, modify, and distribute under open-source terms.
 
 ## 🌐 Links
 
-* Website: [bbox.app](https://bbox.lol)
+* Website: [bbox.lol](https://bbox.lol)
 * Twitter/X: [@zuyuxxyz](https://x.com/zuyuxxyz)
