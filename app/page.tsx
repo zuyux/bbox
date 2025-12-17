@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowRight } from 'lucide-react';
 import { allApps, getCategoryStats, getAppStats } from '@/lib/appsUtils';
+import { getIPFSUrl } from '@/lib/pinataUpload';
 
 // Calculate actual categories from the data
 const calculateCategories = () => {
@@ -59,6 +60,9 @@ export default function HomePage() {
   const isDraggingRef = useRef(false);
   const suppressClickRef = useRef(false);
   const prefersReducedMotionRef = useRef(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadingMoreRef = useRef(false);
   const visibleApps = allApps.slice(0, visibleCount);
   const canLoadMore = visibleCount < allApps.length;
   const markImageLoaded = useCallback((appId: number) => {
@@ -207,6 +211,38 @@ export default function HomePage() {
     };
   }, [stopDragging]);
 
+  const handleLoadMore = useCallback(() => {
+    setVisibleCount(prev => Math.min(prev + LOAD_STEP, allApps.length));
+  }, []);
+
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel || !canLoadMore) {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !loadingMoreRef.current) {
+          loadingMoreRef.current = true;
+          handleLoadMore();
+        }
+      });
+    }, { rootMargin: '200px 0px 0px 0px' });
+
+    observer.observe(sentinel);
+    observerRef.current = observer;
+
+    return () => {
+      observer.disconnect();
+      observerRef.current = null;
+    };
+  }, [canLoadMore, handleLoadMore]);
+
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -284,16 +320,13 @@ export default function HomePage() {
     applyWrappedPosition(pointerStateRef.current.startPosition + delta);
   };
 
-  const handleClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (suppressClickRef.current) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  };
+  useEffect(() => {
+    loadingMoreRef.current = false;
+  }, []);
 
-  const handleLoadMore = () => {
-    setVisibleCount(prev => Math.min(prev + LOAD_STEP, allApps.length));
-  };
+  useEffect(() => {
+    loadingMoreRef.current = false;
+  }, [visibleCount]);
 
   const handleCategoryClick = useCallback((categoryName: string) => {
     router.push(`/apps?category=${encodeURIComponent(categoryName)}`);
@@ -306,6 +339,12 @@ export default function HomePage() {
     }
   }, [handleCategoryClick]);
 
+  const handleClickCapture = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (suppressClickRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, []);
   return (
     <div className="bg-background l-dotted-grid-background min-h-screen">
       <Navbar />
@@ -396,6 +435,7 @@ export default function HomePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {visibleApps.map(app => {
                 const isLoaded = loadedImages[app.id];
+                const imageSrc = app.imgCID ? getIPFSUrl(app.imgCID) : '/bbox.png';
 
                 return (
                   <Tooltip key={app.id}>
@@ -412,7 +452,7 @@ export default function HomePage() {
                             </div>
                           )}
                           <Image
-                            src={app.imgUrl}
+                            src={imageSrc}
                             alt={`${app.name} logo`}
                             width={112}
                             height={112}
@@ -422,6 +462,7 @@ export default function HomePage() {
                           />
                         </div>
                         <p className="text-sm font-medium text-foreground max-w-[8rem] truncate">{app.name}</p>
+                        <p className="text-xs text-foreground/50 max-w-[8rem] truncate">{app.category}</p>
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" sideOffset={8} className="bg-background text-foreground max-w-xs text-center border-1 border-foreground/20">
@@ -433,14 +474,8 @@ export default function HomePage() {
                 );
               })}
             </div>
+            <div ref={loadMoreRef} aria-hidden="true" className="h-8 w-full" />
           </TooltipProvider>
-          {canLoadMore && (
-            <div className="flex justify-center mt-6">
-              <Button variant="outline" onClick={handleLoadMore} className='cursor-pointer'>
-                Load More
-              </Button>
-            </div>
-          )}
         </div>
 
         {/* Stats Section */}
@@ -472,8 +507,10 @@ export default function HomePage() {
             Join thousands of developers building open-source applications for Bitcoin and its Layer-2 ecosystems.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="outline" className='cursor-pointer'>
-              Developer Guide
+            <Button size="lg" variant="outline" className='cursor-pointer' asChild>
+              <Link href="/documentation">
+                Developer Guide
+              </Link>
             </Button>
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-[#fff] cursor-pointer">
               Start Building

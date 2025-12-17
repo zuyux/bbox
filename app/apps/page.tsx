@@ -42,16 +42,16 @@ const categoryIcons: { [key: string]: typeof Shield } = {
 const CHUNK_SIZE = 10;
 const DEFAULT_APP_IMAGE = '/bbox.png';
 
-const AppLogo = ({ name, imgUrl }: { name: string; imgUrl?: string }) => {
+const AppLogo = ({ name, imgCID }: { name: string; imgCID?: string }) => {
   const [imageFailed, setImageFailed] = useState(false);
-  const hasValidHash = Boolean(imgUrl && extractIPFSHash(imgUrl));
+  const hasValidHash = Boolean(imgCID && extractIPFSHash(imgCID));
   const showRemoteImage = hasValidHash && !imageFailed;
 
   return (
     <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[#111] to-[#222] rounded-2xl text-white text-xl sm:text-2xl font-bold shadow-sm overflow-hidden flex items-center justify-center">
-      {showRemoteImage && imgUrl ? (
+      {showRemoteImage && imgCID ? (
         <IPFSImage
-          src={imgUrl}
+          src={imgCID}
           alt={`${name} logo`}
           className="object-cover"
           fill
@@ -235,7 +235,7 @@ export default function AppsPage() {
               <div className="flex gap-4 p-4 rounded-md hover:bg-muted/50 transition-colors cursor-pointer border border-transparent hover:border-border">
                 {/* App Icon */}
                 <div className="flex-shrink-0">
-                  <AppLogo name={app.name} imgUrl={app.imgUrl} />
+                  <AppLogo name={app.name} imgCID={app.imgCID} />
                 </div>
                 
                 {/* App Info */}

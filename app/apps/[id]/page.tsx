@@ -63,9 +63,9 @@ export default function AppDetailPage() {
             {/* App Icon */}
             <div className="flex-shrink-0">
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#111] to-[#222] rounded-2xl sm:rounded-3xl flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-md overflow-hidden">
-                {app.imgUrl ? (
+                {app.imgCID ? (
                   <IPFSImage
-                    src={app.imgUrl}
+                    src={app.imgCID}
                     alt={`${app.name} logo`}
                     className="object-cover"
                     fill
@@ -210,9 +210,9 @@ export default function AppDetailPage() {
                 <Link key={relatedApp.id} href={`/apps/${relatedApp.id}`} className="group">
                   <div className="h-full rounded-2xl border border-border/50 p-4 hover:border-border transition-colors">
                     <div className="relative mb-3 aspect-square rounded-2xl bg-background flex items-center justify-center text-white text-2xl font-bold shadow-sm overflow-hidden">
-                      {relatedApp.imgUrl ? (
+                      {relatedApp.imgCID ? (
                         <IPFSImage
-                          src={relatedApp.imgUrl}
+                          src={relatedApp.imgCID}
                           alt={`${relatedApp.name} logo`}
                           className="object-cover"
                           fill

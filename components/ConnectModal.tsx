@@ -10,7 +10,7 @@ import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
 import { upsertConnectedAccountPasskey, getConnectedAccountByEmail, getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
-import { decryptPortableEncryptedWallet } from '@/lib/encryptedStorage';
+import { decryptPortableEncryptedWallet, type WalletData } from '@/lib/encryptedStorage';
 // Password verification utility for settings changes
 // Usage: await verifyPassphraseForSettings(address, passphrase, privateKey)
 export async function verifyPassphraseForSettings(address: string, passphrase: string, privateKey: string): Promise<boolean> {
@@ -61,6 +61,41 @@ interface EmailAccountPayload {
     walletLabel?: string;
   };
 }
+
+interface EmailWalletLoginResponse {
+  wallet: {
+    address: string;
+    privateKey: string;
+    mnemonic: string;
+    label?: string;
+  };
+  account?: {
+    email: string;
+    address: string;
+    walletLabel?: string;
+  };
+}
+
+const isWalletLoginResponse = (payload: unknown): payload is EmailWalletLoginResponse => {
+  if (!payload || typeof payload !== 'object') return false;
+  const walletCandidate = (payload as EmailWalletLoginResponse).wallet;
+  return Boolean(
+    walletCandidate &&
+    typeof walletCandidate.address === 'string' &&
+    typeof walletCandidate.privateKey === 'string' &&
+    typeof walletCandidate.mnemonic === 'string'
+  );
+};
+
+const isEmailAccountPayload = (payload: unknown): payload is EmailAccountPayload => {
+  if (!payload || typeof payload !== 'object') return false;
+  const accountCandidate = (payload as EmailAccountPayload).account;
+  return Boolean(
+    accountCandidate &&
+    typeof accountCandidate.address === 'string' &&
+    typeof accountCandidate.passkey === 'string'
+  );
+};
 
 // Destructure props at the top of your component
 export default function ConnectModal({ onClose, onSuccess, onError }: ConnectModalProps) {
@@ -300,12 +335,12 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: trimmedEmail }),
+        body: JSON.stringify({ email: trimmedEmail, password }),
       });
 
       const payload = await response.json();
 
-      if (!response.ok || !payload?.account) {
+      if (!response.ok) {
         const message =
           payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
             ? payload.error
@@ -313,41 +348,52 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
         throw new Error(message);
       }
 
-      const account = (payload as EmailAccountPayload).account;
+      let unlockedWallet: WalletData;
 
-      const walletPayload = {
-        encryptedMnemonic: account.encryptedMnemonic,
-        encryptedPrivateKey: account.encryptedPrivateKey,
-        address: account.address,
-        label: account.walletLabel || 'BBOX Wallet',
-        salt: account.encryptionSalt,
-        iv: account.encryptionIv,
-        version: account.encryptionVersion,
-      };
+      if (isWalletLoginResponse(payload)) {
+        unlockedWallet = {
+          mnemonic: payload.wallet.mnemonic,
+          privateKey: payload.wallet.privateKey,
+          address: payload.wallet.address,
+          label: payload.wallet.label || 'BBOX Wallet',
+        };
+      } else if (isEmailAccountPayload(payload)) {
+        const account = payload.account;
+        const walletPayload = {
+          encryptedMnemonic: account.encryptedMnemonic,
+          encryptedPrivateKey: account.encryptedPrivateKey,
+          address: account.address,
+          label: account.walletLabel || 'BBOX Wallet',
+          salt: account.encryptionSalt,
+          iv: account.encryptionIv,
+          version: account.encryptionVersion,
+        };
 
-      let decryptedWallet;
-      try {
-        decryptedWallet = decryptPortableEncryptedWallet(walletPayload, password);
-      } catch {
-        throw new Error('Invalid email or password');
+        try {
+          unlockedWallet = decryptPortableEncryptedWallet(walletPayload, password);
+        } catch {
+          throw new Error('Invalid email or password');
+        }
+
+        const passkeyHash = CryptoJS.SHA256(unlockedWallet.privateKey + password).toString();
+        if (passkeyHash !== account.passkey) {
+          throw new Error('Invalid email or password');
+        }
+      } else {
+        throw new Error('Failed to authenticate account');
       }
 
-      const passkeyHash = CryptoJS.SHA256(decryptedWallet.privateKey + password).toString();
-      if (passkeyHash !== account.passkey) {
-        throw new Error('Invalid email or password');
-      }
-
-      await createEncryptedWallet(decryptedWallet, password);
-      setAddress(decryptedWallet.address);
+      await createEncryptedWallet(unlockedWallet, password);
+      setAddress(unlockedWallet.address);
       setWalletType('imported');
-      await persistSessionForWallet(decryptedWallet.address, 'imported');
+      await persistSessionForWallet(unlockedWallet.address, 'imported');
 
       setPassword('');
       setEmailStatus('success');
       setEmailMessage('Wallet unlocked. Redirecting...');
       onSuccess?.();
       onClose();
-      router.push(`/${decryptedWallet.address}`);
+      router.push(`/${unlockedWallet.address}`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to authenticate account';
       setEmailStatus('error');

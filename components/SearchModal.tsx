@@ -235,9 +235,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                         onClick={onClose}
                       >
                         <div className="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden bg-foreground/10">
-                          {app.imgUrl ? (
+                          {app.imgCID ? (
                             <SafariOptimizedImage
-                              src={app.imgUrl}
+                              src={getIPFSUrl(app.imgCID)}
                               alt={`${app.name} logo`}
                               width={40}
                               height={40}

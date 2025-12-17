@@ -10,7 +10,7 @@ export interface BitcoinApp {
   rating: number;
   verified: boolean;
   link: string;
-  imgUrl: string;
+  imgCID: string;
 }
 
 export const allApps: BitcoinApp[] = appsData;
