@@ -100,7 +100,15 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
+    if (!query.trim()) {
+      setFilteredApps([]);
+      setUsers([]);
+      setDevelopers([]);
+      setLoading(false);
+      return;
+    }
+
     switch (activeTab) {
       case 'apps':
         handleSearchApps(query);
@@ -117,7 +125,15 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
   // Handle tab change
   const handleTabChange = (tabId: TabType) => {
     setActiveTab(tabId);
-    
+
+    if (!searchQuery.trim()) {
+      setFilteredApps([]);
+      setUsers([]);
+      setDevelopers([]);
+      setLoading(false);
+      return;
+    }
+
     switch (tabId) {
       case 'apps':
         handleSearchApps(searchQuery);
@@ -131,12 +147,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
     }
   };
 
-  // Initialize data when modal opens
-  useEffect(() => {
-    if (open) {
-      handleSearchApps(''); // Load initial apps
-    }
-  }, [open, handleSearchApps]);
 
   useEffect(() => {
     if (open && inputRef.current) {
@@ -201,7 +211,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-all duration-200 text-sm cursor-pointer ${
                     activeTab === tab.id
                       ? 'bg-background/80 text-foreground'
-                      : 'text-foreground hover:text-gray-300 hover:bg-background/50'
+                      : 'text-gray-400 hover:text-gray-300 hover:bg-background/50'
                   }`}
                 >
                   <Icon size={14} />
@@ -223,11 +233,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
               {/* Apps Tab */}
               {activeTab === 'apps' && (
                 <div className="p-4">
-                  <h3 className="text-foreground text-sm font-medium tracking-wider uppercase mb-4 px-2">
-                    Bitcoin Apps ({filteredApps.length})
-                  </h3>
                   <div className="space-y-1">
-                    {filteredApps.map((app) => (
+                    {searchQuery.trim() && filteredApps.map((app) => (
                       <Link
                         key={app.id}
                         href={`/apps/${app.id}`}
@@ -275,11 +282,15 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                         </div>
                       </Link>
                     ))}
-                    {filteredApps.length === 0 && (
+                    {!searchQuery.trim() ? (
                       <div className="text-foreground text-center py-8">
-                        {searchQuery ? 'No apps found matching your search' : 'No apps available'}
+                        ...
                       </div>
-                    )}
+                    ) : filteredApps.length === 0 ? (
+                      <div className="text-foreground text-center py-8">
+                        No apps found matching your search
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               )}
@@ -287,11 +298,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
               {/* Developers Tab */}
               {activeTab === 'developers' && (
                 <div className="p-4">
-                  <h3 className="text-foreground text-sm font-medium tracking-wider uppercase mb-4 px-2">
-                    Developers ({developers.length})
-                  </h3>
+
                   <div className="space-y-1">
-                    {developers.map((dev) => (
+                    {searchQuery.trim() && developers.map((dev) => (
                       <Link
                         key={dev.address}
                         href={`/${dev.address}`}
@@ -323,11 +332,15 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                         </div>
                       </Link>
                     ))}
-                    {developers.length === 0 && (
+                    {!searchQuery.trim() ? (
                       <div className="text-foreground text-center py-8">
-                        {searchQuery ? 'No developers found matching your search' : 'No developers found'}
+                        ...
                       </div>
-                    )}
+                    ) : developers.length === 0 ? (
+                      <div className="text-foreground text-center py-8">
+                        No developers found matching your search
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               )}
@@ -335,11 +348,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
               {/* Users Tab */}
               {activeTab === 'users' && (
                 <div className="p-4">
-                  <h3 className="text-foreground text-sm font-medium tracking-wider uppercase mb-4 px-2">
-                    Users ({users.length})
-                  </h3>
                   <div className="space-y-1">
-                    {users.map((user) => (
+                    {searchQuery.trim() && users.map((user) => (
                       <Link
                         key={user.address}
                         href={`/${user.address}`}
@@ -371,11 +381,15 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                         </div>
                       </Link>
                     ))}
-                    {users.length === 0 && (
+                    {!searchQuery.trim() ? (
                       <div className="text-foreground text-center py-8">
-                        {searchQuery ? 'No users found matching your search' : 'No users found'}
+                        ...
                       </div>
-                    )}
+                    ) : users.length === 0 ? (
+                      <div className="text-foreground text-center py-8">
+                        No users found matching your search
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               )}
