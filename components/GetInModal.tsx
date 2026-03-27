@@ -334,7 +334,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                   className="w-full h-12 rounded-[9px] bg-[#0000ff] text-foreground font-semibold text-base cursor-pointer flex items-center px-4 hover:bg-[#0000ff]"
                   type="button"
                 >
-                  <Shield className="w-[18px] h-[18px] mx-[5px]"/>
+                  <Shield className="text-white w-[18px] h-[18px] mx-[5px]"/>
                   <span className="text-center flex-1 text-white">
                     {isWalletEncrypted && walletInfo 
                       ? `Unlock ${formatStxAddress(walletInfo.address)}` 

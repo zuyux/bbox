@@ -202,7 +202,7 @@
       "Mobile"
     ],
     "downloads": "100K+",
-    "rating": 4.8,
+    "rating": 4.1,
     "verified": true,
     "link": "https://zeusln.app/",
     "imgCID": "bafkreihrnn3quxgq2qwkeam64kmi5grlmjshg7tetepesjd2ongaajxcne"
@@ -893,5 +893,22 @@
     "verified": true,
     "link": "https://dmnd.work/",
     "imgCID": "bafkreibid2mmntqv5n5z25j2b6hg4d3rg2qqzh7gy34bjxivo4qkfaev7m"
+  },
+
+  {
+    "id": 57,
+    "name": "Samourai",
+    "description": "Samourai is a free, open-source, and privacy-focused Bitcoin wallet.",
+    "category": "Wallet",
+    "tags": [
+      "Wallet",
+      "Bitcoin",
+      "Lightning"
+    ],
+    "downloads": "N/A",
+    "rating": 5.0,
+    "verified": true,
+    "link": "https://freesamourai.com/",
+    "imgCID": "bafkreifhlat7yxkgmykrm576efbkwhq75cmvibplmp3juyvf7yb6mjrovy"
   }
 ]

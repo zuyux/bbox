@@ -1,11 +1,14 @@
 
 'use client';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search } from 'lucide-react';
 
 import { useState } from 'react';
-import { SearchModal } from './SearchModal';
+const SearchModal = dynamic(() => import('./SearchModal').then((mod) => mod.SearchModal), {
+  ssr: false,
+});
 import GetInModal from './GetInModal';
 
 export const Navbar = () => {
@@ -45,7 +48,7 @@ export const Navbar = () => {
           </div>
         </div>
       </nav>
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {searchOpen && <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />}
       {getInOpen && <GetInModal onClose={() => setGetInOpen(false)} />}
       
       <style jsx>{`

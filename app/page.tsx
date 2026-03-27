@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
+import GetInModal from '@/components/GetInModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowRight } from 'lucide-react';
+import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { allApps, getCategoryStats, getAppStats } from '@/lib/appsUtils';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 
@@ -51,6 +53,7 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [isDragging, setIsDragging] = useState(false);
   const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
+  const [showGetInModal, setShowGetInModal] = useState(false);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastTimestampRef = useRef<number | null>(null);
@@ -63,8 +66,13 @@ export default function HomePage() {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingMoreRef = useRef(false);
-  const visibleApps = allApps.slice(0, visibleCount);
-  const canLoadMore = visibleCount < allApps.length;
+  const currentAddress = useCurrentAddress();
+  const sortedApps = useMemo(() => {
+    return [...allApps].sort((a, b) => b.rating - a.rating);
+  }, [allApps]);
+  const totalAppsCount = sortedApps.length;
+  const visibleApps = sortedApps.slice(0, visibleCount);
+  const canLoadMore = visibleCount < totalAppsCount;
   const markImageLoaded = useCallback((appId: number) => {
     setLoadedImages(prev => {
       if (prev[appId]) {
@@ -212,8 +220,8 @@ export default function HomePage() {
   }, [stopDragging]);
 
   const handleLoadMore = useCallback(() => {
-    setVisibleCount(prev => Math.min(prev + LOAD_STEP, allApps.length));
-  }, []);
+    setVisibleCount(prev => Math.min(prev + LOAD_STEP, totalAppsCount));
+  }, [totalAppsCount]);
 
   useEffect(() => {
     const sentinel = loadMoreRef.current;
@@ -344,6 +352,18 @@ export default function HomePage() {
       event.preventDefault();
       event.stopPropagation();
     }
+  }, []);
+
+  const handleStartBuilding = useCallback(() => {
+    if (currentAddress) {
+      router.push('/build');
+      return;
+    }
+    setShowGetInModal(true);
+  }, [currentAddress, router]);
+
+  const handleGetInModalClose = useCallback(() => {
+    setShowGetInModal(false);
   }, []);
   return (
     <div className="bg-background l-dotted-grid-background min-h-screen">
@@ -512,12 +532,13 @@ export default function HomePage() {
                 Developer Guide
               </Link>
             </Button>
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-[#fff] cursor-pointer">
+            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-[#fff] cursor-pointer" onClick={handleStartBuilding}>
               Start Building
             </Button>
           </div>
         </div>
       </div>
+      {showGetInModal && <GetInModal onClose={handleGetInModalClose} />}
     </div>
   );
 }

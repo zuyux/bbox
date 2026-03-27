@@ -15,6 +15,33 @@ const FEATURED_TOKEN_SYMBOLS = new Set([
   'cholo',
 ]);
 
+const formatQuickFillAmount = (value: number) => {
+  if (!Number.isFinite(value) || value <= 0) {
+    return '';
+  }
+  const normalized = value >= 1 ? Number(value.toFixed(6)) : Number(value.toPrecision(6));
+  return normalized.toString();
+};
+
+const formatCompactBalance = (value: number) => {
+  if (!Number.isFinite(value)) {
+    return '--';
+  }
+  return value >= 1
+    ? value.toLocaleString(undefined, { maximumFractionDigits: 6 })
+    : value.toPrecision(4);
+};
+
+const abbreviateAddress = (value: string, chars = 5) => {
+  if (!value) {
+    return '';
+  }
+  if (value.length <= chars * 2 + 3) {
+    return value;
+  }
+  return `${value.slice(0, chars)}...${value.slice(-chars)}`;
+};
+
 // Extend the Window interface to include StacksProvider
 declare global {
   interface Window {
@@ -109,6 +136,41 @@ export default function WalletPage() {
     (extensionAvailable || (!!sendPassword && !passwordError))
   );
 
+  const availableBalanceValue = useMemo(() => {
+    if (!sbtcBalance) {
+      return 0;
+    }
+    const sanitized = Number(String(sbtcBalance).replace(/,/g, ''));
+    return Number.isFinite(sanitized) ? sanitized : 0;
+  }, [sbtcBalance]);
+
+  const remainingBalanceValue = useMemo(() => {
+    if (!availableBalanceValue || !parsedAmount) {
+      return null;
+    }
+    const remaining = availableBalanceValue - parsedAmount;
+    return Number.isFinite(remaining) ? remaining : null;
+  }, [availableBalanceValue, parsedAmount]);
+
+  const quickFillOptions = useMemo(() => {
+    if (!availableBalanceValue || availableBalanceValue <= 0) {
+      return [];
+    }
+    const options = [
+      { label: '25%', value: formatQuickFillAmount(availableBalanceValue * 0.25) },
+      { label: '50%', value: formatQuickFillAmount(availableBalanceValue * 0.5) },
+      { label: '75%', value: formatQuickFillAmount(availableBalanceValue * 0.75) },
+      { label: 'All', value: formatQuickFillAmount(availableBalanceValue) }
+    ];
+    return options.filter((option): option is { label: string; value: string } => Boolean(option.value));
+  }, [availableBalanceValue]);
+
+  const maxFillValue = useMemo(() => formatQuickFillAmount(availableBalanceValue), [availableBalanceValue]);
+
+  const sendActionLabel = extensionAvailable ? 'Send via Extension' : 'Send Securely';
+  const summaryRecipientDisplay = trimmedRecipient ? abbreviateAddress(trimmedRecipient, 6) : 'Add recipient';
+  const remainingBalanceDisplay = remainingBalanceValue !== null ? formatCompactBalance(Math.max(remainingBalanceValue, 0)) : null;
+
   const resetSendForm = () => {
     setSendTo("");
     setSendAmount("");
@@ -122,6 +184,35 @@ export default function WalletPage() {
   };
 
   const closeReceiveModal = () => setShowReceive(false);
+
+  const handlePasteRecipient = useCallback(async () => {
+    if (sendLoading) {
+      return;
+    }
+    if (typeof navigator === 'undefined' || !navigator.clipboard?.readText) {
+      toast.error('Clipboard unavailable in this context.');
+      return;
+    }
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text) {
+        toast.error('Clipboard is empty.');
+        return;
+      }
+      setSendTo(text.trim());
+      toast.success('Recipient pasted.');
+    } catch (error) {
+      console.warn('Clipboard read failed', error);
+      toast.error('Clipboard permission denied.');
+    }
+  }, [sendLoading]);
+
+  const handleQuickFillValue = useCallback((value: string) => {
+    if (!value || sendLoading) {
+      return;
+    }
+    setSendAmount(value);
+  }, [sendLoading]);
 
   const sendMethodTitle = extensionAvailable ? 'Sending sBTC with Extension' : 'Sending sBTC with Local Wallet';
   const sendMethodDescription = extensionAvailable
@@ -655,17 +746,28 @@ export default function WalletPage() {
                 <label className="block text-sm font-medium mb-2" htmlFor="send-recipient">
                   Recipient Address
                 </label>
-                <input
-                  id="send-recipient"
-                  className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${recipientError ? 'border-destructive/70' : 'border-border'}`}
-                  value={sendTo}
-                  onChange={e => setSendTo(e.target.value)}
-                  required
-                  placeholder="SP3FBR2K..."
-                  disabled={sendLoading}
-                  autoComplete="off"
-                  spellCheck={false}
-                />
+                <div className="flex gap-2">
+                  <input
+                    id="send-recipient"
+                    className={`flex-1 px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${recipientError ? 'border-destructive/70' : 'border-border'}`}
+                    value={sendTo}
+                    onChange={e => setSendTo(e.target.value)}
+                    required
+                    placeholder="SP3FBR2K..."
+                    disabled={sendLoading}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <button
+                    type="button"
+                    className="px-3 py-2 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:border-foreground hover:text-foreground transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    onClick={handlePasteRecipient}
+                    disabled={sendLoading}
+                    aria-label="Paste address from clipboard"
+                  >
+                    Paste
+                  </button>
+                </div>
                 <p className="text-xs text-muted-foreground mt-2">Double-check the destination—sBTC transfers on Stacks are final.</p>
                 {recipientError && (
                   <p className="text-xs text-destructive mt-2">{recipientError}</p>
@@ -676,23 +778,48 @@ export default function WalletPage() {
                 <label className="block text-sm font-medium mb-2" htmlFor="send-amount">
                   Amount 
                 </label>
-                <input
-                  id="send-amount"
-                  className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
-                  type="number"
-                  min={MIN_SEND_AMOUNT}
-                  step="any"
-                  value={sendAmount}
-                  onChange={e => setSendAmount(e.target.value)}
-                  required
-                  placeholder="0.0"
-                  disabled={sendLoading}
-                  style={{ MozAppearance: "textfield" } as React.CSSProperties}
-                />
+                <div className="flex gap-2">
+                  <input
+                    id="send-amount"
+                    className={`flex-1 px-4 py-3 rounded-xl border bg-background text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
+                    type="number"
+                    min={MIN_SEND_AMOUNT}
+                    step="any"
+                    value={sendAmount}
+                    onChange={e => setSendAmount(e.target.value)}
+                    required
+                    placeholder="0.0"
+                    disabled={sendLoading}
+                    style={{ MozAppearance: "textfield" } as React.CSSProperties}
+                  />
+                  <button
+                    type="button"
+                    className="px-3 py-2 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:border-foreground hover:text-foreground transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    onClick={() => handleQuickFillValue(maxFillValue)}
+                    disabled={sendLoading || !maxFillValue}
+                  >
+                    Max
+                  </button>
+                </div>
                 <div className="flex items-center justify-between text-xs mt-2 text-muted-foreground">
                   <span>Minimum {MIN_SEND_AMOUNT} sBTC (≈1 sat)</span>
-                  <span>Approximately {sbtcBalance ?? '--'} satoshis available</span>
+                  <span>Available {formatCompactBalance(availableBalanceValue)} sBTC</span>
                 </div>
+                {quickFillOptions.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {quickFillOptions.map(option => (
+                      <button
+                        key={option.label}
+                        type="button"
+                        className="px-3 py-1.5 rounded-full border border-border text-xs font-semibold text-muted-foreground hover:border-foreground hover:text-foreground transition disabled:opacity-40 disabled:cursor-not-allowed"
+                        onClick={() => handleQuickFillValue(option.value)}
+                        disabled={sendLoading}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {amountError && (
                   <p className="text-xs text-destructive mt-2">{amountError}</p>
                 )}
@@ -723,6 +850,35 @@ export default function WalletPage() {
                 {memoError && <p className="text-xs text-destructive mt-2">{memoError}</p>}
               </div>
 
+              {(sendAmount || trimmedRecipient) && (
+                <div className="rounded-2xl border border-border bg-muted/20 p-4 text-sm">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Network</span>
+                    <span className="font-mono uppercase">{currentNetwork}</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-3">
+                    <span className="text-muted-foreground">Recipient</span>
+                    <span className={`font-mono text-xs ${trimmedRecipient ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {summaryRecipientDisplay}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mt-3">
+                    <span className="text-muted-foreground">Amount</span>
+                    <span className="font-semibold text-lg">{sendAmount || '0.0'} sBTC</span>
+                  </div>
+                  {remainingBalanceDisplay && (
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+                      <span>Remaining balance</span>
+                      <span>{remainingBalanceDisplay} sBTC</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mt-3">
+                    <span>Method</span>
+                    <span>{extensionAvailable ? 'Browser extension' : 'Encrypted wallet'}</span>
+                  </div>
+                </div>
+              )}
+
               {!extensionAvailable && (
                 <div>
                   <label className="block text-sm font-medium mb-2" htmlFor="send-password">
@@ -750,7 +906,7 @@ export default function WalletPage() {
                   className="w-full py-3 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={sendLoading || !sendFormValid}
                 >
-                  {sendLoading ? (extensionAvailable ? 'Sending via extension...' : 'Sending...') : 'Send'}
+                  {sendLoading ? (extensionAvailable ? 'Sending via extension...' : 'Sending...') : sendActionLabel}
                 </button>
                 <button
                   type="button"
