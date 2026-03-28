@@ -51,7 +51,7 @@ export default function AppDetailPage() {
       
       <div className="container mx-auto px-4 pt-20 pb-12 max-w-4xl">
         {/* Back Button */}
-        <Button variant="ghost" className="mb-4" asChild>
+        <Button variant="link" className="mb-4" asChild>
           <Link href="/apps">
             <ArrowLeft className="-ml-3 mr-2 h-4 w-4" />
           </Link>
@@ -62,7 +62,7 @@ export default function AppDetailPage() {
           <div className="flex gap-4 items-start mb-4">
             {/* App Icon */}
             <div className="flex-shrink-0">
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#111] to-[#222] rounded-2xl sm:rounded-3xl flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-md overflow-hidden">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#fff] to-[#f1f1f1] rounded-2xl sm:rounded-3xl flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-md overflow-hidden">
                 {app.imgCID ? (
                   <IPFSImage
                     src={app.imgCID}

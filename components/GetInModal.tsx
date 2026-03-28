@@ -317,10 +317,10 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
               <div>
                 <Button
                   onClick={() => setShowImportModal(true)}
-                  className="w-full h-12 rounded-[9px] bg-accent-foreground text-background hover:text-background hover:bg-accent-foreground font-semibold text-base border border-foreground cursor-pointer flex items-center px-4"
+                  className="w-full h-12 rounded-[9px] bg-accent-foreground text-foreground hover:text-foreground hover:bg-accent-foreground font-semibold text-base border border-foreground cursor-pointer flex items-center px-4"
                   type="button"
                 >
-                  <Image src="/wallet-ico.svg" alt="Wallet" width={18} height={18} className="invert dark:invert-0  mr-2"/>
+                  <Image src="/wallet-ico.svg" alt="Wallet" width={18} height={18} className="mr-2"/>
                   <span className="text-center flex-1">Connect Wallet</span>
                 </Button>
                 {walletError && (
@@ -334,7 +334,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                   className="w-full h-12 rounded-[9px] bg-[#0000ff] text-foreground font-semibold text-base cursor-pointer flex items-center px-4 hover:bg-[#0000ff]"
                   type="button"
                 >
-                  <Shield className="text-white w-[18px] h-[18px] mx-[5px]"/>
+                  <Shield className="text-background w-[18px] h-[18px] mx-[5px]"/>
                   <span className="text-center flex-1 text-white">
                     {isWalletEncrypted && walletInfo 
                       ? `Unlock ${formatStxAddress(walletInfo.address)}` 

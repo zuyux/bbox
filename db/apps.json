@@ -892,7 +892,7 @@
     "rating": 4.5,
     "verified": true,
     "link": "https://dmnd.work/",
-    "imgCID": "bafkreibid2mmntqv5n5z25j2b6hg4d3rg2qqzh7gy34bjxivo4qkfaev7m"
+    "imgCID": "bafkreightwh7lgxn7e7zjoi5eyhjyrwvx5yyc3ulegln5rpd7kcrltihtm"
   },
 
   {
@@ -906,9 +906,183 @@
       "Lightning"
     ],
     "downloads": "N/A",
-    "rating": 5.0,
+    "rating": 4.9,
     "verified": true,
     "link": "https://freesamourai.com/",
     "imgCID": "bafkreifhlat7yxkgmykrm576efbkwhq75cmvibplmp3juyvf7yb6mjrovy"
+  },
+  {
+    "id": 58,
+    "name": "BTCPay Server",
+    "description": "Open-source Bitcoin payment processor for merchants and self-hosted stores.",
+    "category": "Payment",
+    "tags": [
+      "Bitcoin",
+      "Lightning",
+      "Merchant"
+    ],
+    "downloads": "N/A",
+    "rating": 4.5,
+    "verified": true,
+    "link": "https://btcpayserver.org/",
+    "imgCID": "bafkreie3ld67npqk23y7j6t3k77rull67br2sudz6tcef3n2mzthv2uhbe"
+  },
+  {
+    "id": 59,
+    "name": "Umbrel",
+    "description": "Personal Bitcoin and Lightning node platform with an easy-to-use app marketplace.",
+    "category": "Infrastructure",
+    "tags": [
+      "Bitcoin",
+      "Node",
+      "Self-hosted"
+    ],
+    "downloads": "N/A",
+    "rating": 4.5,
+    "verified": true,
+    "link": "https://umbrel.com/",
+    "imgCID": "bafkreieihbi4ooziglscss6l6c5abetjcbvnhm7xvajbjieu2ifusfnzvq"
+  },
+  {
+    "id": 60,
+    "name": "RaspiBlitz",
+    "description": "DIY Bitcoin and Lightning node distribution for hobbyists and self-hosters.",
+    "category": "Infrastructure",
+    "tags": [
+      "Bitcoin",
+      "Node",
+      "DIY"
+    ],
+    "downloads": "N/A",
+    "rating": 4.4,
+    "verified": true,
+    "link": "https://raspiblitz.org/",
+    "imgCID": "bafkreifxdjy6szedrjynsrnxl2davpa4o3jfcshcf2op35oo7wfqpf46jq"
+  },
+  {
+    "id": 61,
+    "name": "Wasabi",
+    "description": "Privacy-focused Bitcoin desktop wallet with CoinJoin support.",
+    "category": "Wallet",
+    "tags": [
+      "Bitcoin",
+      "Privacy",
+      "Desktop"
+    ],
+    "downloads": "N/A",
+    "rating": 4.4,
+    "verified": true,
+    "link": "https://wasabiwallet.io/",
+    "imgCID": "bafkreidqel2crxzlvcs662hgvto47sebmd5carkwx4rhlqq3s2xvpxh4ui"
+  },
+  {
+    "id": 62,
+    "name": "Nunchuk",
+    "description": "Mobile Bitcoin Lightning wallet with seamless on-ramp and transaction UX.",
+    "category": "Wallet",
+    "tags": [
+      "Bitcoin",
+      "Lightning",
+      "Mobile"
+    ],
+    "downloads": "N/A",
+    "rating": 4.4,
+    "verified": true,
+    "link": "https://nunchuk.io/",
+    "imgCID": "bafkreih5radd3anmwg3ixfby4vemkxwch2hexrpyl4hglisof2l3kogazq"
+  },
+  {
+    "id": 63,
+    "name": "Blockstream",
+    "description": "Secure Bitcoin wallet with multi-sig and hardware wallet support.",
+    "category": "Wallet",
+    "tags": [
+      "Bitcoin",
+      "Security",
+      "Multi-sig"
+    ],
+    "downloads": "N/A",
+    "rating": 4.5,
+    "verified": true,
+    "link": "https://blockstream.com/app/",
+    "imgCID": "bafkreibfbrjbdmrjtj7pmjwenryswuxayydcssq4q3tyiqngevelczs2mu"
+  },
+  {
+    "id": 64,
+    "name": "Breez",
+    "description": "Lightning wallet with built-in point-of-sale and streaming payment features.",
+    "category": "Wallet",
+    "tags": [
+      "Bitcoin",
+      "Lightning",
+      "Payments"
+    ],
+    "downloads": "N/A",
+    "rating": 4.5,
+    "verified": true,
+    "link": "https://breez.technology/",
+    "imgCID": "bafkreihgqbhsoslbnpqxcu6laaj5gbbkygh22ainczgiez2s2ijo7tslbe"
+  },
+  {
+    "id": 65,
+    "name": "HodlHodl",
+    "description": "Non-custodial Bitcoin peer-to-peer trading platform.",
+    "category": "DeFi",
+    "tags": [
+      "Bitcoin",
+      "P2P",
+      "Trading"
+    ],
+    "downloads": "N/A",
+    "rating": 4.4,
+    "verified": true,
+    "link": "https://hodlhodl.com/",
+    "imgCID": "bafkreigxuulqdsuatdvotu245copjelktxecd5w3e636nk2h2rfv24xzh4"
+  },
+  {
+    "id": 66,
+    "name": "Bitcoin Dev Kit",
+    "description": "Tools and SDKs for building Bitcoin-native applications.",
+    "category": "Developer",
+    "tags": [
+      "Bitcoin",
+      "SDK",
+      "Developer"
+    ],
+    "downloads": "N/A",
+    "rating": 4.5,
+    "verified": true,
+    "link": "https://bitcoindevkit.org/",
+    "imgCID": "bafkreihmceyasgctbhm4v3gdmhpqfqelsfjp6flj4epkpee46mh5h5akie"
+  },
+  {
+    "id": 67,
+    "name": "OpenOrdex",
+    "description": "Decentralized marketplace for Ordinals and Bitcoin-native digital assets.",
+    "category": "DeFi",
+    "tags": [
+      "Ordinals",
+      "Marketplace",
+      "Runes"
+    ],
+    "downloads": "N/A",
+    "rating": 4.4,
+    "verified": true,
+    "link": "https://openordex.org/",
+    "imgCID": "bafkreicrobuuo737n6ezl5z6tco7d52hwgidk4tcpo6laqrz4bgtdrqrve"
+  },
+    {
+    "id": 68,
+    "name": "BitChat",
+    "description": "bitchat is a decentralized peer-to-peer messaging application that operates over bluetooth mesh networks. no internet required, no servers, no phone numbers.",
+    "category": "DeFi",
+    "tags": [
+      "Ordinals"
+    ],
+    "downloads": "N/A",
+    "rating": 4.4,
+    "verified": true,
+    "link": "https://bitchat.free/",
+    "imgCID": "bafkreicq3djwzp6jzyuu74xf4arcnmnh7j2iisvskhltlt6vvc3tdqrx4y"
   }
 ]

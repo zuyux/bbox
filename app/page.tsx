@@ -386,7 +386,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Link href="/submit" className="text-sm underline">
-              <Button size="lg" variant="outline" className='cursor-pointer'>
+              <Button size="lg" variant="secondary" className='cursor-pointer'>
                 Submit Your App
               </Button>
             </Link>
@@ -444,7 +444,7 @@ export default function HomePage() {
         <div className="my-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="title text-2xl font-bold">Featured Apps</h2>
-            <Button variant="ghost" asChild>
+            <Button variant="link" asChild>
               <Link href="/apps">
                 View All
                 <ArrowRight className="ml-2 h-4 w-4" />
