@@ -200,8 +200,8 @@ export default function AppsPage() {
               onClick={() => updateCategorySelection('all')}
               className={`rounded-full whitespace-nowrap text-xs cursor-pointer border border-green-500 transition-colors ${
                 selectedCategory === 'all'
-                  ? 'bg-green-500 text-white hover:bg-green-600'
-                  : 'text-green-600 hover:bg-green-50'
+                  ? 'bg-green-500 text-white hover:bg-green-600 hover:text-foreground'
+                  : 'text-green-600 hover:bg-green-50 hover:text-foreground'
               }`}
             >
               All Apps
@@ -216,8 +216,8 @@ export default function AppsPage() {
                   onClick={() => updateCategorySelection(category)}
                   className={`rounded-md whitespace-nowrap flex items-center justify-center gap-1 text-xs cursor-pointer border border-green-500 transition-colors ${
                     selectedCategory === category
-                      ? 'bg-green-500 text-white hover:bg-green-600'
-                      : 'text-green-600 hover:bg-green-50'
+                      ? 'bg-green-500 text-white hover:bg-green-600 hover:text-foreground'
+                      : 'text-green-600 hover:bg-green-50 hover:text-foreground'
                   }`}
                 >
                   <Icon className="w-3 h-3 flex-shrink-0" />

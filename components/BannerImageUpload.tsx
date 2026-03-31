@@ -214,7 +214,7 @@ export function BannerImageUpload({
             onChange={handleFileSelect}
             className="hidden"
           />
-          <div className="w-full py-2 px-4 bg-white/10 hover:bg-white/20 text-accent-foreground rounded-lg border border-foreground/20 transition-colors text-center text-sm cursor-pointer">
+          <div className="w-full py-2 px-4 bg-white/10 hover:bg-white/20 text-foreground rounded-lg border border-foreground/20 transition-colors text-center text-sm cursor-pointer">
             <Upload className="w-4 h-4 inline mr-2" />
             Choose Banner Image
           </div>

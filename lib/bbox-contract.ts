@@ -23,7 +23,6 @@ import {
   type TupleCV,
 } from '@stacks/transactions';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
-import { openContractCall } from '@stacks/connect';
 import { getPersistedNetwork, type Network } from './network';
 import { getApiUrl } from './stacks-api';
 import { getSbtcAssetString, getSBTCContract } from './contracts';
@@ -382,6 +381,7 @@ export async function voteOnApp(
   const contractId = getBboxContractAddress();
   const { contractAddress, contractName } = parseContractAddress(contractId);
 
+  const { openContractCall } = await import('@stacks/connect');
   openContractCall({
     network,
     anchorMode: AnchorMode.Any,
@@ -422,6 +422,7 @@ export async function rateApp(
     throw new Error('Rating must be between 1 and 5');
   }
 
+  const { openContractCall } = await import('@stacks/connect');
   openContractCall({
     network,
     anchorMode: AnchorMode.Any,
@@ -545,6 +546,7 @@ export async function sendSbtcDonation(options: SendSbtcDonationOptions): Promis
     }
   }
 
+  const { openContractCall } = await import('@stacks/connect');
   openContractCall({
     network,
     anchorMode: AnchorMode.Any,
@@ -798,6 +800,8 @@ async function executeBboxContractCall(options: BboxContractCallOptions): Promis
   }
 
   console.log('📱 Using @stacks/connect (fallback)...');
+
+  const { openContractCall } = await import('@stacks/connect');
 
   const fallbackAppDetails = appDetails ?? {
     name: 'BBOX',

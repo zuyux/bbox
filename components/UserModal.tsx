@@ -190,7 +190,7 @@ export default function UserModal({ onClose }: UserModalProps) {
           {/* SUBMIT button on the left */}
           <button
             onClick={() => { onClose(); router.push('/submit'); }}
-            className="px-6 py-1.5 bg-background/10 border border-foreground/50 text-foreground text-sm font-medium rounded-lg hover:bg-foreground hover:text-background transition-all duration-200 cursor-pointer select-none mr-3"
+            className="px-6 py-1.5 bg-background/10 border border-foreground/50 text-foreground text-xs font-medium rounded-lg hover:bg-foreground hover:text-background transition-all duration-200 cursor-pointer select-none mr-3"
           >
             SUBMIT
           </button>

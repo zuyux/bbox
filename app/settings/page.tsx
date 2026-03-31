@@ -55,6 +55,9 @@ export default function SettingsPage() {
   const [occupation, setOccupation] = useState('');
   const [company, setCompany] = useState('');
   const [yearsExperience, setYearsExperience] = useState<number>(0);
+  const [bitcoinExperienceLevel, setBitcoinExperienceLevel] = useState('');
+  const [bitcoinTechStack, setBitcoinTechStack] = useState('');
+  const [bitcoinProjectUrl, setBitcoinProjectUrl] = useState('');
   
   // Profile Media
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -108,6 +111,14 @@ export default function SettingsPage() {
           setOccupation(profile.occupation || '');
           setCompany(profile.company || '');
           setYearsExperience(profile.years_experience || 0);
+          const profileBitcoin = profile as Profile & {
+            bitcoin_experience_level?: string;
+            bitcoin_tech_stack?: string;
+            bitcoin_project_url?: string;
+          };
+          setBitcoinExperienceLevel(profileBitcoin.bitcoin_experience_level || '');
+          setBitcoinTechStack(profileBitcoin.bitcoin_tech_stack || '');
+          setBitcoinProjectUrl(profileBitcoin.bitcoin_project_url || '');
           setAvatarUrl(profile.avatar_url || '');
           setAvatarCid(profile.avatar_cid || '');
           setBannerUrl(profile.banner_url || '');
@@ -123,7 +134,25 @@ export default function SettingsPage() {
 
         // Load skill categories
         const categories = await getSkillCategories();
-        setSkillCategories(categories || []);
+        const defaultProgrammingSkills = [
+          { category: 'Languages', skills: ['JavaScript', 'TypeScript', 'Rust', 'Python', 'Go', 'C++'] },
+          { category: 'Bitcoin Stack', skills: ['Bitcoin Core', 'LND', 'BDK', 'Electrum', 'Ordinals', 'Lightning Network', 'Stacks', 'Rootstock'] },
+          { category: 'Frameworks', skills: ['React', 'Next.js', 'Node.js', 'Express', 'Actix', 'Rocket'] },
+          { category: 'DevOps Tools', skills: ['Docker', 'Kubernetes', 'GitHub Actions', 'GitLab CI', 'Terraform'] },
+        ];
+
+        const oldArtCategories = [
+          '3D Software',
+          'CAD Software',
+          'Voxel/Pixel Art',
+          'Texturing/Materials',
+          'Rendering',
+          'Game Engines',
+          'Other Tools',
+        ];
+
+        const hasOldArtCategories = categories?.some((category) => oldArtCategories.includes(category.category));
+        setSkillCategories(hasOldArtCategories || !categories || categories.length === 0 ? defaultProgrammingSkills : categories);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
         console.error('Error loading profile data:', {
@@ -147,7 +176,12 @@ export default function SettingsPage() {
     try {
       if (!address) throw new Error('Wallet not connected');
       
-      const profileData: Partial<Profile> & { address: string } = {
+      const profileData: Partial<Profile> & {
+        address: string;
+        bitcoin_experience_level?: string;
+        bitcoin_tech_stack?: string;
+        bitcoin_project_url?: string;
+      } = {
         address,
         username: username.trim() || undefined,
         email: email.trim() || undefined,
@@ -170,6 +204,9 @@ export default function SettingsPage() {
         occupation: occupation.trim() || undefined,
         company: company.trim() || undefined,
         years_experience: yearsExperience > 0 ? yearsExperience : undefined,
+        bitcoin_experience_level: bitcoinExperienceLevel.trim() || undefined,
+        bitcoin_tech_stack: bitcoinTechStack.trim() || undefined,
+        bitcoin_project_url: bitcoinProjectUrl.trim() || undefined,
         avatar_url: avatarUrl.trim() || undefined,
         avatar_cid: avatarCid.trim() || undefined,
         banner_url: bannerUrl.trim() || undefined,
@@ -214,15 +251,15 @@ export default function SettingsPage() {
 
   if (!address) {
     return (
-  <div className="max-w-2xl mx-auto my-24 p-8 rounded-2xl border text-center bg-accent-background border-gray-200 dark:border-gray-800 text-accent-foreground">
+  <div className="max-w-2xl mx-auto my-24 p-8 rounded-2xl border text-center bg-accent-background border-gray-200 dark:border-gray-800 text-foreground">
           <h1 className="text-2xl font-bold mb-4">Connect Your Wallet</h1>
-        <p className="text-accent-foreground">Please connect your wallet to access settings.</p>
+        <p className="text-foreground">Please connect your wallet to access settings.</p>
       </div>
     );
   }
 
   return (
-  <div className="max-w-4xl mx-auto my-24 p-8 rounded-2xl border bg-accent-background border-gray-200 dark:border-gray-800 text-accent-foreground">
+  <div className="max-w-4xl mx-auto my-24 p-8 rounded-2xl border bg-accent-background border-gray-200 dark:border-gray-800 text-foreground">
       <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
       
       <Tabs defaultValue="profile" className="w-full">
@@ -231,25 +268,25 @@ export default function SettingsPage() {
         >
           <TabsTrigger
             value="profile"
-            className="cursor-pointer font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:border data-[state=active]:bg-transparent data-[state=active]:text-accent-background transition-colors"
+            className="cursor-pointer font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:border data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
           >
             Profile
           </TabsTrigger>
           <TabsTrigger
             value="social"
-            className="cursor-pointer bg-accent-background text-accent-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-accent-background transition-colors"
+            className="cursor-pointer bg-accent-background text-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
           >
             Social
           </TabsTrigger>
           <TabsTrigger
             value="professional"
-            className="cursor-pointer bg-accent-background text-accent-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-accent-background transition-colors"
+            className="cursor-pointer bg-accent-background text-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
           >
             Professional
           </TabsTrigger>
           <TabsTrigger
             value="privacy"
-            className="cursor-pointer bg-accent-background text-accent-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-accent-background transition-colors"
+            className="cursor-pointer bg-accent-background text-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
           >
             Privacy
           </TabsTrigger>
@@ -316,7 +353,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">Username</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={username}
                       onChange={e => setUsername(e.target.value)}
@@ -329,7 +366,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">Email</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
@@ -340,7 +377,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">Display Name</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={displayName}
                       onChange={e => setDisplayName(e.target.value)}
@@ -352,7 +389,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">Location</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={location}
                       onChange={e => setLocation(e.target.value)}
@@ -365,7 +402,7 @@ export default function SettingsPage() {
                 <div>
                   <label className="block mb-2 text-sm font-medium">Tagline</label>
                   <input
-                    className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     type="text"
                     value={tagline}
                     onChange={e => setTagline(e.target.value)}
@@ -378,7 +415,7 @@ export default function SettingsPage() {
                 <div>
                   <label className="block mb-2 text-sm font-medium">Biography</label>
                   <textarea
-                    className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={biography}
                     onChange={e => setBiography(e.target.value)}
                     placeholder="Tell us more about you..."
@@ -392,7 +429,7 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6 mt-6">
-            <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-accent-foreground">
+            <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
               <CardHeader>
                 <CardTitle>Social Links</CardTitle>
               </CardHeader>
@@ -401,7 +438,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">Website</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="url"
                       value={website}
                       onChange={e => setWebsite(e.target.value)}
@@ -412,7 +449,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">X</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={twitter}
                       onChange={e => setTwitter(e.target.value)}
@@ -423,18 +460,18 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">Discord</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={discord}
                       onChange={e => setDiscord(e.target.value)}
-                      placeholder="user#1234"
+                      placeholder="username"
                     />
                   </div>
                   
                   <div>
                     <label className="block mb-2 text-sm font-medium">Instagram</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={instagram}
                       onChange={e => setInstagram(e.target.value)}
@@ -445,7 +482,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">LinkedIn</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={linkedin}
                       onChange={e => setLinkedin(e.target.value)}
@@ -453,83 +490,12 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
-                
-                <div className="mt-6">
-                  <h3 className="text-lg font-medium mb-4 text-blue-400">3D Art & Portfolio Platforms</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block mb-2 text-sm font-medium">ArtStation</label>
-                      <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        type="text"
-                        value={artstation}
-                        onChange={e => setArtstation(e.target.value)}
-                        placeholder="artstation.com/username"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block mb-2 text-sm font-medium">Sketchfab</label>
-                      <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        type="text"
-                        value={sketchfab}
-                        onChange={e => setSketchfab(e.target.value)}
-                        placeholder="sketchfab.com/username"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block mb-2 text-sm font-medium">Fab (Epic Games)</label>
-                      <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        type="text"
-                        value={fab}
-                        onChange={e => setFab(e.target.value)}
-                        placeholder="fab.com/sellers/username"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block mb-2 text-sm font-medium">TurboSquid</label>
-                      <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        type="text"
-                        value={turbosquid}
-                        onChange={e => setTurbosquid(e.target.value)}
-                        placeholder="turbosquid.com/Search/Artists/username"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block mb-2 text-sm font-medium">CGTrader</label>
-                      <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        type="text"
-                        value={cgtrader}
-                        onChange={e => setCgtrader(e.target.value)}
-                        placeholder="cgtrader.com/username"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block mb-2 text-sm font-medium">Behance</label>
-                      <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        type="text"
-                        value={behance}
-                        onChange={e => setBehance(e.target.value)}
-                        placeholder="behance.net/username"
-                      />
-                    </div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="professional" className="space-y-6 mt-6">
-            <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-accent-foreground">
+            <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
               <CardHeader>
                 <CardTitle>Professional Information</CardTitle>
               </CardHeader>
@@ -538,18 +504,18 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">Occupation</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={occupation}
                       onChange={e => setOccupation(e.target.value)}
-                      placeholder="3D Artist, Game Developer, etc."
+                      placeholder="Bitcoin Developer, Protocol Engineer, etc."
                     />
                   </div>
                   
                   <div>
                     <label className="block mb-2 text-sm font-medium">Company</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={company}
                       onChange={e => setCompany(e.target.value)}
@@ -560,7 +526,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">Years of Experience</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-accent-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="number"
                       min="0"
                       max="50"
@@ -570,13 +536,52 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
-                
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-2 text-sm font-medium">Bitcoin Experience Level</label>
+                    <select
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={bitcoinExperienceLevel}
+                      onChange={e => setBitcoinExperienceLevel(e.target.value)}
+                    >
+                      <option value="">Select level</option>
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                      <option value="expert">Expert</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm font-medium">Bitcoin Tech Stack</label>
+                    <input
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      type="text"
+                      value={bitcoinTechStack}
+                      onChange={e => setBitcoinTechStack(e.target.value)}
+                      placeholder="e.g. Bitcoin Core, LND, BDK, Ordinals"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block mb-4 text-sm font-medium">Skills & Software</label>
+                  <label className="block mb-2 text-sm font-medium">Bitcoin Project URL</label>
+                  <input
+                    className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="url"
+                    value={bitcoinProjectUrl}
+                    onChange={e => setBitcoinProjectUrl(e.target.value)}
+                    placeholder="https://github.com/your-bitcoin-project"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-4 text-sm font-medium">Development Skills & Tools</label>
                   <div className="space-y-4">
                     {skillCategories.map((category) => (
                       <div key={category.category}>
-                        <h4 className="text-sm font-medium text-accent-foreground mb-2">{category.category}</h4>
+                        <h4 className="text-sm font-medium text-foreground mb-2">{category.category}</h4>
                         <div className="flex flex-wrap gap-2">
                           {category.skills.map((skill) => (
                             <Badge
@@ -585,7 +590,7 @@ export default function SettingsPage() {
                               className={`cursor-pointer transition-colors ${
                                 selectedSkills.includes(skill)
                                   ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                  : "bg-accent-background hover:bg-[#333] text-accent-foreground border-[#222]"
+                                  : "bg-accent-background hover:bg-[#333] text-foreground border-[#222]"
                               }`}
                               onClick={() => toggleSkill(skill)}
                             >
@@ -598,7 +603,7 @@ export default function SettingsPage() {
                   </div>
                   {selectedSkills.length > 0 && (
                     <div className="mt-4">
-                      <h5 className="text-sm font-medium text-accent-foreground mb-2">Selected Skills ({selectedSkills.length})</h5>
+                      <h5 className="text-sm font-medium text-foreground mb-2">Selected Skills ({selectedSkills.length})</h5>
                       <div className="flex flex-wrap gap-2">
                         {selectedSkills.map((skill) => (
                           <Badge
@@ -617,7 +622,7 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="privacy" className="space-y-6 mt-6">
-            <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-accent-foreground">
+            <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
               <CardHeader>
                 <CardTitle>Privacy Settings</CardTitle>
               </CardHeader>
@@ -758,7 +763,7 @@ export default function SettingsPage() {
           {!isExtensionWallet && (
             <Link
               href="/settings/password"
-              className="block w-full text-center py-3 px-4 rounded-lg border border-[#222] bg-accent-background text-accent-foreground hover:underline"
+              className="block w-full text-center py-3 px-4 rounded-lg border border-[#222] bg-accent-background text-foreground hover:underline"
             >
               Change Password
             </Link>

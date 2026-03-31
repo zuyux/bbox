@@ -1,4 +1,4 @@
-import { openSignatureRequestPopup, type SignatureRequestOptions } from '@stacks/connect';
+import type { SignatureRequestOptions } from '@stacks/connect';
 import type { StacksProvider } from '@stacks/connect/dist/types';
 import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 
@@ -122,6 +122,7 @@ const requestSignatureViaPopup = async (
   payload: string,
   provider: StacksProvider | undefined
 ): Promise<SignatureData> => {
+  const { openSignatureRequestPopup } = await import('@stacks/connect');
   const networkName = getPersistedNetwork();
   const stacksNetwork = networkName === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET;
 

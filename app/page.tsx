@@ -376,7 +376,7 @@ export default function HomePage() {
             Our Open App Store
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-1xl mx-auto select-text">
-            Discover, evaluate, and fund open-source applications through transparent milestones.
+            Discover, rate, and fund open-source applications through transparent milestones.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600" asChild>
@@ -527,7 +527,7 @@ export default function HomePage() {
             Join thousands of developers building open-source applications for Bitcoin and its Layer-2 ecosystems.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="outline" className='cursor-pointer' asChild>
+            <Button size="lg" variant="secondary" className='cursor-pointer' asChild>
               <Link href="/documentation">
                 Developer Guide
               </Link>

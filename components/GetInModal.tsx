@@ -320,7 +320,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                   className="w-full h-12 rounded-[9px] bg-accent-foreground text-foreground hover:text-foreground hover:bg-accent-foreground font-semibold text-base border border-foreground cursor-pointer flex items-center px-4"
                   type="button"
                 >
-                  <Image src="/wallet-ico.svg" alt="Wallet" width={18} height={18} className="mr-2"/>
+                  <Image src="/wallet-ico.svg" alt="Wallet" width={18} height={18} className="dark:invert mr-2"/>
                   <span className="text-center flex-1">Connect Wallet</span>
                 </Button>
                 {walletError && (
@@ -334,7 +334,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                   className="w-full h-12 rounded-[9px] bg-[#0000ff] text-foreground font-semibold text-base cursor-pointer flex items-center px-4 hover:bg-[#0000ff]"
                   type="button"
                 >
-                  <Shield className="text-background w-[18px] h-[18px] mx-[5px]"/>
+                  <Shield className="dark:invert text-background w-[18px] h-[18px] mx-[5px]"/>
                   <span className="text-center flex-1 text-white">
                     {isWalletEncrypted && walletInfo 
                       ? `Unlock ${formatStxAddress(walletInfo.address)}` 
@@ -358,7 +358,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         )}
         {/* Terms */}
         <div className="w-full rounded-b-2xl text-center text-xs text-foreground tracking-wider p-6 px-8">
-          By Signing In, you agree to our <Link href="/terms" className="hover:text-accent-primary">Terms of Service</Link> and <Link href="/privacy" className="hover:text-accent-primary">Privacy Policy</Link>
+          By Connecting, you agree to our <Link href="/terms" className="hover:text-accent-primary hover:underline">Terms of Service</Link> and <Link href="/privacy" className="hover:text-accent-primary hover:underline">Privacy Policy</Link>
         </div>
       </div>
     </div>

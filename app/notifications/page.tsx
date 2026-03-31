@@ -18,7 +18,7 @@ export default function NotificationsPage() {
 function EmptyMuted() {
   return (
     <Empty className="from-muted/50 to-background h-full bg-gradient-to-b from-30%">
-      <EmptyHeader>
+      <EmptyHeader className="mt-20">
         <EmptyMedia variant="icon">
           <IconBell />
         </EmptyMedia>

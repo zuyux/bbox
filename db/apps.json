@@ -42,7 +42,7 @@
       "Self-custody"
     ],
     "downloads": "50K+",
-    "rating": 4.5,
+    "rating": 4.8,
     "verified": true,
     "link": "https://bluewallet.io/",
     "imgCID": "bafkreif6knxq5i3zf6nsl4da2k2fjcze5ona2zpv2qofgfddlfyplsxvpm"
@@ -571,7 +571,7 @@
       "Bitcoin"
     ],
     "downloads": "N/A",
-    "rating": 4.8,
+    "rating": 4.7,
     "verified": true,
     "link": "https://braiins.com/",
     "imgCID": "bafkreiamdedgxt5lqxmkmtjbkhxfge7dypf635u3zinpjay3f4k2iomru4"
@@ -603,7 +603,7 @@
       "Bitcoin"
     ],
     "downloads": "N/A",
-    "rating": 4.3,
+    "rating": 4.9,
     "verified": false,
     "link": "https://bitaxe.org",
     "imgCID": "bafkreihfhedjq2jnmwppycnuzjsqfburpnlbx5djgbohsc7mrpqjcw4fmm"
@@ -747,7 +747,7 @@
       "Open Source"
     ],
     "downloads": "N/A",
-    "rating": 4.9,
+    "rating": 4.8,
     "verified": true,
     "link": "https://bitcoinos.build",
     "imgCID": "bafkreidtxvpxfja2swd35tj2kbbb6xx3f6kt7uxsdx2zughvz2oz54nl4y"
@@ -922,7 +922,7 @@
       "Merchant"
     ],
     "downloads": "N/A",
-    "rating": 4.5,
+    "rating": 4.9,
     "verified": true,
     "link": "https://btcpayserver.org/",
     "imgCID": "bafkreie3ld67npqk23y7j6t3k77rull67br2sudz6tcef3n2mzthv2uhbe"
@@ -1075,14 +1075,47 @@
     "id": 68,
     "name": "BitChat",
     "description": "bitchat is a decentralized peer-to-peer messaging application that operates over bluetooth mesh networks. no internet required, no servers, no phone numbers.",
-    "category": "DeFi",
+    "category": "Social",
     "tags": [
-      "Ordinals"
+      "Wallet",
+      "Lightning",
+      "Messaging"
     ],
     "downloads": "N/A",
-    "rating": 4.4,
+    "rating": 4.7,
     "verified": true,
     "link": "https://bitchat.free/",
     "imgCID": "bafkreicq3djwzp6jzyuu74xf4arcnmnh7j2iisvskhltlt6vvc3tdqrx4y"
+  },
+    {
+    "id": 69,
+    "name": "Boltz",
+    "description": "Non-Custodial Bitcoin Bridge. Swap between different Bitcoin layers while staying in full control.",
+    "category": "DeFi",
+    "tags": [
+      "DeFi",
+      "Lightning"
+    ],
+    "downloads": "N/A",
+    "rating": 4.7,
+    "verified": true,
+    "link": "https://boltz.exchange/",
+    "imgCID": "bafkreie477xvfvgmp5jkhzuly4g4psbmq3xek43k7ygyp7pte5wfecdoi4"
+  },
+  {
+    "id": 70,
+    "name": "Sideshift",
+    "description": "Trade between BTC, ETH, SOL and 200+ other coins. Sent directly to your wallet.",
+    "category": "DeFi",
+    "tags": [
+      "DeFi",
+      "Liquid",
+      "Rootstock"
+    ],
+    "downloads": "N/A",
+    "rating": 4.8,
+    "verified": true,
+    "link": "https://sideshift.ai/",
+    "imgCID": "bafkreiedmm5zgu7amf3kannke5jcsi7luernxfyigfcuenu4eynm6hfzxe"
   }
 ]

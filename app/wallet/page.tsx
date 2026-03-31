@@ -575,14 +575,14 @@ export default function WalletPage() {
   }
 
   return (
-    <div className="my-20 flex flex-col items-center justify-center bg-background">
+    <div className="py-12 px-4 sm:px-6 bg-background my-16">
 
-      <div className="max-w-xl mx-auto p-8 bg-card rounded-2xl border border-border shadow text-card-foreground select-none min-w-[100vw] lg:min-w-1/4">
-        <div className="my-2 flex items-center justify-left">
+      <div className="w-full max-w-xl mx-auto p-8 bg-card rounded-2xl border border-border shadow text-card-foreground select-none">
+        <div className="my-2 flex items-center justify-start gap-3">
           <Wallet className="w-8 h-8 text-foreground" />
-          <h1 className="title text-lg mx-4 font-bold">Wallet</h1>
-        </div>        
-      <div className="mt-2 flex justify-center">
+          <h1 className="title text-lg font-bold">Wallet</h1>
+        </div>
+        <div className="mt-4 flex justify-center">
         <div className="flex items-center gap-3">
           {loading ? (
             <LoaderCircle className="animate-spin text-foreground" size={32} />
@@ -620,7 +620,7 @@ export default function WalletPage() {
         </button>
       </div>
 
-      <div className="mt-10 w-full">
+      <div className="mt-16 w-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Image src="/logos/stacks.svg" alt="Stacks" width={28} height={28} className="rounded-full" />
@@ -633,10 +633,10 @@ export default function WalletPage() {
         <div className="mt-4 rounded-xl border border-border bg-card/40">
 
       {(btcAddress || btcAddressLoading || btcAddressError) && (
-        <div className="mt-8 w-full">
+        <div className="m-6">
           <div className="flex items-center gap-2 mb-3">
-            <Image src="/logos/bitcoin.svg" alt="Bitcoin" width={28} height={28} />
-            <h2 className="text-lg font-semibold">Bitcoin L1</h2>
+            <Image src="/btc.svg" alt="Bitcoin" width={28} height={28} />
+            <h2 className="text-lg font-semibold">Bitcoin</h2>
           </div>
           <div className="rounded-xl border border-border bg-card/40 p-4 flex flex-col gap-3">
             {btcAddressLoading ? (

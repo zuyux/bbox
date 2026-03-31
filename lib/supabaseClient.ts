@@ -30,11 +30,21 @@ export const supabase = globalForSupabase.supabase ?? (
 );
 
 // Admin client for server-side operations (bypasses RLS)
-export const supabaseAdmin = globalForSupabase.supabaseAdmin ?? (
-  globalForSupabase.supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
+function createSupabaseAdminClient(): SupabaseClient {
+  if (typeof window !== 'undefined') {
+    throw new Error('supabaseAdmin may only be instantiated on the server');
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
     auth: {
       autoRefreshToken: false,
-      persistSession: false
-    }
-  })
-);
+      persistSession: false,
+    },
+  });
+}
+
+export const supabaseAdmin = typeof window === 'undefined'
+  ? globalForSupabase.supabaseAdmin ?? (
+      globalForSupabase.supabaseAdmin = createSupabaseAdminClient()
+    )
+  : (null as unknown as SupabaseClient);

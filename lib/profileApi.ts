@@ -54,6 +54,9 @@ export interface Profile {
   occupation?: string;
   company?: string;
   years_experience?: number;
+  bitcoin_experience_level?: string;
+  bitcoin_tech_stack?: string;
+  bitcoin_project_url?: string;
   
   // Profile Media
   avatar_url?: string;

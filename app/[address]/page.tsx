@@ -72,7 +72,7 @@ function ProfileDisplay({ profile, isOwnProfile }: {
           {isOwnProfile && (
             <Link
               href="/settings"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-border text-foreground rounded-full transition-colors hover:bg-accent"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-border text-foreground rounded-full transition-colors hover:bg-accent hover:text-background"
             >
               <Pen size={14} />
               Edit Profile

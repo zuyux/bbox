@@ -18,7 +18,7 @@ export function ModeToggle() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 bg-transparent hover:bg-transparent cursor-pointer text-white hover:text-[#fff]">
+        <Button variant="secondary" size="sm" className="h-8 bg-transparent hover:bg-transparent cursor-pointer text-white hover:text-[#fff]">
           <div className="relative flex items-center">
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -35,21 +35,21 @@ export function ModeToggle() {
       >
         <DropdownMenuItem 
           onClick={() => setTheme("light")}
-          className="hover:bg-accent focus:bg-accent cursor-pointer"
+          className="hover:bg-accent focus:bg-foreground cursor-pointer"
         >
           <Sun className="h-4 w-4 mr-2" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("dark")}
-          className="hover:bg-accent focus:bg-accent cursor-pointer"
+          className="hover:bg-accent focus:bg-foreground cursor-pointer"
         >
           <Moon className="h-4 w-4 mr-2" />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("system")}
-          className="hover:bg-accent focus:bg-accent cursor-pointer"
+          className="hover:bg-accent focus:bg-foreground cursor-pointer"
         >
           <Eclipse className="mr-2"/>
           System

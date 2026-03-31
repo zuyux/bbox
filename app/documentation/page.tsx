@@ -101,7 +101,7 @@ export default function DocumentationPage() {
                 <li>• Filter apps by category, traction, or verification status.</li>
                 <li>• Support teams publicly or privately with multisig payouts.</li>
               </ul>
-              <Button variant="outline" className="mt-6" asChild>
+              <Button variant="default" className="mt-6" asChild>
                 <Link href="/apps">Explore Apps</Link>
               </Button>
             </div>
@@ -114,7 +114,7 @@ export default function DocumentationPage() {
             This page focuses on the big picture. For SDKs, API references, or integration guides, reach out and we will share the latest builds.
           </p>
           <Button variant="ghost" asChild>
-            <Link href="mailto:team@bbox.build">Email the BBOX Team</Link>
+            <Link href="mailto:40230@pm.me">Email the BBOX Team</Link>
           </Button>
         </section>
       </main>

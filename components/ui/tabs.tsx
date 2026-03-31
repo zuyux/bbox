@@ -43,11 +43,11 @@ function TabsTrigger({
       data-slot="tabs-trigger"
       className={cn(
         // Base styles
-        "inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm hover:bg-white/10",
-        // Inactive state: accent-foreground text
-        "data-[state=inactive]:text-accent-foreground",
-        // Active state: accent-background bg and text (force this last for specificity)
-        "data-[state=active]:bg-accent-background data-[state=active]:text-accent-background !text-accent-background",
+        "inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm hover:bg-white/10 text-foreground",
+        // Inactive state: text-foreground
+        "data-[state=inactive]:text-foreground",
+        // Active state: accent background and foreground text
+        "data-[state=active]:bg-accent-background data-[state=active]:text-accent-foreground",
         className
       )}
       {...props}

@@ -1,28 +1,16 @@
 "use client";
-import React, { useState } from "react";
 
 export default function SupportPage() {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [sent, setSent] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSent(true);
-    setTimeout(() => setSent(false), 2000);
-    setEmail("");
-    setMessage("");
-  };
 
   return (
-    <div className="max-w-xl mx-auto my-24 p-8 bg-surface-primary rounded-2xl border-[1px] border-border shadow text-foreground">
+    <div className="max-w-2xl mx-auto my-24 p-8 bg-surface-primary rounded-2xl border-[1px] border-border shadow text-foreground">
       <h1 className="text-3xl font-bold mb-8">Support</h1>
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Contact Us</h2>
         <p className="text-muted-foreground mb-2">
           For help, questions, or feedback, email us at{" "}
-          <a href="mailto:support@bbox.app" className="text-blue-400 hover:underline">
-            support@sumaq.cc
+          <a href="mailto:40230@pm.me" className="text-blue-400 hover:underline">
+            40230@pm.me
           </a>
         </p>
         <p className="text-muted-foreground text-sm">
@@ -48,34 +36,6 @@ export default function SupportPage() {
             Visit our <a href="https://bbox.app/docs" className="text-blue-400 hover:underline">documentation page</a>.
           </li>
         </ul>
-      </div>
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Send us a message</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            className="w-full px-4 py-2 rounded-xl border border-border bg-surface-primary text-foreground focus:outline-none"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="Your email"
-            required
-          />
-          <textarea
-            className="w-full px-4 py-2 rounded-xl border border-border bg-surface-primary text-foreground focus:outline-none"
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            placeholder="How can we help you?"
-            rows={4}
-            required
-          />
-          <button
-            type="submit"
-            className="w-full py-3 px-4 rounded-xl border-[1px] border-border bg-accent-foreground text-primary-foreground transition-all duration-200 focus:outline-none cursor-pointer select-none"
-            disabled={sent}
-          >
-            {sent ? "Message sent!" : "Send"}
-          </button>
-        </form>
       </div>
     </div>
   );

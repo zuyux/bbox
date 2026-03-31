@@ -15,7 +15,7 @@ export default function Footer() {
             <Link href="/privacy-policy" className="hover:text-[#fff] text-[#555] mr-8">Privacy</Link>
             <Link href="/terms-of-service" className="hover:text-[#fff] text-[#555]">Terms</Link>
           </div>
-          <div className="flex items-center gap-2 h-full">
+          <div className="flex items-center gap-0 h-full">
             <ModeToggle />
           </div>
         </div>
