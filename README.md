@@ -71,7 +71,7 @@ npm run dev
 
 BBOX is developed by **ZUYUX** — a research & development collective based in Earth.
 Lead: [@fabohax](https://github.com/fabohax)
-Contributors: [@anthozg](https://github.com/anthozg), [@ronoelc](https://github.com/ronoelc), [@stackslabs](https://stackslabs.com)
+Contributors: [@anthozg](https://github.com/anthozg), [@stackslabs](https://stackslabs.com)
 
 ---
 
