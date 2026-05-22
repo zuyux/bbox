@@ -39,23 +39,6 @@ BBOX aims to become the **App Store of the Bitcoin economy** — permissionless,
 
 ---
 
-## 📦 Repository Structure
-
-```
-
-bbox/
-├── contracts/        # Clarity smart contracts (funding, registry, dao)
-├── web/              # Next.js frontend
-├── api/              # API routes and middleware
-├── scripts/          # Deployment and verification scripts
-├── docs/             # Specs and architecture docs
-├── tests/            # Unit and integration tests
-└── README.md
-
-````
-
----
-
 ## ⚙️ Setup
 
 ### Prerequisites
@@ -71,27 +54,6 @@ cd bbox
 npm install
 npm run dev
 ````
-
-### Email configuration
-
-Set the following variables in `.env.local` (or your deployment provider) so transactional emails go through Resend:
-
-```
-RESEND_API_KEY="your_resend_key"
-RESEND_FROM_EMAIL="BBOX <noreply@bbox.app>"
-```
-
-**Important:**
-- Use a **Live** Resend API key (`re_live_…`). Test keys (`re_test_…`) never deliver to real inboxes even though the API returns success.
-- `RESEND_FROM_EMAIL` must match a domain you have verified inside Resend (or use an `@yourdomain.onresend.com` address while testing). If it’s missing, the app will skip sending and log a warning.
-- When either value is missing during development, the app logs the email contents instead of sending so you can still test the flow.
-
-### Deploy contracts
-
-```bash
-clarinet deploy --network=testnet
-```
-
 ---
 
 ## 🧪 Development Roadmap
@@ -115,12 +77,12 @@ Contributors: [@anthozg](https://github.com/anthozg), [@ronoelc](https://github.
 
 ## 🪙 License
 
-MIT © 2025 Zuyux DAO
+MIT 2025 zuyux
 Free to use, modify, and distribute under open-source terms.
 
 ---
 
 ## 🌐 Links
 
-* Website: [bbox.lol](https://bbox.lol)
-* Twitter/X: [@zuyuxxyz](https://x.com/zuyuxxyz)
+* [bbox.lol](https://bbox.lol)
+* [@zuyuxxyz](https://x.com/zuyuxxyz)
