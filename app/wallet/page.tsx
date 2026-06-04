@@ -173,6 +173,15 @@ export default function WalletPage() {
   const summaryRecipientDisplay = trimmedRecipient ? abbreviateAddress(trimmedRecipient, 6) : 'Add recipient';
   const remainingBalanceDisplay = remainingBalanceValue !== null ? formatCompactBalance(Math.max(remainingBalanceValue, 0)) : null;
 
+  const stxAsset = assets.find((asset) => asset.id === 'stx' || asset.symbol === 'STX');
+  const stxBalanceDisplay = stxAsset?.formattedBalance || '--';
+  const btcBalanceDisplay = '--';
+  const rskBalanceDisplay = '--';
+  const liquidBalanceDisplay = '--';
+  const visibleAssets = assets.filter((asset) => asset.symbol !== 'STX');
+  const visibleAssetCount = visibleAssets.length;
+  const chainLabel = currentNetwork === 'mainnet' ? 'Mainnet' : currentNetwork.toUpperCase();
+
   const resetSendForm = () => {
     setSendTo("");
     setSendAmount("");
@@ -648,100 +657,80 @@ export default function WalletPage() {
             <h2 className="text-lg font-semibold">Assets</h2>
           </div>
           {!assetsLoading && (
-            <span className="text-xs text-muted-foreground">{assets.length} assets</span>
+            <span className="text-xs text-muted-foreground">{visibleAssetCount} assets</span>
           )}
         </div>
-        <div className="mt-4 rounded-xl border border-border bg-card/40">
 
-      {(btcAddress || btcAddressLoading || btcAddressError || rskAddress || liquidAddress) && (
-        <div className="m-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Image src="/btc.svg" alt="Bitcoin" width={28} height={28} />
-            <h2 className="text-lg font-semibold">Bitcoin</h2>
-          </div>
-          <div className="rounded-xl border border-border bg-card/40 p-4 flex flex-col gap-3">
-            {btcAddressLoading ? (
-              <div className="flex justify-center py-4">
-                <LoaderCircle className="animate-spin text-foreground" size={24} />
-              </div>
-            ) : btcAddressError ? (
-              <div className="text-sm text-muted-foreground">{btcAddressError}</div>
-            ) : btcAddress ? (
-              <>
-                <code className="font-mono text-sm break-all">{btcAddress}</code>
-                <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground">
-                  <span>SegWit bech32 address paired with this Stacks account.</span>
-                  <button
-                    type="button"
-                    className="text-primary hover:text-primary/80 font-medium cursor-pointer"
-                    onClick={() => {
-                      navigator.clipboard.writeText(btcAddress);
-                      toast.success('Bitcoin address copied');
-                    }}
-                  >
-                    Copy address
-                  </button>
+        <div className="mt-4 rounded-xl border border-border bg-card/40">
+          <div className="space-y-4 p-4">
+            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Image src="/btc.svg" alt="Bitcoin" width={28} height={28} />
+                <div>
+                  <div className="text-sm font-semibold">Bitcoin</div>
+                  <div className="text-xs text-muted-foreground">BTC</div>
                 </div>
-              </>
-            ) : null}
-          {rskAddress && (
-            <div className="mt-4 rounded-xl border border-border bg-card/40 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Wallet className="h-7 w-7 text-foreground" />
-                <h2 className="text-lg font-semibold">Rootstock</h2>
               </div>
-              <code className="font-mono text-sm break-all">{rskAddress}</code>
-              <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground mt-3">
-                <span>Rootstock address derived from the same private key.</span>
-                <button
-                  type="button"
-                  className="text-primary hover:text-primary/80 font-medium cursor-pointer"
-                  onClick={() => {
-                    navigator.clipboard.writeText(rskAddress);
-                    toast.success('Rootstock address copied');
-                  }}
-                >
-                  Copy address
-                </button>
+              <div className="text-right">
+                <div className="text-lg font-semibold">{btcBalanceDisplay}</div>
+                <div className="text-xs text-muted-foreground">Balance</div>
               </div>
             </div>
-          )}
-          {liquidAddress && (
-            <div className="mt-4 rounded-xl border border-border bg-card/40 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Wallet className="h-7 w-7 text-foreground" />
-                <h2 className="text-lg font-semibold">Liquid</h2>
+
+            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Image src="/rsk.svg" alt="Rootstock" width={28} height={28} />
+                <div>
+                  <div className="text-sm font-semibold">Rootstock</div>
+                  <div className="text-xs text-muted-foreground">RSK</div>
+                </div>
               </div>
-              <code className="font-mono text-sm break-all">{liquidAddress}</code>
-              <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground mt-3">
-                <span>Liquid Network bech32 address from the same private key.</span>
-                <button
-                  type="button"
-                  className="text-primary hover:text-primary/80 font-medium cursor-pointer"
-                  onClick={() => {
-                    navigator.clipboard.writeText(liquidAddress);
-                    toast.success('Liquid address copied');
-                  }}
-                >
-                  Copy address
-                </button>
+              <div className="text-right">
+                <div className="text-lg font-semibold">{rskBalanceDisplay}</div>
+                <div className="text-xs text-muted-foreground">Balance</div>
               </div>
             </div>
-          )}
+
+            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Image src="/stx.png" alt="Stacks" width={28} height={28} />
+                <div>
+                  <div className="text-sm font-semibold">Stacks</div>
+                  <div className="text-xs text-muted-foreground">STX</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-semibold">{stxBalanceDisplay}</div>
+                <div className="text-xs text-muted-foreground">Balance</div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Image src="/liquid.svg" alt="Liquid" width={28} height={28} />
+                <div>
+                  <div className="text-sm font-semibold">Liquid</div>
+                  <div className="text-xs text-muted-foreground">Liquid</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-semibold">{liquidBalanceDisplay}</div>
+                <div className="text-xs text-muted-foreground">Balance</div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+
           {assetsLoading ? (
             <div className="p-4 space-y-3">
               {[0, 1, 2].map((skeleton) => (
                 <div key={skeleton} className="h-10 rounded-lg bg-muted/40 animate-pulse" />
               ))}
             </div>
-          ) : assets.length === 0 ? (
+          ) : visibleAssetCount === 0 ? (
             <div className="p-4 text-sm text-muted-foreground">No assets detected for this wallet yet.</div>
           ) : (
             <ul>
-              {assets.map((asset) => (
+              {visibleAssets.map((asset) => (
                 <li
                   key={asset.id}
                   className="flex items-center justify-between px-4 py-3 border-b border-border/60 last:border-b-0"
@@ -762,8 +751,6 @@ export default function WalletPage() {
           )}
         </div>
       </div>
-
-
 
       {/* Send Modal */}
       {showSend && (
