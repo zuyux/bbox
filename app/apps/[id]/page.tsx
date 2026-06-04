@@ -100,10 +100,6 @@ export default function AppDetailPage() {
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-semibold">{app.rating}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Download className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-medium">{app.downloads}</span>
-                </div>
                 <Badge variant="secondary" className="text-xs">
                   {app.category}
                 </Badge>
@@ -161,10 +157,6 @@ export default function AppDetailPage() {
               <div>
                 <span className="text-muted-foreground text-xs">Category</span>
                 <div className="font-medium">{app.category}</div>
-              </div>
-              <div>
-                <span className="text-muted-foreground text-xs">Downloads</span>
-                <div className="font-medium">{app.downloads}</div>
               </div>
               <div>
                 <span className="text-muted-foreground text-xs">Rating</span>

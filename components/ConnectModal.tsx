@@ -393,7 +393,7 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
       setEmailMessage('Wallet unlocked. Redirecting...');
       onSuccess?.();
       onClose();
-      router.push(`/${unlockedWallet.address}`);
+      router.push(`/${unlockedWallet.bitcoinAddress || unlockedWallet.address}`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to authenticate account';
       setEmailStatus('error');

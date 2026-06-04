@@ -91,10 +91,11 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         }
 
         // Generate new wallet data for encryption
-        const { mnemonic, stxPrivateKey, address } = await createStacksAccount('mainnet');
+        const { mnemonic, stxPrivateKey, address, bitcoinAddress } = await createStacksAccount('mainnet');
         const walletData = {
           mnemonic,
           privateKey: stxPrivateKey,
+          bitcoinAddress,
           address,
           label: 'sumak'
         };
@@ -191,9 +192,9 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
           persistWalletContext(unlockedAddress);
         }
 
-        const destinationAddress = walletInfo?.address || unlockedAddress;
+        const destinationAddress = walletInfo?.bitcoinAddress || walletInfo?.address || unlockedAddress;
         if (destinationAddress) {
-          // For existing wallets, redirect to the address page
+          // For existing wallets, redirect to the primary profile address
           router.push(`/${destinationAddress}`);
           if (onClose) onClose();
         }

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { retrieveEncryptedWallet } from "@/lib/encryptedStorage";
+import { getStoredEncryptedWallet, retrieveEncryptedWallet } from "@/lib/encryptedStorage";
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 
 const STACKS_ADDRESS_REGEX = /^(SP|SM|SN|ST|SU|TP|TM|TN|TS)[A-Za-z0-9]{30,40}$/i;
@@ -542,15 +542,26 @@ export default function WalletPage() {
           ? btcInfo
           : btcInfo?.p2wpkh || btcInfo?.bech32 || btcInfo?.p2tr || null;
 
-        setBtcAddress(derivedAddress);
-        if (!derivedAddress) {
+        const storedWallet = getStoredEncryptedWallet();
+        const localBitcoinAddress = storedWallet?.bitcoinAddress ?? null;
+        const finalAddress = derivedAddress || localBitcoinAddress;
+
+        setBtcAddress(finalAddress);
+        if (!finalAddress) {
           setBtcAddressError('No Bitcoin address reported for this account yet.');
         }
       })
       .catch(error => {
         console.error('Failed to fetch Bitcoin L1 address:', error);
-        setBtcAddress(null);
-        setBtcAddressError('Unable to derive Bitcoin address. Try again later.');
+        const storedWallet = getStoredEncryptedWallet();
+        const localBitcoinAddress = storedWallet?.bitcoinAddress ?? null;
+        if (localBitcoinAddress) {
+          setBtcAddress(localBitcoinAddress);
+          setBtcAddressError(null);
+        } else {
+          setBtcAddress(null);
+          setBtcAddressError('Unable to derive Bitcoin address. Try again later.');
+        }
       })
       .finally(() => setBtcAddressLoading(false));
   }, [address, currentNetwork]);

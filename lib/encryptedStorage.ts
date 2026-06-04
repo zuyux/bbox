@@ -8,6 +8,7 @@ import CryptoJS from 'crypto-js';
 export interface EncryptedWalletData {
   encryptedMnemonic: string;
   encryptedPrivateKey: string;
+  bitcoinAddress?: string;
   address: string;
   label: string;
   salt: string;
@@ -20,6 +21,7 @@ export interface EncryptedWalletData {
 export interface WalletData {
   mnemonic: string;
   privateKey: string;
+  bitcoinAddress?: string;
   address: string;
   label: string;
 }
@@ -27,6 +29,7 @@ export interface WalletData {
 export interface PortableEncryptedWalletData {
   encryptedMnemonic: string;
   encryptedPrivateKey: string;
+  bitcoinAddress?: string;
   address: string;
   label: string;
   salt: string;
@@ -112,6 +115,7 @@ function buildEncryptedWalletData(walletData: WalletData, passphrase: string): E
   return {
     encryptedMnemonic,
     encryptedPrivateKey,
+    bitcoinAddress: walletData.bitcoinAddress,
     address: walletData.address,
     label: walletData.label,
     salt,
@@ -229,6 +233,7 @@ export async function retrieveEncryptedWallet(passphrase: string): Promise<Walle
     return {
       mnemonic,
       privateKey,
+      bitcoinAddress: encryptedData.bitcoinAddress,
       address: encryptedData.address,
       label: encryptedData.label,
     };
@@ -249,7 +254,7 @@ export function hasEncryptedWallet(): boolean {
 /**
  * Get wallet info without decrypting
  */
-export function getWalletInfo(): { address: string; label: string; createdAt: number } | null {
+export function getWalletInfo(): { address: string; label: string; createdAt: number; bitcoinAddress?: string } | null {
   if (typeof window === 'undefined') return null;
 
   const encryptedDataStr = localStorage.getItem(STORAGE_KEY);
@@ -260,6 +265,7 @@ export function getWalletInfo(): { address: string; label: string; createdAt: nu
     return {
       address: encryptedData.address,
       label: encryptedData.label,
+      bitcoinAddress: encryptedData.bitcoinAddress,
       createdAt: encryptedData.createdAt,
     };
   } catch {
@@ -489,6 +495,7 @@ export function decryptPortableEncryptedWallet(
   return {
     mnemonic,
     privateKey,
+    bitcoinAddress: payload.bitcoinAddress,
     address: payload.address,
     label: payload.label,
   };
@@ -529,6 +536,7 @@ export function tryRestoreSession(): WalletData | null {
     return {
       mnemonic: '', // Don't expose sensitive data
       privateKey: '', // Don't expose sensitive data  
+      bitcoinAddress: walletInfo.bitcoinAddress,
       address: session.address,
       label: session.label || 'Encrypted Wallet',
     };

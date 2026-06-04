@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Copy, Eye, EyeOff, CheckCircle, ArrowRight, Shield, Wallet, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
+import Image from 'next/image';
 
 export default function WelcomePage() {
   const searchParams = useSearchParams();
@@ -90,9 +91,10 @@ export default function WelcomePage() {
     } else if (step === 'backup') {
       setStep('security');
     } else {
-      // Route to address-based page when setup is complete
-      if (currentWallet?.address) {
-        router.push(`/${currentWallet.address}`);
+      // Route to the primary profile address (Bitcoin first, fallback to Stacks)
+      const profileAddress = currentWallet?.bitcoinAddress || currentWallet?.address;
+      if (profileAddress) {
+        router.push(`/${profileAddress}`);
       } else {
         router.push('/profile');
       }
@@ -109,8 +111,8 @@ export default function WelcomePage() {
         {step === 'welcome' && (
           <>
             <CardHeader className="text-center pb-6">
-              <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-10 h-10 text-green-400" />
+              <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Image src="/star.svg" height={100} width={100} alt="" className="w-10 h-10 text-green-400" />
               </div>
               <CardTitle className="text-3xl text-foreground mb-2">Well done!</CardTitle>
               <p className="text-muted-foreground">
@@ -132,8 +134,27 @@ export default function WelcomePage() {
                       <p className="text-foreground text-lg font-bold">{normalizedEmail}</p>
                     </div>
                   )}
+                  {currentWallet.bitcoinAddress && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">Bitcoin Address</label>
+                      <div className="flex items-center gap-1">
+                        <p className="text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.bitcoinAddress}</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            await copyToClipboard(currentWallet.bitcoinAddress || '');
+                            toast.success('Bitcoin address copied');
+                          }}
+                          className="shrink-0 border-border text-muted-foreground hover:bg-muted cursor-pointer"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   <div>
-                    <label className="text-sm text-muted-foreground">Wallet Address</label>
+                    <label className="text-sm text-muted-foreground">Stacks Address</label>
                     <div className="flex items-center gap-1">
                       <p className="text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.address}</p>
                       <Button
@@ -272,8 +293,8 @@ export default function WelcomePage() {
         {step === 'security' && (
           <>
             <CardHeader className="text-center pb-6">
-              <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-10 h-10 text-blue-400" />
+              <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto my-4">
+                <Image src="/shield-sec.svg" height={50} width={50} alt="" className='text-blue-500'/>
               </div>
               <CardTitle className="text-2xl text-foreground mb-2">Security Best Practices</CardTitle>
               <p className="text-muted-foreground">
@@ -281,11 +302,12 @@ export default function WelcomePage() {
               </p>
             </CardHeader>
 
-            <CardContent className="space-y-6 px-6 pb-6">
+            <CardContent className="space-y-6 px-6 pb-6 text-center">
               {/* Security Tips */}
               <div className="space-y-4">
                 <div className=" border border-green-700/30 rounded-lg p-4">
-                  <h4 className="text-green-500  font-medium mb-3">✅ Do This</h4>
+                  <Image src="/check-square.svg" height={30} width={30} alt="" className='mb-4 text-center mx-auto'/>
+                  <h4 className="text-green-500  font-medium mb-3">Do This</h4>
                   <ul className="text-green-500/80 text-sm space-y-2">
                     <li>• Use a strong, unique password for your wallet</li>
                     <li>• Enable two-factor authentication whenever possible</li>
@@ -296,7 +318,8 @@ export default function WelcomePage() {
                 </div>
 
                 <div className=" border border-red-700/30 rounded-lg p-4">
-                  <h4 className="text-red-500 font-medium mb-3">❌ Avoid This</h4>
+                  <Image src="/close-square.svg" height={30} width={30} alt="" className='mb-4 text-center mx-auto'/>
+                  <h4 className="text-red-500 font-medium mb-3">Avoid This</h4>
                   <ul className="text-red-500/80 text-sm space-y-2">
                     <li>• Never enter your seed phrase on suspicious websites</li>
                     <li>• Don&apos;t store your keys in screenshots or the cloud</li>

@@ -7,7 +7,7 @@ import { LoaderCircle } from "lucide-react";
 
 export default function AccountCreatedPage() {
   const router = useRouter();
-  const [wallet, setWallet] = useState<{ mnemonic: string; stxPrivateKey: string; address: string } | null>(null);
+  const [wallet, setWallet] = useState<{ mnemonic: string; stxPrivateKey: string; address: string; bitcoinAddress?: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -30,11 +30,12 @@ export default function AccountCreatedPage() {
         JSON.stringify({
           stxPrivateKey: wallet.stxPrivateKey,
           address: wallet.address,
+          bitcoinAddress: wallet.bitcoinAddress,
           createdAt: Date.now(),
         })
       );
       window.dispatchEvent(new Event("bbox-session-update"));
-      router.push(`/${wallet.address}`);
+      router.push(`/${wallet.bitcoinAddress ?? wallet.address}`);
     }
   };
 

@@ -1117,5 +1117,20 @@
     "verified": true,
     "link": "https://sideshift.ai/",
     "imgCID": "bafkreiedmm5zgu7amf3kannke5jcsi7luernxfyigfcuenu4eynm6hfzxe"
+  },
+  {
+    "id": 71,
+    "name": "Aqua",
+    "description": "Aqua is a user-friendly mobile wallet designed for the Liquid Network and Bitcoin.",
+    "category": "Wallet",
+    "tags": [
+      "Wallet",
+      "Liquid"
+    ],
+    "downloads": "N/A",
+    "rating": 4.9,
+    "verified": true,
+    "link": "https://aqua.net/",
+    "imgCID": "bafkreie5b5wqo5gqrhwosj2zqrlkkh3xqohm52d6vlezhbdcbaan3puiqy"
   }
 ]
