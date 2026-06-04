@@ -13,7 +13,7 @@ import { mnemonicToSeed } from '@scure/bip39';
 import { HDKey } from '@scure/bip32';
 import { bytesToHex } from '@stacks/common';
 import { getAddressFromPrivateKey } from '@stacks/transactions';
-import { getBitcoinAddressFromPrivateKey } from '@/lib/bitcoinWallet';
+import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from '@/lib/bitcoinWallet';
 
 export default function WalletRecoveryPage() {
   const searchParams = useSearchParams();
@@ -115,11 +115,15 @@ export default function WalletRecoveryPage() {
         privateKeyHex,
         process.env.NEXT_PUBLIC_STACKS_NETWORK === 'testnet' ? 'testnet' : 'mainnet'
       );
+      const rootstockAddress = getRootstockAddressFromPrivateKey(privateKeyHex);
+      const liquidAddress = getLiquidAddressFromPrivateKey(privateKeyHex, process.env.NEXT_PUBLIC_STACKS_NETWORK === 'testnet' ? 'testnet' : 'mainnet');
       
       return {
         mnemonic,
         privateKey: privateKeyHex,
         bitcoinAddress,
+        rootstockAddress,
+        liquidAddress,
         address,
         label: `BBOX Wallet - ${email}`
       };

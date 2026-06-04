@@ -2,7 +2,7 @@ import { generateMnemonic } from 'bip39';
 import { getStxAddress } from '@stacks/wallet-sdk';
 import { HDKey } from '@scure/bip32';
 import { mnemonicToSeed } from 'bip39';
-import { getBitcoinAddressFromPrivateKey } from './bitcoinWallet';
+import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
 
 /**
  * Creates a Stacks wallet and returns key details.
@@ -44,11 +44,15 @@ export async function createStacksAccount(
       privateKeyHex,
       network === 'testnet' ? 'testnet' : 'mainnet'
     );
+    const rootstockAddress = getRootstockAddressFromPrivateKey(privateKeyHex);
+    const liquidAddress = getLiquidAddressFromPrivateKey(privateKeyHex, network === 'testnet' ? 'testnet' : 'mainnet');
 
     return {
       address,
       stxPrivateKey: account.stxPrivateKey,
       bitcoinAddress,
+      rootstockAddress,
+      liquidAddress,
       mnemonic,
       encryptedSecretKey: '',
       index: 0,

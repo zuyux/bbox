@@ -1,6 +1,7 @@
 import { getStxAddress } from '@stacks/wallet-sdk';
 import { validateMnemonic as isValidMnemonic, mnemonicToSeed } from 'bip39';
 import { HDKey } from '@scure/bip32';
+import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
 
 /**
  * Validates a mnemonic and generates a wallet/account.
@@ -37,5 +38,8 @@ export async function validateAndGenerateWallet(mnemonic: string) {
   };
 
   const address = getStxAddress(account, 'mainnet');
-  return { privateKey, address };
+  const bitcoinAddress = getBitcoinAddressFromPrivateKey(privateKey, 'mainnet');
+  const rootstockAddress = getRootstockAddressFromPrivateKey(privateKey);
+  const liquidAddress = getLiquidAddressFromPrivateKey(privateKey, 'mainnet');
+  return { privateKey, address, bitcoinAddress, rootstockAddress, liquidAddress };
 }

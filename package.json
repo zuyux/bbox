@@ -39,6 +39,7 @@
     "crypto-js": "^4.2.0",
     "framer-motion": "^12.11.0",
     "fs": "^0.0.1-security",
+    "js-sha3": "^0.8.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.503.0",
     "nanoid": "^5.1.6",

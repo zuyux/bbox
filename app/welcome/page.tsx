@@ -131,14 +131,14 @@ export default function WelcomePage() {
                   {showEmail && (
                     <div>
                       <label className="text-sm text-muted-foreground">Email</label>
-                      <p className="text-foreground text-lg font-bold">{normalizedEmail}</p>
+                      <p className="text-foreground text-lg font-bold select-auto">{normalizedEmail}</p>
                     </div>
                   )}
                   {currentWallet.bitcoinAddress && (
                     <div>
                       <label className="text-sm text-muted-foreground">Bitcoin Address</label>
                       <div className="flex items-center gap-1">
-                        <p className="text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.bitcoinAddress}</p>
+                        <p className="select-text text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.bitcoinAddress}</p>
                         <Button
                           variant="outline"
                           size="sm"
@@ -153,10 +153,29 @@ export default function WelcomePage() {
                       </div>
                     </div>
                   )}
+                  {currentWallet.rootstockAddress && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">Rootstock Address</label>
+                      <div className="flex items-center gap-1">
+                        <p className="select-text text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.rootstockAddress}</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            await copyToClipboard(currentWallet.rootstockAddress || '');
+                            toast.success('Rootstock address copied');
+                          }}
+                          className="shrink-0 border-border text-muted-foreground hover:bg-muted cursor-pointer"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <label className="text-sm text-muted-foreground">Stacks Address</label>
                     <div className="flex items-center gap-1">
-                      <p className="text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.address}</p>
+                      <p className="select-text text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.address}</p>
                       <Button
                         variant="outline"
                         size="sm"

@@ -91,11 +91,13 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         }
 
         // Generate new wallet data for encryption
-        const { mnemonic, stxPrivateKey, address, bitcoinAddress } = await createStacksAccount('mainnet');
+        const { mnemonic, stxPrivateKey, address, bitcoinAddress, rootstockAddress, liquidAddress } = await createStacksAccount('mainnet');
         const walletData = {
           mnemonic,
           privateKey: stxPrivateKey,
           bitcoinAddress,
+          rootstockAddress,
+          liquidAddress,
           address,
           label: 'sumak'
         };

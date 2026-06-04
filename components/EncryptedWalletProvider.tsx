@@ -27,7 +27,7 @@ import { DevnetWallet, devnetWallets } from '@/lib/devnet-wallet-context';
 export interface EncryptedWalletContextType {
   // Wallet state
   currentWallet: WalletData | null;
-  walletInfo: { address: string; label: string; createdAt: number; bitcoinAddress?: string } | null;
+  walletInfo: { address: string; label: string; createdAt: number; bitcoinAddress?: string; rootstockAddress?: string; liquidAddress?: string } | null;
   isWalletEncrypted: boolean;
   isSessionLocked: boolean;
   
@@ -77,7 +77,7 @@ interface ProviderProps {
 
 export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
   const [currentWallet, setCurrentWallet] = useState<WalletData | null>(null);
-  const [walletInfo, setWalletInfo] = useState<{ address: string; label: string; createdAt: number; bitcoinAddress?: string } | null>(null);
+  const [walletInfo, setWalletInfo] = useState<{ address: string; label: string; createdAt: number; bitcoinAddress?: string; rootstockAddress?: string; liquidAddress?: string } | null>(null);
   const [isWalletEncrypted, setIsWalletEncrypted] = useState(false);
   const [isSessionLocked, setIsSessionLocked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -248,6 +248,8 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
         address: walletData.address, 
         label: walletData.label, 
         bitcoinAddress: walletData.bitcoinAddress,
+        rootstockAddress: walletData.rootstockAddress,
+        liquidAddress: walletData.liquidAddress,
         createdAt: Date.now() 
       });
 
@@ -256,6 +258,8 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
         const sessionData = {
           address: walletData.address,
           bitcoinAddress: walletData.bitcoinAddress,
+          rootstockAddress: walletData.rootstockAddress,
+          liquidAddress: walletData.liquidAddress,
           label: walletData.label,
           encrypted: true,
           createdAt: Date.now()
@@ -297,6 +301,8 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
         const sessionData = {
           address: walletData.address,
           bitcoinAddress: walletData.bitcoinAddress,
+          rootstockAddress: walletData.rootstockAddress,
+          liquidAddress: walletData.liquidAddress,
           label: walletData.label,
           encrypted: true,
           createdAt: Date.now()

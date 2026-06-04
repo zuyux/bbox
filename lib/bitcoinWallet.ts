@@ -1,4 +1,5 @@
 import { bech32 } from 'bech32';
+import { keccak256 } from 'js-sha3';
 import CryptoJS from 'crypto-js';
 import { privateKeyToPublic } from '@stacks/transactions';
 import { privateKeyToBytes } from '@stacks/common';
@@ -38,6 +39,33 @@ export function getBitcoinAddressFromPrivateKey(
   words.unshift(0);
 
   const prefix = network === 'testnet' ? 'tb' : 'bc';
+  return bech32.encode(prefix, words);
+}
+
+export function getRootstockAddressFromPrivateKey(privateKey: string): string {
+  const publicKey = privateKeyToPublic(privateKey);
+  const publicKeyHex = typeof publicKey === 'string' ? publicKey : bytesToHex(publicKey);
+  const normalizedPublicKeyHex = publicKeyHex.startsWith('04') ? publicKeyHex.slice(2) : publicKeyHex;
+  const publicKeyBytes = hexToBytes(normalizedPublicKeyHex);
+  const hashed = keccak256(publicKeyBytes);
+  const hashBytes = hexToBytes(hashed);
+  const addressBytes = hashBytes.slice(-20);
+  return `0x${bytesToHex(addressBytes)}`;
+}
+
+export function getLiquidAddressFromPrivateKey(
+  privateKey: string,
+  network: 'mainnet' | 'testnet' = 'mainnet'
+): string {
+  const publicKey = privateKeyToPublic(privateKey);
+  const publicKeyHex = typeof publicKey === 'string' ? publicKey : bytesToHex(publicKey);
+  const publicKeyBytes = hexToBytes(publicKeyHex);
+  const witnessProgram = hash160(publicKeyBytes);
+
+  const words = bech32.toWords(witnessProgram);
+  words.unshift(0);
+
+  const prefix = network === 'testnet' ? 'ert' : 'ex';
   return bech32.encode(prefix, words);
 }
 

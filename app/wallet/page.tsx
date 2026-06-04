@@ -83,6 +83,8 @@ export default function WalletPage() {
   const [btcAddress, setBtcAddress] = useState<string | null>(null);
   const [btcAddressLoading, setBtcAddressLoading] = useState(false);
   const [btcAddressError, setBtcAddressError] = useState<string | null>(null);
+  const [rskAddress, setRskAddress] = useState<string | null>(null);
+  const [liquidAddress, setLiquidAddress] = useState<string | null>(null);
 
   const formatTokenBalance = useCallback((balance: string, decimals = 0) => {
     if (!balance) return '0';
@@ -544,9 +546,13 @@ export default function WalletPage() {
 
         const storedWallet = getStoredEncryptedWallet();
         const localBitcoinAddress = storedWallet?.bitcoinAddress ?? null;
+        const localRskAddress = storedWallet?.rootstockAddress ?? null;
+        const localLiquidAddress = storedWallet?.liquidAddress ?? null;
         const finalAddress = derivedAddress || localBitcoinAddress;
 
         setBtcAddress(finalAddress);
+        setRskAddress(localRskAddress);
+        setLiquidAddress(localLiquidAddress);
         if (!finalAddress) {
           setBtcAddressError('No Bitcoin address reported for this account yet.');
         }
@@ -555,6 +561,10 @@ export default function WalletPage() {
         console.error('Failed to fetch Bitcoin L1 address:', error);
         const storedWallet = getStoredEncryptedWallet();
         const localBitcoinAddress = storedWallet?.bitcoinAddress ?? null;
+        const localRskAddress = storedWallet?.rootstockAddress ?? null;
+        const localLiquidAddress = storedWallet?.liquidAddress ?? null;
+        setRskAddress(localRskAddress);
+        setLiquidAddress(localLiquidAddress);
         if (localBitcoinAddress) {
           setBtcAddress(localBitcoinAddress);
           setBtcAddressError(null);
@@ -643,7 +653,7 @@ export default function WalletPage() {
         </div>
         <div className="mt-4 rounded-xl border border-border bg-card/40">
 
-      {(btcAddress || btcAddressLoading || btcAddressError) && (
+      {(btcAddress || btcAddressLoading || btcAddressError || rskAddress || liquidAddress) && (
         <div className="m-6">
           <div className="flex items-center gap-2 mb-3">
             <Image src="/btc.svg" alt="Bitcoin" width={28} height={28} />
@@ -674,6 +684,50 @@ export default function WalletPage() {
                 </div>
               </>
             ) : null}
+          {rskAddress && (
+            <div className="mt-4 rounded-xl border border-border bg-card/40 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Wallet className="h-7 w-7 text-foreground" />
+                <h2 className="text-lg font-semibold">Rootstock</h2>
+              </div>
+              <code className="font-mono text-sm break-all">{rskAddress}</code>
+              <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground mt-3">
+                <span>Rootstock address derived from the same private key.</span>
+                <button
+                  type="button"
+                  className="text-primary hover:text-primary/80 font-medium cursor-pointer"
+                  onClick={() => {
+                    navigator.clipboard.writeText(rskAddress);
+                    toast.success('Rootstock address copied');
+                  }}
+                >
+                  Copy address
+                </button>
+              </div>
+            </div>
+          )}
+          {liquidAddress && (
+            <div className="mt-4 rounded-xl border border-border bg-card/40 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Wallet className="h-7 w-7 text-foreground" />
+                <h2 className="text-lg font-semibold">Liquid</h2>
+              </div>
+              <code className="font-mono text-sm break-all">{liquidAddress}</code>
+              <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-muted-foreground mt-3">
+                <span>Liquid Network bech32 address from the same private key.</span>
+                <button
+                  type="button"
+                  className="text-primary hover:text-primary/80 font-medium cursor-pointer"
+                  onClick={() => {
+                    navigator.clipboard.writeText(liquidAddress);
+                    toast.success('Liquid address copied');
+                  }}
+                >
+                  Copy address
+                </button>
+              </div>
+            </div>
+          )}
           </div>
         </div>
       )}
