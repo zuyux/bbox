@@ -19,8 +19,6 @@ export default function WelcomePage() {
 
   const [showMnemonic, setShowMnemonic] = useState(false);
   const [copiedMnemonic, setCopiedMnemonic] = useState(false);
-  const [copiedAddress, setCopiedAddress] = useState(false);
-  const [copiedNostrKey, setCopiedNostrKey] = useState(false);
   const [acknowledgedBackup, setAcknowledgedBackup] = useState(false);
   const [step, setStep] = useState<'welcome' | 'backup' | 'security'>('welcome');
 
@@ -68,36 +66,6 @@ export default function WelcomePage() {
       } catch {
         toast.error('Failed to copy to clipboard');
       }
-    }
-  };
-
-  const copyAddress = async () => {
-    if (!currentWallet?.address) return;
-    try {
-      const copied = await copyToClipboard(currentWallet.address);
-      if (!copied) {
-        throw new Error('Clipboard unavailable');
-      }
-      setCopiedAddress(true);
-      toast.success('Wallet address copied');
-      setTimeout(() => setCopiedAddress(false), 2500);
-    } catch {
-      toast.error('Failed to copy address');
-    }
-  };
-
-  const copyNostrKey = async () => {
-    if (!currentWallet?.nostrPublicKey) return;
-    try {
-      const copied = await copyToClipboard(currentWallet.nostrPublicKey);
-      if (!copied) {
-        throw new Error('Clipboard unavailable');
-      }
-      setCopiedNostrKey(true);
-      toast.success('Nostr public key copied');
-      setTimeout(() => setCopiedNostrKey(false), 2500);
-    } catch {
-      toast.error('Failed to copy Nostr public key');
     }
   };
 
@@ -162,66 +130,9 @@ export default function WelcomePage() {
                             await copyToClipboard(currentWallet.bitcoinAddress || '');
                             toast.success('Bitcoin address copied');
                           }}
-                          className="shrink-0 border-border text-muted-foreground hover:bg-muted cursor-pointer"
+                          className="shrink-0 border-border text-muted-foreground hover:bg-muted hover:text-white cursor-pointer"
                         >
                           <Copy className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  {currentWallet.rootstockAddress && (
-                    <div>
-                      <label className="text-sm text-muted-foreground">Rootstock Address</label>
-                      <div className="flex items-center gap-1">
-                        <p className="select-text text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.rootstockAddress}</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={async () => {
-                            await copyToClipboard(currentWallet.rootstockAddress || '');
-                            toast.success('Rootstock address copied');
-                          }}
-                          className="shrink-0 border-border text-muted-foreground hover:bg-muted cursor-pointer"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-sm text-muted-foreground">Stacks Address</label>
-                    <div className="flex items-center gap-1">
-                      <p className="select-text text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.address}</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={copyAddress}
-                        className="shrink-0 border-border text-muted-foreground hover:bg-muted cursor-pointer"
-                      >
-                        {copiedAddress ? (
-                          <CheckCircle className="w-4 h-4" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                  {currentWallet.nostrPublicKey && (
-                    <div>
-                      <label className="text-sm text-muted-foreground">Nostr Public Key</label>
-                      <div className="flex items-center gap-1">
-                        <p className="select-text text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.nostrPublicKey}</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={copyNostrKey}
-                          className="shrink-0 border-border text-muted-foreground hover:bg-muted cursor-pointer"
-                        >
-                          {copiedNostrKey ? (
-                            <CheckCircle className="w-4 h-4" />
-                          ) : (
-                            <Copy className="w-4 h-4" />
-                          )}
                         </Button>
                       </div>
                     </div>
