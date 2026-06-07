@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowRight } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
+import type { BitcoinApp } from '@/lib/appsUtils';
 import { allApps, getCategoryStats, getAppStats } from '@/lib/appsUtils';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 
@@ -46,11 +47,23 @@ const categories = calculateCategories();
 const appStats = getAppStats();
 const duplicatedCategories = [...categories, ...categories];
 
+const featuredAppsByCategory = Object.entries(
+  allApps.reduce<Record<string, BitcoinApp[]>>((acc, app) => {
+    acc[app.category] = acc[app.category] || [];
+    acc[app.category].push(app);
+    return acc;
+  }, {})
+)
+  .map(([category, apps]) => ({
+    category,
+    apps: apps.sort((a, b) => b.rating - a.rating).slice(0, 5),
+    total: apps.length,
+  }))
+  .sort((a, b) => b.total - a.total)
+  .slice(0, 5);
+
 export default function HomePage() {
   const router = useRouter();
-  const INITIAL_VISIBLE = 24;
-  const LOAD_STEP = 24;
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [isDragging, setIsDragging] = useState(false);
   const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
   const [showGetInModal, setShowGetInModal] = useState(false);
@@ -63,16 +76,7 @@ export default function HomePage() {
   const isDraggingRef = useRef(false);
   const suppressClickRef = useRef(false);
   const prefersReducedMotionRef = useRef(false);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadingMoreRef = useRef(false);
   const currentAddress = useCurrentAddress();
-  const sortedApps = useMemo(() => {
-    return [...allApps].sort((a, b) => b.rating - a.rating);
-  }, [allApps]);
-  const totalAppsCount = sortedApps.length;
-  const visibleApps = sortedApps.slice(0, visibleCount);
-  const canLoadMore = visibleCount < totalAppsCount;
   const markImageLoaded = useCallback((appId: number) => {
     setLoadedImages(prev => {
       if (prev[appId]) {
@@ -219,38 +223,6 @@ export default function HomePage() {
     };
   }, [stopDragging]);
 
-  const handleLoadMore = useCallback(() => {
-    setVisibleCount(prev => Math.min(prev + LOAD_STEP, totalAppsCount));
-  }, [totalAppsCount]);
-
-  useEffect(() => {
-    const sentinel = loadMoreRef.current;
-    if (!sentinel || !canLoadMore) {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
-      return;
-    }
-
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !loadingMoreRef.current) {
-          loadingMoreRef.current = true;
-          handleLoadMore();
-        }
-      });
-    }, { rootMargin: '200px 0px 0px 0px' });
-
-    observer.observe(sentinel);
-    observerRef.current = observer;
-
-    return () => {
-      observer.disconnect();
-      observerRef.current = null;
-    };
-  }, [canLoadMore, handleLoadMore]);
-
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -327,14 +299,6 @@ export default function HomePage() {
 
     applyWrappedPosition(pointerStateRef.current.startPosition + delta);
   };
-
-  useEffect(() => {
-    loadingMoreRef.current = false;
-  }, []);
-
-  useEffect(() => {
-    loadingMoreRef.current = false;
-  }, [visibleCount]);
 
   const handleCategoryClick = useCallback((categoryName: string) => {
     router.push(`/apps?category=${encodeURIComponent(categoryName)}`);
@@ -442,59 +406,81 @@ export default function HomePage() {
 
         {/* Featured Apps */}
         <div className="my-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="title text-2xl font-bold">Featured Apps</h2>
+          <div className="flex items-center justify-between mb-6 gap-4">
+            <div>
+              <h2 className="title text-2xl font-bold">Featured Apps</h2>
+              <p className="text-sm text-muted-foreground mt-1">Top-rated apps grouped by category for quick discovery.</p>
+            </div>
             <Button variant="link" asChild>
               <Link href="/apps">
-                View All
+                Browse all apps
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
-          <TooltipProvider delayDuration={150}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {visibleApps.map(app => {
-                const isLoaded = loadedImages[app.id];
-                const imageSrc = app.imgCID ? getIPFSUrl(app.imgCID) : '/bbox.png';
 
-                return (
-                  <Tooltip key={app.id}>
-                    <TooltipTrigger asChild>
-                      <Link
-                        href={`/apps/${app.id}`}
-                        aria-label={`View ${app.name}`}
-                        className="flex flex-col items-center justify-center text-center"
-                      >
-                        <div className="relative w-24 h-24 my-8 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-transparent transition-transform duration-200 hover:scale-105">
-                          {!isLoaded && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-                              <span className="h-6 w-6 border-2 border-muted-foreground/30 border-t-orange-500 rounded-full animate-spin" aria-hidden="true" />
-                            </div>
-                          )}
-                          <Image
-                            src={imageSrc}
-                            alt={`${app.name} logo`}
-                            width={112}
-                            height={112}
-                            loading="lazy"
-                            onLoadingComplete={() => markImageLoaded(app.id)}
-                            className={`object-cover w-full h-full transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-                          />
-                        </div>
-                        <p className="text-sm font-medium text-foreground max-w-[8rem] truncate">{app.name}</p>
-                        <p className="text-xs text-foreground/50 max-w-[8rem] truncate">{app.category}</p>
+          <TooltipProvider delayDuration={150}>
+            <div className="space-y-10">
+              {featuredAppsByCategory.map((group) => (
+                <div key={group.category} className="space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">{group.category}</p>
+                      <h3 className="text-lg font-semibold">Top {group.category} apps</h3>
+                    </div>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/apps?category=${encodeURIComponent(group.category)}`} className="inline-flex items-center gap-1">
+                        Explore more
+                        <ArrowRight className="h-4 w-4" />
                       </Link>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" sideOffset={8} className="bg-background text-foreground max-w-xs text-center border-1 border-foreground/20">
-                      <p className="text-xs text-foreground leading-snug mt-1">
-                        {app.description}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+                    {group.apps.map((app) => {
+                      const isLoaded = loadedImages[app.id];
+                      const imageSrc = app.imgCID ? getIPFSUrl(app.imgCID) : '/bbox.png';
+
+                      return (
+                        <Tooltip key={`${group.category}-${app.id}`}>
+                          <TooltipTrigger asChild>
+                            <Link
+                              href={`/apps/${app.id}`}
+                              aria-label={`View ${app.name}`}
+                              className="flex flex-col items-center justify-center text-center rounded-3xl border border-border bg-background p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
+                            >
+                              <div className="relative w-24 h-24 mb-4 rounded-3xl overflow-hidden bg-muted/10 transition-transform duration-200 hover:scale-105">
+                                {!isLoaded && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+                                    <span className="h-6 w-6 border-2 border-muted-foreground/30 border-t-orange-500 rounded-full animate-spin" aria-hidden="true" />
+                                  </div>
+                                )}
+                                <Image
+                                  src={imageSrc}
+                                  alt={`${app.name} logo`}
+                                  width={112}
+                                  height={112}
+                                  loading="lazy"
+                                  onLoadingComplete={() => markImageLoaded(app.id)}
+                                  className={`object-cover w-full h-full transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </div>
+                              <p className="text-sm font-medium text-foreground truncate">{app.name}</p>
+                              <p className="text-xs text-foreground/60 mt-1 truncate">{app.category}</p>
+                            </Link>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" sideOffset={8} className="bg-background text-foreground max-w-xs text-center border border-foreground/10">
+                            <p className="text-xs text-foreground leading-snug mt-1">
+                              {app.description}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-            <div ref={loadMoreRef} aria-hidden="true" className="h-8 w-full" />
           </TooltipProvider>
         </div>
 
