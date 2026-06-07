@@ -4,8 +4,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
+import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 import { getProfile, Profile } from '@/lib/profileApi';
-import { User, MapPin, Calendar, Briefcase, Globe, Pen, LoaderCircle, Code, Download, Star } from 'lucide-react';
+import { User, MapPin, Calendar, Briefcase, Globe, Pen, LoaderCircle, Code, Download, Star, Hash } from 'lucide-react';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from '@/components/SafariOptimizedImage';
 import Image from 'next/image';
@@ -29,9 +30,10 @@ interface SubmittedApp {
   created_at?: string;
 }
 
-function ProfileDisplay({ profile, isOwnProfile }: {
+function ProfileDisplay({ profile, isOwnProfile, nostrPublicKey }: {
   profile: Profile | null;
   isOwnProfile: boolean;
+  nostrPublicKey?: string;
 }) {
   return (
     <div className="mx-auto max-w-4xl bg-background/95 p-6 mt-16 md:p-10 rounded-2xl border border-border text-center">
@@ -104,6 +106,12 @@ function ProfileDisplay({ profile, isOwnProfile }: {
               >
                 {profile.website.replace(/^https?:\/\//, '')}
               </a>
+            </div>
+          )}
+          {isOwnProfile && nostrPublicKey && (
+            <div className="flex items-center justify-center gap-2 max-w-full truncate">
+              <Hash size={16} />
+              <span className="truncate">Nostr: {nostrPublicKey}</span>
             </div>
           )}
           <div className="flex items-center justify-center gap-2 col-span-1 sm:col-span-2">
@@ -229,6 +237,7 @@ export default function AddressPage() {
   const [appsError, setAppsError] = useState<string | null>(null);
 
   const isOwnProfile = currentAddress === address;
+  const { currentWallet } = useEncryptedWallet();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -303,6 +312,7 @@ export default function AddressPage() {
       <ProfileDisplay 
         profile={profile} 
         isOwnProfile={isOwnProfile} 
+        nostrPublicKey={currentWallet?.nostrPublicKey}
       />
       
       {appsError && (

@@ -180,7 +180,6 @@ export default function WalletPage() {
   const liquidBalanceDisplay = '--';
   const visibleAssets = assets.filter((asset) => asset.symbol !== 'STX');
   const visibleAssetCount = visibleAssets.length;
-  const chainLabel = currentNetwork === 'mainnet' ? 'Mainnet' : currentNetwork.toUpperCase();
 
   const resetSendForm = () => {
     setSendTo("");
@@ -1016,24 +1015,90 @@ export default function WalletPage() {
                 </div>
               )}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="space-y-4">
+              <div className="flex items-center justify-center gap-2">
                 <span className="font-light px-8 py-2 rounded-xl text-sm break-all select-text">{address}</span>
-                
-              </div>
-              <button
+                <button
                   className="text-center text-foreground text-sm p-1 rounded transition"
                   onClick={() => {
                     if (address) {
                       navigator.clipboard.writeText(address);
-                      toast.success("Address copied!");
+                      toast.success("Stacks address copied!");
                     }
                   }}
                   aria-label="Copy address"
                   type="button"
                 >
-                  <Copy size={18} className="text-accent-foreground cursor-pointer"/>
+                  <Copy size={18} className="text-accent-foreground cursor-pointer" />
                 </button>
+              </div>
+
+              <div className="grid gap-3 text-left">
+                <div className="p-4 rounded-2xl bg-slate-100 text-sm text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Bitcoin</div>
+                  {btcAddressLoading ? (
+                    <div className="text-sm">Loading address…</div>
+                  ) : btcAddress ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-sm break-all">{btcAddress}</span>
+                      <button
+                        className="text-foreground text-sm p-1 rounded transition"
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(btcAddress);
+                          toast.success("Bitcoin address copied!");
+                        }}
+                      >
+                        <Copy size={18} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-destructive">{btcAddressError || 'No Bitcoin address available.'}</div>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-100 text-sm text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Rootstock</div>
+                  {rskAddress ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-sm break-all">{rskAddress}</span>
+                      <button
+                        className="text-foreground text-sm p-1 rounded transition"
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(rskAddress);
+                          toast.success("Rootstock address copied!");
+                        }}
+                      >
+                        <Copy size={18} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">Rootstock address not configured.</div>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-100 text-sm text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Liquid</div>
+                  {liquidAddress ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-sm break-all">{liquidAddress}</span>
+                      <button
+                        className="text-foreground text-sm p-1 rounded transition"
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(liquidAddress);
+                          toast.success("Liquid address copied!");
+                        }}
+                      >
+                        <Copy size={18} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">Liquid address not configured.</div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

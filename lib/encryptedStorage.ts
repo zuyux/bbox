@@ -11,6 +11,7 @@ export interface EncryptedWalletData {
   bitcoinAddress?: string;
   rootstockAddress?: string;
   liquidAddress?: string;
+  nostrPublicKey?: string;
   address: string;
   label: string;
   salt: string;
@@ -26,6 +27,7 @@ export interface WalletData {
   bitcoinAddress?: string;
   rootstockAddress?: string;
   liquidAddress?: string;
+  nostrPublicKey?: string;
   address: string;
   label: string;
 }
@@ -36,6 +38,7 @@ export interface PortableEncryptedWalletData {
   bitcoinAddress?: string;
   rootstockAddress?: string;
   liquidAddress?: string;
+  nostrPublicKey?: string;
   address: string;
   label: string;
   salt: string;
@@ -123,6 +126,8 @@ function buildEncryptedWalletData(walletData: WalletData, passphrase: string): E
     encryptedPrivateKey,
     bitcoinAddress: walletData.bitcoinAddress,
     rootstockAddress: walletData.rootstockAddress,
+    liquidAddress: walletData.liquidAddress,
+    nostrPublicKey: walletData.nostrPublicKey,
     address: walletData.address,
     label: walletData.label,
     salt,
@@ -263,7 +268,7 @@ export function hasEncryptedWallet(): boolean {
 /**
  * Get wallet info without decrypting
  */
-export function getWalletInfo(): { address: string; label: string; createdAt: number; bitcoinAddress?: string; rootstockAddress?: string; liquidAddress?: string } | null {
+export function getWalletInfo(): { address: string; label: string; createdAt: number; bitcoinAddress?: string; rootstockAddress?: string; liquidAddress?: string; nostrPublicKey?: string } | null {
   if (typeof window === 'undefined') return null;
 
   const encryptedDataStr = localStorage.getItem(STORAGE_KEY);
@@ -277,6 +282,7 @@ export function getWalletInfo(): { address: string; label: string; createdAt: nu
       bitcoinAddress: encryptedData.bitcoinAddress,
       rootstockAddress: encryptedData.rootstockAddress,
       liquidAddress: encryptedData.liquidAddress,
+      nostrPublicKey: encryptedData.nostrPublicKey,
       createdAt: encryptedData.createdAt,
     };
   } catch {
@@ -486,6 +492,7 @@ export function toPortableEncryptedWalletData(data: EncryptedWalletData): Portab
     bitcoinAddress: data.bitcoinAddress,
     rootstockAddress: data.rootstockAddress,
     liquidAddress: data.liquidAddress,
+    nostrPublicKey: data.nostrPublicKey,
     address: data.address,
     label: data.label,
     salt: data.salt,
@@ -512,6 +519,7 @@ export function decryptPortableEncryptedWallet(
     bitcoinAddress: payload.bitcoinAddress,
     rootstockAddress: payload.rootstockAddress,
     liquidAddress: payload.liquidAddress,
+    nostrPublicKey: payload.nostrPublicKey,
     address: payload.address,
     label: payload.label,
   };

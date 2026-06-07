@@ -9,11 +9,7 @@ import { Loader, Key, AlertCircle, Timer, Shield } from 'lucide-react';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 import { generateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
-import { mnemonicToSeed } from '@scure/bip39';
-import { HDKey } from '@scure/bip32';
-import { bytesToHex } from '@stacks/common';
-import { getAddressFromPrivateKey } from '@stacks/transactions';
-import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from '@/lib/bitcoinWallet';
+import { validateAndGenerateWallet } from '@/lib/walletHelpers';
 
 export default function WalletRecoveryPage() {
   const searchParams = useSearchParams();
@@ -99,33 +95,10 @@ export default function WalletRecoveryPage() {
 
   const generateWalletFromMnemonic = async (mnemonic: string) => {
     try {
-      const seed = await mnemonicToSeed(mnemonic);
-      const hdKey = HDKey.fromMasterSeed(seed);
-      
-      // Derive the key using Stacks derivation path: m/44'/5757'/0'/0/0
-      const derivedKey = hdKey.derive("m/44'/5757'/0'/0/0");
-      
-      if (!derivedKey.privateKey) {
-        throw new Error('Failed to derive private key');
-      }
-      
-      const privateKeyHex = bytesToHex(derivedKey.privateKey);
-      const address = getAddressFromPrivateKey(privateKeyHex);
-      const bitcoinAddress = getBitcoinAddressFromPrivateKey(
-        privateKeyHex,
-        process.env.NEXT_PUBLIC_STACKS_NETWORK === 'testnet' ? 'testnet' : 'mainnet'
-      );
-      const rootstockAddress = getRootstockAddressFromPrivateKey(privateKeyHex);
-      const liquidAddress = getLiquidAddressFromPrivateKey(privateKeyHex, process.env.NEXT_PUBLIC_STACKS_NETWORK === 'testnet' ? 'testnet' : 'mainnet');
-      
+      const walletData = await validateAndGenerateWallet(mnemonic);
       return {
-        mnemonic,
-        privateKey: privateKeyHex,
-        bitcoinAddress,
-        rootstockAddress,
-        liquidAddress,
-        address,
-        label: `BBOX Wallet - ${email}`
+        ...walletData,
+        label: `BBOX Wallet - ${email}`,
       };
     } catch (error) {
       console.error('Failed to generate wallet:', error);

@@ -70,13 +70,16 @@ export function ProfilePictureUpload({
       });
 
       const result = await response.json();
+      const errorMessage = typeof result.error === 'string'
+        ? result.error
+        : result.error ? JSON.stringify(result.error) : 'Upload failed. Please try again.';
 
       if (response.ok && result.success) {
         onUploadSuccess(result.avatarUrl, result.cid);
         setPreviewUrl(null);
         setError(null);
       } else {
-        setError(result.error || 'Upload failed. Please try again.');
+        setError(errorMessage);
         setPreviewUrl(null);
       }
     } catch (error) {
@@ -106,12 +109,15 @@ export function ProfilePictureUpload({
       );
 
       const result = await response.json();
+      const errorMessage = typeof result.error === 'string'
+        ? result.error
+        : result.error ? JSON.stringify(result.error) : 'Failed to remove profile picture.';
 
       if (response.ok && result.success) {
         onRemoveSuccess();
         setError(null);
       } else {
-        setError(result.error || 'Failed to remove profile picture.');
+        setError(errorMessage);
       }
     } catch (error) {
       console.error('Remove error:', error);

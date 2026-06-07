@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from 'next/navigation';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
+import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 import { getProfile, upsertProfile, getSkillCategories, Profile } from '@/lib/profileApi';
 import { hasEncryptedWallet } from '@/lib/encryptedStorage';
 import Link from "next/link";
@@ -14,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ProfilePictureUpload } from "@/components/ProfilePictureUpload";
 import { BannerImageUpload } from "@/components/BannerImageUpload";
 import { toast } from "sonner";
+import { Copy } from 'lucide-react';
 
 interface SkillCategory {
   category: string;
@@ -23,7 +25,8 @@ interface SkillCategory {
 export default function SettingsPage() {
   const address = useCurrentAddress();
   const router = useRouter();
-  
+  const { currentWallet } = useEncryptedWallet();
+
   // Determine wallet type - if we have an address but no encrypted wallet, it's an extension wallet
   const isExtensionWallet = address && !hasEncryptedWallet();
   
@@ -58,6 +61,7 @@ export default function SettingsPage() {
   const [bitcoinExperienceLevel, setBitcoinExperienceLevel] = useState('');
   const [bitcoinTechStack, setBitcoinTechStack] = useState('');
   const [bitcoinProjectUrl, setBitcoinProjectUrl] = useState('');
+  const [copiedNostrKey, setCopiedNostrKey] = useState(false);
   
   // Profile Media
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -167,7 +171,20 @@ export default function SettingsPage() {
     loadData();
   }, [address]);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const copyNostrKey = async () => {
+    if (!currentWallet?.nostrPublicKey) return;
+    try {
+      await navigator.clipboard.writeText(currentWallet.nostrPublicKey);
+      setCopiedNostrKey(true);
+      toast.success('Nostr public key copied');
+      setTimeout(() => setCopiedNostrKey(false), 2500);
+    } catch (err) {
+      console.error('Failed to copy Nostr public key:', err);
+      toast.error('Failed to copy Nostr public key');
+    }
+  };
+
+  const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError('');
@@ -396,6 +413,32 @@ export default function SettingsPage() {
                       placeholder="City, Country"
                       maxLength={100}
                     />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block mb-2 text-sm font-medium">Nostr Public Key</label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        className="flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        type="text"
+                        readOnly
+                        value={currentWallet?.nostrPublicKey || ''}
+                        placeholder={currentWallet ? 'Nostr key not available' : 'Encrypted wallet required'}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={copyNostrKey}
+                        disabled={!currentWallet?.nostrPublicKey}
+                        className="border-border text-muted-foreground hover:bg-muted cursor-pointer"
+                      >
+                        {copiedNostrKey ? 'Copied' : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Your Nostr public key is derived from your wallet private key and is shown here when your encrypted wallet is available.
+                    </p>
                   </div>
                 </div>
                 

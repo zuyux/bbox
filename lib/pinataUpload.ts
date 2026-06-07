@@ -12,6 +12,30 @@ export interface PinataUploadError {
   details?: string;
 }
 
+function normalizePinataError(error: unknown): string {
+  if (!error) {
+    return 'Upload failed. Please try again.';
+  }
+
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  if (typeof error === 'object') {
+    const err = error as Record<string, unknown>;
+    if (typeof err.message === 'string') return err.message;
+    if (typeof err.error === 'string') return err.error;
+    if (typeof err.reason === 'string') return err.reason;
+    if (typeof err.details === 'string') return err.details;
+  }
+
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return 'Upload failed. Please try again.';
+  }
+}
+
 /**
  * Upload a file to Pinata IPFS
  */
@@ -119,7 +143,7 @@ export async function uploadFileToPinata(
     } else {
       return {
         success: false,
-        error: 'Upload failed. Please try again.'
+        error: normalizePinataError(response.data?.error ?? response.data)
       };
     }
   } catch (error) {
@@ -149,13 +173,13 @@ export async function uploadFileToPinata(
       
       return {
         success: false,
-        error: error.response?.data?.error || 'Upload failed. Please try again.'
+        error: normalizePinataError(error.response?.data?.error ?? error.response?.data ?? error.message)
       };
     }
     
     return {
       success: false,
-      error: 'Upload failed. Please try again.'
+      error: normalizePinataError(error)
     };
   }
 }

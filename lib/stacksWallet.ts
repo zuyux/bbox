@@ -3,6 +3,7 @@ import { getStxAddress } from '@stacks/wallet-sdk';
 import { HDKey } from '@scure/bip32';
 import { mnemonicToSeed } from 'bip39';
 import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
+import { getNostrPublicKeyFromPrivateKey } from './nostr';
 
 /**
  * Creates a Stacks wallet and returns key details.
@@ -30,7 +31,9 @@ export async function createStacksAccount(
     }
     
     // Create account object compatible with getStxAddress
-    const privateKeyHex = Buffer.from(child.privateKey).toString('hex');
+    const privateKeyHex = Array.from(child.privateKey)
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('');
     const account = {
       stxPrivateKey: privateKeyHex,
       dataPrivateKey: privateKeyHex,
@@ -46,6 +49,7 @@ export async function createStacksAccount(
     );
     const rootstockAddress = getRootstockAddressFromPrivateKey(privateKeyHex);
     const liquidAddress = getLiquidAddressFromPrivateKey(privateKeyHex, network === 'testnet' ? 'testnet' : 'mainnet');
+    const nostrPublicKey = getNostrPublicKeyFromPrivateKey(privateKeyHex);
 
     return {
       address,
@@ -53,6 +57,7 @@ export async function createStacksAccount(
       bitcoinAddress,
       rootstockAddress,
       liquidAddress,
+      nostrPublicKey,
       mnemonic,
       encryptedSecretKey: '',
       index: 0,

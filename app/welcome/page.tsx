@@ -20,6 +20,7 @@ export default function WelcomePage() {
   const [showMnemonic, setShowMnemonic] = useState(false);
   const [copiedMnemonic, setCopiedMnemonic] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [copiedNostrKey, setCopiedNostrKey] = useState(false);
   const [acknowledgedBackup, setAcknowledgedBackup] = useState(false);
   const [step, setStep] = useState<'welcome' | 'backup' | 'security'>('welcome');
 
@@ -82,6 +83,21 @@ export default function WelcomePage() {
       setTimeout(() => setCopiedAddress(false), 2500);
     } catch {
       toast.error('Failed to copy address');
+    }
+  };
+
+  const copyNostrKey = async () => {
+    if (!currentWallet?.nostrPublicKey) return;
+    try {
+      const copied = await copyToClipboard(currentWallet.nostrPublicKey);
+      if (!copied) {
+        throw new Error('Clipboard unavailable');
+      }
+      setCopiedNostrKey(true);
+      toast.success('Nostr public key copied');
+      setTimeout(() => setCopiedNostrKey(false), 2500);
+    } catch {
+      toast.error('Failed to copy Nostr public key');
     }
   };
 
@@ -190,6 +206,26 @@ export default function WelcomePage() {
                       </Button>
                     </div>
                   </div>
+                  {currentWallet.nostrPublicKey && (
+                    <div>
+                      <label className="text-sm text-muted-foreground">Nostr Public Key</label>
+                      <div className="flex items-center gap-1">
+                        <p className="select-text text-foreground font-mono font-bold text-lg break-all flex-1">{currentWallet.nostrPublicKey}</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={copyNostrKey}
+                          className="shrink-0 border-border text-muted-foreground hover:bg-muted cursor-pointer"
+                        >
+                          {copiedNostrKey ? (
+                            <CheckCircle className="w-4 h-4" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

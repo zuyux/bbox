@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileToPinata, unpinFromPinata, getIPFSUrl } from '@/lib/pinataUpload';
-import { supabase } from '@/lib/supabaseClient';
+import { supabaseAdmin } from '@/lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const avatarUrl = getIPFSUrl(cid);
 
     // First, try to find existing profile with case-insensitive search
-    const { data: existingProfiles } = await supabase
+    const { data: existingProfiles } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .ilike('address', address);
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (existingProfiles && existingProfiles.length > 0) {
       // Update existing profile (use the first match)
       const existingProfile = existingProfiles[0];
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('profiles')
         .update({
           avatar_cid: cid,
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       updateError = error;
     } else {
       // No existing profile found, create new one with normalized address
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('profiles')
         .insert({
           address: address.toLowerCase(),
@@ -115,7 +115,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // First, find existing profile with case-insensitive search
-    const { data: existingProfiles } = await supabase
+    const { data: existingProfiles } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .ilike('address', address);
@@ -129,7 +129,7 @@ export async function DELETE(request: NextRequest) {
 
     // Remove avatar from profile in Supabase (use the first match)
     const existingProfile = existingProfiles[0];
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
         avatar_cid: null,

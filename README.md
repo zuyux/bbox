@@ -1,7 +1,7 @@
-# 🟧 BBOX — The Open Bitcoin App Store
+# 🟧 BBOX — Bitcoin Builders Open Extension
 
-**BBOX** is a decentralized app directory and funding layer for Bitcoin and its Layer-2 ecosystems (Stacks, Lightning, Runes, etc.).  
-It helps users discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and smart contracts.
+**BBOX** is a decentralized app directory and funding layer for Bitcoin and its Layer-2 ecosystems.
+It helps users discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and contracts.
 
 ---
 

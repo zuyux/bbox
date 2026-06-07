@@ -22,12 +22,13 @@ import {
   extendSession as libExtendSession,
   WalletData
 } from '@/lib/encryptedStorage';
+import { getNostrPublicKeyFromPrivateKey } from '@/lib/nostr';
 import { DevnetWallet, devnetWallets } from '@/lib/devnet-wallet-context';
 
 export interface EncryptedWalletContextType {
   // Wallet state
   currentWallet: WalletData | null;
-  walletInfo: { address: string; label: string; createdAt: number; bitcoinAddress?: string; rootstockAddress?: string; liquidAddress?: string } | null;
+  walletInfo: { address: string; label: string; createdAt: number; bitcoinAddress?: string; rootstockAddress?: string; liquidAddress?: string; nostrPublicKey?: string } | null;
   isWalletEncrypted: boolean;
   isSessionLocked: boolean;
   
@@ -77,7 +78,7 @@ interface ProviderProps {
 
 export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
   const [currentWallet, setCurrentWallet] = useState<WalletData | null>(null);
-  const [walletInfo, setWalletInfo] = useState<{ address: string; label: string; createdAt: number; bitcoinAddress?: string; rootstockAddress?: string; liquidAddress?: string } | null>(null);
+  const [walletInfo, setWalletInfo] = useState<{ address: string; label: string; createdAt: number; bitcoinAddress?: string; rootstockAddress?: string; liquidAddress?: string; nostrPublicKey?: string } | null>(null);
   const [isWalletEncrypted, setIsWalletEncrypted] = useState(false);
   const [isSessionLocked, setIsSessionLocked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -250,6 +251,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
         bitcoinAddress: walletData.bitcoinAddress,
         rootstockAddress: walletData.rootstockAddress,
         liquidAddress: walletData.liquidAddress,
+        nostrPublicKey: walletData.nostrPublicKey,
         createdAt: Date.now() 
       });
 
@@ -260,6 +262,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
           bitcoinAddress: walletData.bitcoinAddress,
           rootstockAddress: walletData.rootstockAddress,
           liquidAddress: walletData.liquidAddress,
+          nostrPublicKey: walletData.nostrPublicKey,
           label: walletData.label,
           encrypted: true,
           createdAt: Date.now()
@@ -303,6 +306,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
           bitcoinAddress: walletData.bitcoinAddress,
           rootstockAddress: walletData.rootstockAddress,
           liquidAddress: walletData.liquidAddress,
+          nostrPublicKey: walletData.nostrPublicKey,
           label: walletData.label,
           encrypted: true,
           createdAt: Date.now()
@@ -383,7 +387,10 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
   }, []);
 
   // Provide effective current wallet (encrypted or devnet)
-  const effectiveCurrentWallet = currentWallet || (devnetWallet ? {
+  const effectiveCurrentWallet = currentWallet ? {
+    ...currentWallet,
+    nostrPublicKey: currentWallet.nostrPublicKey ?? (currentWallet.privateKey ? getNostrPublicKeyFromPrivateKey(currentWallet.privateKey) : undefined),
+  } : (devnetWallet ? {
     mnemonic: devnetWallet.mnemonic,
     privateKey: '',
     address: devnetWallet.stxAddress,
