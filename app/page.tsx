@@ -56,7 +56,7 @@ const featuredAppsByCategory = Object.entries(
 )
   .map(([category, apps]) => ({
     category,
-    apps: apps.sort((a, b) => b.rating - a.rating).slice(0, 5),
+    apps: apps.sort((a, b) => b.rating - a.rating).slice(0, 6),
     total: apps.length,
   }))
   .sort((a, b) => b.total - a.total)
@@ -436,7 +436,7 @@ export default function HomePage() {
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
                     {group.apps.map((app) => {
                       const isLoaded = loadedImages[app.id];
                       const imageSrc = app.imgCID ? getIPFSUrl(app.imgCID) : '/bbox.png';
