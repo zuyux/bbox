@@ -453,6 +453,12 @@ html, body {
     transform: translateY(-4px);
   }
 
+  @media (max-width: 768px) {
+    .category-card {
+      min-width: 140px;
+    }
+  }
+
   .category-card:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 3px;

@@ -4,6 +4,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from 'next/navigation';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
+import PasswordSigningModal from '@/components/PasswordSigningModal';
 import { getProfile, upsertProfile, getSkillCategories, Profile } from '@/lib/profileApi';
 import { hasEncryptedWallet } from '@/lib/encryptedStorage';
 import Link from "next/link";
@@ -22,10 +23,17 @@ interface SkillCategory {
   skills: string[];
 }
 
+type PendingProfileData = Partial<Profile> & {
+  address: string;
+  bitcoin_experience_level?: string;
+  bitcoin_tech_stack?: string;
+  bitcoin_project_url?: string;
+};
+
 export default function SettingsPage() {
   const address = useCurrentAddress();
   const router = useRouter();
-  const { currentWallet } = useEncryptedWallet();
+  const { currentWallet, isWalletEncrypted, isSessionLocked, unlockWallet } = useEncryptedWallet();
 
   // Determine wallet type - if we have an address but no encrypted wallet, it's an extension wallet
   const isExtensionWallet = address && !hasEncryptedWallet();
@@ -62,6 +70,9 @@ export default function SettingsPage() {
   const [bitcoinTechStack, setBitcoinTechStack] = useState('');
   const [bitcoinProjectUrl, setBitcoinProjectUrl] = useState('');
   const [copiedNostrKey, setCopiedNostrKey] = useState(false);
+  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
+  const [pendingProfileData, setPendingProfileData] = useState<PendingProfileData | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
   
   // Profile Media
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -91,7 +102,7 @@ export default function SettingsPage() {
     
     const loadData = async () => {
       try {
-        // Load profile
+        // Load profile from Nostr relays
         const profile = await getProfile(address);
         if (profile) {
           setUsername(profile.username || '');
@@ -169,7 +180,7 @@ export default function SettingsPage() {
     };
     
     loadData();
-  }, [address]);
+  }, [address, currentWallet?.nostrPublicKey]);
 
   const copyNostrKey = async () => {
     if (!currentWallet?.nostrPublicKey) return;
@@ -184,21 +195,51 @@ export default function SettingsPage() {
     }
   };
 
+  const handleUnlockAndSave = async (passphrase: string) => {
+    setSaving(true);
+    setUnlocking(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const walletData = await unlockWallet(passphrase);
+      const privateKey = walletData.privateKey || currentWallet?.privateKey;
+      if (!privateKey) {
+        throw new Error('Unable to retrieve your private key after unlocking');
+      }
+      if (!pendingProfileData) {
+        throw new Error('No pending profile data available to save');
+      }
+
+      await upsertProfile(pendingProfileData, privateKey);
+      setSuccess('Profile saved successfully to Nostr relays!');
+      toast.success('Profile updated!');
+      setPendingProfileData(null);
+      setIsUnlockModalOpen(false);
+      setTimeout(() => {
+        router.push(`/${address}`);
+      }, 1500);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to unlock wallet and save profile';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw err;
+    } finally {
+      setUnlocking(false);
+      setSaving(false);
+    }
+  };
+
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError('');
     setSuccess('');
-    
+
     try {
       if (!address) throw new Error('Wallet not connected');
-      
-      const profileData: Partial<Profile> & {
-        address: string;
-        bitcoin_experience_level?: string;
-        bitcoin_tech_stack?: string;
-        bitcoin_project_url?: string;
-      } = {
+
+      const profileData: PendingProfileData = {
         address,
         username: username.trim() || undefined,
         email: email.trim() || undefined,
@@ -236,14 +277,23 @@ export default function SettingsPage() {
         push_notifications: pushNotifications,
         marketing_emails: marketingEmails,
       };
-      
-  // For encrypted wallets, save profile directly (no passphrase required)
-      
-      // For extension wallets, save directly
-      await upsertProfile(profileData);
-      setSuccess('Profile saved successfully!');
+
+      const privateKey = currentWallet?.privateKey;
+      if (!privateKey) {
+        if (isWalletEncrypted) {
+          setPendingProfileData(profileData);
+          setIsUnlockModalOpen(true);
+          setSaving(false);
+          return;
+        }
+
+        throw new Error('Encrypted wallet is required to save profile data to Nostr relays');
+      }
+
+      await upsertProfile(profileData, privateKey);
+      setSuccess('Profile saved successfully to Nostr relays!');
       toast.success('Profile updated!');
-      
+
       // Navigate to user's profile page after successful save
       setTimeout(() => {
         router.push(`/${address}`);
@@ -252,8 +302,9 @@ export default function SettingsPage() {
       const errorMessage = err instanceof Error ? err.message : 'Failed to save profile';
       setError(errorMessage);
       toast.error(errorMessage);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   // ...removed passphrase signing logic...
@@ -281,7 +332,7 @@ export default function SettingsPage() {
       
       <Tabs defaultValue="profile" className="w-full">
         <TabsList
-          className="grid w-full grid-cols-4 bg-accent-background border border-gray-200 dark:border-white/20 rounded-xl overflow-hidden"
+          className="grid w-full grid-cols-2 sm:grid-cols-4 bg-accent-background border border-gray-200 dark:border-white/20 rounded-xl overflow-hidden"
         >
           <TabsTrigger
             value="profile"
@@ -437,8 +488,14 @@ export default function SettingsPage() {
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      Your Nostr public key is derived from your wallet private key and is shown here when your encrypted wallet is available.
+                      Your Nostr public key is derived from your wallet private key and is shown here when your encrypted wallet is available. Your profile updates will be published to public Nostr relays.
                     </p>
+                    {(isWalletEncrypted && isSessionLocked) || (isWalletEncrypted && !currentWallet?.privateKey) ? (
+                      <div className="rounded-xl border border-yellow-400 bg-yellow-50 text-yellow-900 dark:bg-yellow-950/50 dark:text-yellow-200 p-3 mt-4">
+                        <p className="text-sm font-medium">Your encrypted wallet must be unlocked to sign Nostr profile updates.</p>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2">Click Save Changes to open the wallet unlock prompt, then your profile update will be signed locally.</p>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
                 
@@ -820,7 +877,15 @@ export default function SettingsPage() {
         </div>
       </div>
 
-  {/* Passphrase signing modal removed. Passphrase is now verified inline. */}
+      <PasswordSigningModal
+        isOpen={isUnlockModalOpen}
+        onClose={() => setIsUnlockModalOpen(false)}
+        onSign={handleUnlockAndSave}
+        title="Unlock encrypted wallet"
+        description="Enter your wallet password to unlock the private key and sign the Nostr profile update locally. Your password is never sent to the server."
+        actionText="Unlock and Save"
+        isLoading={unlocking}
+      />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileToPinata } from '@/lib/pinataUpload';
-import { supabase } from '@/lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!address) {
-      return NextResponse.json({ error: 'No address provided' }, { status: 400 })   ;
+      return NextResponse.json({ error: 'No address provided' }, { status: 400 });
     }
 
     // Validate file type and size
@@ -59,27 +58,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    // Update profile with new banner CID
-    console.log('Updating profile with banner CID:', result.data.IpfsHash);
-    const { error: dbError } = await supabase
-      .from('profiles')
-      .update({
-        banner_cid: result.data.IpfsHash,
-        updated_at: new Date().toISOString(),
-      })
-      .ilike('address', address);
-
-    if (dbError) {
-      console.error('Database update error:', dbError);
-      return NextResponse.json(
-        { error: `Failed to update profile: ${dbError.message}` },
-        { status: 500 }
-      );
-    }
-
-    // If there was an old banner, we could optionally remove it from Pinata here
-    // But we'll keep it for now to avoid breaking existing references
 
     return NextResponse.json({
       success: true,

@@ -192,8 +192,8 @@ export default function AppsPage() {
         </div>
 
         {/* Category Pills - 2 Rows */}
-        <div className="mb-8 max-w-4xl mx-auto">
-          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+        <div className="mb-8 w-full mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
             <Button
               variant="outline"
               size="sm"

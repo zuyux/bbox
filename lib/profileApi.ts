@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { createNostrMetadataEvent, fetchNostrProfileByAddress, publishNostrEvent } from '@/lib/nostr';
 
 // Test Supabase connectivity
 export async function testSupabaseConnection() {
@@ -97,38 +98,15 @@ export interface Profile {
 export async function getProfile(address: string): Promise<Profile | null> {
   try {
     console.log(`Attempting to fetch profile for address: ${address}`);
-    
-    // Use case-insensitive search to find profiles regardless of address case
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .ilike('address', address)
-      .single();
-    
-    if (error) {
-      if (error.code === 'PGRST116') {
-        // No profile found - this is normal for new users
-        console.log(`No profile found for address: ${address}`);
-        return null;
-      }
-      if (error.code === '42P01') {
-        // Table doesn't exist
-        console.warn('Profiles table does not exist yet. Please run the database setup.');
-        return null;
-      }
-      console.error('Supabase error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        address: address,
-        timestamp: new Date().toISOString()
-      });
-      throw error;
+    const profile = await fetchNostrProfileByAddress(address);
+
+    if (!profile) {
+      console.log(`No Nostr profile event found for address: ${address}`);
+      return null;
     }
-    
-    console.log(`Profile loaded successfully for address: ${address}`);
-    return data;
+
+    console.log(`Nostr profile loaded successfully for address: ${address}`);
+    return profile as Profile;
   } catch (error) {
     console.error('Complete error in getProfile:', {
       errorType: typeof error,
@@ -137,112 +115,40 @@ export async function getProfile(address: string): Promise<Profile | null> {
       errorStack: error instanceof Error ? error.stack : undefined,
       errorObject: error,
       address: address,
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Available' : 'Missing',
-      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_KEY ? 'Available' : 'Missing',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
-    // Test connection if we get an unexpected error
-    console.log('Running Supabase connection test...');
-    await testSupabaseConnection();
-    
-    // Return null instead of throwing to prevent page crashes
     return null;
   }
 }
 
-export async function upsertProfile(profile: Partial<Profile> & { address: string }): Promise<Profile> {
-  try {
-    // Normalize address for searching only - keep original address for storage
-    const normalizedAddress = profile.address.toLowerCase();
-    
-    // Update last_active timestamp but keep the original address
-    const profileData = {
-      ...profile,
-      // DO NOT overwrite the address - keep the original case
-      last_active: new Date().toISOString()
-    };
-
-    console.log('Upserting profile:', { 
-      originalAddress: profile.address,
-      searchAddress: normalizedAddress,
-      fields: Object.keys(profileData),
-      dataPreview: {
-        address: profileData.address,
-        username: profileData.username,
-        email: profileData.email,
-        display_name: profileData.display_name
-      }
-    });
-
-    // First, try to find existing profile with case-insensitive search
-    const { data: existingProfiles } = await supabase
-      .from('profiles')
-      .select('*')
-      .ilike('address', profile.address);
-
-    let data, error;
-
-    if (existingProfiles && existingProfiles.length > 0) {
-      // Update existing profile (use the first match) - keep existing address case
-      const existingProfile = existingProfiles[0];
-      const updateResult = await supabase
-        .from('profiles')
-        .update({
-          ...profileData,
-          // Preserve the existing address case from the database
-          address: existingProfile.address,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingProfile.id)
-        .select()
-        .single();
-      
-      data = updateResult.data;
-      error = updateResult.error;
-      console.log('Updated existing profile:', existingProfile.id, 'preserved address:', existingProfile.address);
-    } else {
-      // No existing profile found, create new one with original address case
-      const insertResult = await supabase
-        .from('profiles')
-        .insert({
-          ...profileData,
-          // Keep the original address case for new profiles
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-      
-      data = insertResult.data;
-      error = insertResult.error;
-      console.log('Created new profile with original address:', profile.address);
-    }
-    
-    if (error) {
-      console.error('Supabase upsert error:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        fullError: JSON.stringify(error, null, 2)
-      });
-      throw new Error(`Database error: ${error.message || error.code || 'Unknown error'}`);
-    }
-    
-    console.log('Profile upserted successfully:', data.id);
-    return data;
-  } catch (error) {
-    console.error('Error upserting profile:', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      address: profile.address,
-      errorType: typeof error,
-      errorConstructor: error?.constructor?.name,
-      fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
-    });
-    throw new Error(`Failed to save profile: ${error instanceof Error ? error.message : String(error)}`);
+export async function upsertProfile(profile: Partial<Profile> & { address: string }, privateKeyHex?: string): Promise<Profile> {
+  if (!privateKeyHex) {
+    throw new Error('Private key is required to publish your Nostr profile. Unlock your encrypted wallet first.');
   }
+
+  const cleanedProfile: Record<string, unknown> & { address: string } = {
+    address: profile.address,
+  };
+
+  Object.entries(profile).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (key === 'email' && profile.show_email === false) return;
+      cleanedProfile[key] = value;
+    }
+  });
+
+  const event = await createNostrMetadataEvent(cleanedProfile, privateKeyHex);
+  const published = await publishNostrEvent(event);
+
+  if (!published) {
+    throw new Error('Failed to publish profile to Nostr relays. Please try again.');
+  }
+
+  return {
+    ...profile,
+    updated_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+  } as Profile;
 }
 
 export async function updateProfileField(address: string, field: keyof Profile, value: unknown): Promise<void> {
@@ -309,17 +215,24 @@ export async function searchProfiles(query: string, limit: number = 10) {
 }
 
 export async function getSkillCategories() {
-  try {
-    const { data, error } = await supabase
-      .from('skill_categories')
-      .select('category, skills');
-    
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error fetching skill categories:', error);
-    throw error;
-  }
+  return [
+    {
+      category: 'Languages',
+      skills: ['JavaScript', 'TypeScript', 'Rust', 'Python', 'Go', 'C++'],
+    },
+    {
+      category: 'Bitcoin Stack',
+      skills: ['Bitcoin Core', 'LND', 'BDK', 'Electrum', 'Ordinals', 'Lightning Network', 'Stacks', 'Rootstock'],
+    },
+    {
+      category: 'Frameworks',
+      skills: ['React', 'Next.js', 'Node.js', 'Express', 'Actix', 'Rocket'],
+    },
+    {
+      category: 'DevOps Tools',
+      skills: ['Docker', 'Kubernetes', 'GitHub Actions', 'GitLab CI', 'Terraform'],
+    },
+  ];
 }
 
 // User Collections

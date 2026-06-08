@@ -436,7 +436,7 @@ export default function HomePage() {
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
                     {group.apps.map((app) => {
                       const isLoaded = loadedImages[app.id];
                       const imageSrc = app.imgCID ? getIPFSUrl(app.imgCID) : '/bbox.png';

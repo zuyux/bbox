@@ -153,7 +153,7 @@ export default function AppDetailPage() {
         <div className="mb-6 pb-6 border-b">
           <h3 className="text-base font-semibold mb-3">Information</h3>
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
               <div>
                 <span className="text-muted-foreground text-xs">Category</span>
                 <div className="font-medium">{app.category}</div>

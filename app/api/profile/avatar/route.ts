@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileToPinata, unpinFromPinata, getIPFSUrl } from '@/lib/pinataUpload';
-import { supabaseAdmin } from '@/lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,57 +28,7 @@ export async function POST(request: NextRequest) {
     const { IpfsHash: cid } = uploadResult.data;
     const avatarUrl = getIPFSUrl(cid);
 
-    // First, try to find existing profile with case-insensitive search
-    const { data: existingProfiles } = await supabaseAdmin
-      .from('profiles')
-      .select('*')
-      .ilike('address', address);
-
-    let updateError = null;
-
-    if (existingProfiles && existingProfiles.length > 0) {
-      // Update existing profile (use the first match)
-      const existingProfile = existingProfiles[0];
-      const { error } = await supabaseAdmin
-        .from('profiles')
-        .update({
-          avatar_cid: cid,
-          avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingProfile.id);
-      
-      updateError = error;
-    } else {
-      // No existing profile found, create new one with normalized address
-      const { error } = await supabaseAdmin
-        .from('profiles')
-        .insert({
-          address: address.toLowerCase(),
-          avatar_cid: cid,
-          avatar_url: avatarUrl,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-      
-      updateError = error;
-    }
-
-    if (updateError) {
-      console.error('Supabase update error:', updateError);
-      // Try to unpin the newly uploaded file since profile update failed
-      if (cid) {
-        await unpinFromPinata(cid);
-      }
-      return NextResponse.json(
-        { error: 'Failed to update profile' },
-        { status: 500 }
-      );
-    }
-
-    // If there was an old CID and update was successful, unpin the old file
     if (oldCid && oldCid !== cid) {
-      // Don't await this - let it happen in background
       unpinFromPinata(oldCid).catch(error => {
         console.warn('Failed to unpin old avatar:', error);
       });
@@ -89,7 +38,7 @@ export async function POST(request: NextRequest) {
       success: true,
       cid,
       avatarUrl,
-      message: 'Profile picture updated successfully'
+      message: 'Profile picture uploaded successfully'
     });
 
   } catch (error) {
@@ -114,43 +63,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // First, find existing profile with case-insensitive search
-    const { data: existingProfiles } = await supabaseAdmin
-      .from('profiles')
-      .select('*')
-      .ilike('address', address);
-
-    if (!existingProfiles || existingProfiles.length === 0) {
-      return NextResponse.json(
-        { error: 'Profile not found' },
-        { status: 404 }
-      );
-    }
-
-    // Remove avatar from profile in Supabase (use the first match)
-    const existingProfile = existingProfiles[0];
-    const { error: updateError } = await supabaseAdmin
-      .from('profiles')
-      .update({
-        avatar_cid: null,
-        avatar_url: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', existingProfile.id);
-
-    if (updateError) {
-      console.error('Supabase update error:', updateError);
-      return NextResponse.json(
-        { error: 'Failed to remove profile picture' },
-        { status: 500 }
-      );
-    }
-
-    // Unpin from Pinata
     const unpinSuccess = await unpinFromPinata(cid);
-    
     if (!unpinSuccess) {
-      console.warn('Failed to unpin file from Pinata, but profile was updated');
+      console.warn('Failed to unpin file from Pinata');
     }
 
     return NextResponse.json({

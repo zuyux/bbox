@@ -39,7 +39,7 @@ export interface EncryptedWalletContextType {
   
   // Actions
   createEncryptedWallet: (walletData: WalletData, passphrase: string) => Promise<void>;
-  unlockWallet: (passphrase: string) => Promise<void>;
+  unlockWallet: (passphrase: string) => Promise<WalletData>;
   lockWallet: () => void;
   deleteWallet: () => void;
   changePassphrase: (oldPassphrase: string, newPassphrase: string) => Promise<void>;
@@ -61,11 +61,11 @@ const EncryptedWalletContext = createContext<EncryptedWalletContextType>({
   isAuthenticated: false,
   authError: null,
   isLoading: false,
-  createEncryptedWallet: async () => {},
-  unlockWallet: async () => {},
+  createEncryptedWallet: async () => { return Promise.reject(new Error('createEncryptedWallet not implemented')) as never; },
+  unlockWallet: async () => { return Promise.reject(new Error('unlockWallet not implemented')) as never; },
   lockWallet: () => {},
   deleteWallet: () => {},
-  changePassphrase: async () => {},
+  changePassphrase: async () => { return Promise.reject(new Error('changePassphrase not implemented')) as never; },
   extendSession: () => {},
   checkSessionExpiry: () => {},
   setDevnetWallet: () => {},
@@ -277,7 +277,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const unlockWallet = useCallback(async (passphrase: string) => {
+  const unlockWallet = useCallback(async (passphrase: string): Promise<WalletData> => {
     setIsLoading(true);
     setAuthError(null);
 
@@ -313,6 +313,8 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
         };
         localStorage.setItem('bbox_session', JSON.stringify(sessionData));
       }
+
+      return walletData;
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Failed to unlock wallet');
       throw error;
