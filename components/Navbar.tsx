@@ -41,7 +41,6 @@ export const Navbar = () => {
               </div>
             </div>
             
-            {/* Right: Additional items can go here */}
             <div className="flex justify-end">
               {/* Reserved for future items */}
             </div>

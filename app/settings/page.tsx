@@ -3,10 +3,13 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from 'next/navigation';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
+import { useWallet } from '@/components/WalletProvider';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 import PasswordSigningModal from '@/components/PasswordSigningModal';
-import { getProfile, upsertProfile, getSkillCategories, Profile } from '@/lib/profileApi';
+import { getProfile, upsertProfile, createWalletLinkProof, getSkillCategories, Profile } from '@/lib/profileApi';
+import { buildWalletProofMessage, createWalletProof } from '@/lib/commentSigning';
 import { hasEncryptedWallet } from '@/lib/encryptedStorage';
+import { isNostrPublicKey } from '@/lib/nostr';
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,10 +36,13 @@ type PendingProfileData = Partial<Profile> & {
 export default function SettingsPage() {
   const address = useCurrentAddress();
   const router = useRouter();
+  const { walletType } = useWallet();
   const { currentWallet, isWalletEncrypted, isSessionLocked, unlockWallet } = useEncryptedWallet();
 
   // Determine wallet type - if we have an address but no encrypted wallet, it's an extension wallet
-  const isExtensionWallet = address && !hasEncryptedWallet();
+  const isExtensionWallet = Boolean(address && !hasEncryptedWallet());
+  const isNostrKeyAvailable = Boolean(currentWallet?.nostrPublicKey && isNostrPublicKey(currentWallet.nostrPublicKey));
+  const canLinkWallet = isExtensionWallet && Boolean(walletType) && isNostrKeyAvailable;
   
   // Basic Profile Fields
   const [username, setUsername] = useState('');
@@ -69,6 +75,11 @@ export default function SettingsPage() {
   const [bitcoinExperienceLevel, setBitcoinExperienceLevel] = useState('');
   const [bitcoinTechStack, setBitcoinTechStack] = useState('');
   const [bitcoinProjectUrl, setBitcoinProjectUrl] = useState('');
+  const [linkedNostrPublicKey, setLinkedNostrPublicKey] = useState('');
+  const [walletLinkStatus, setWalletLinkStatus] = useState('');
+  const [walletLinkError, setWalletLinkError] = useState('');
+  const [walletProofResult, setWalletProofResult] = useState<{ walletSignature: string; walletPublicKey?: string; proofTimestamp: string } | null>(null);
+  const [walletLinking, setWalletLinking] = useState(false);
   const [copiedNostrKey, setCopiedNostrKey] = useState(false);
   const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
   const [pendingProfileData, setPendingProfileData] = useState<PendingProfileData | null>(null);
@@ -304,6 +315,78 @@ export default function SettingsPage() {
       toast.error(errorMessage);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreateWalletProof = async () => {
+    setWalletLinkStatus('');
+    setWalletLinkError('');
+
+    try {
+      if (!address) {
+        throw new Error('Wallet address is required for proof creation');
+      }
+      if (!walletType) {
+        throw new Error('Unable to determine wallet type');
+      }
+      if (!currentWallet?.nostrPublicKey) {
+        throw new Error('Nostr public key is required to create a wallet link proof');
+      }
+      if (!isNostrPublicKey(currentWallet.nostrPublicKey)) {
+        throw new Error('Invalid Nostr public key detected');
+      }
+
+      const proof = await createWalletProof(address, currentWallet.nostrPublicKey, walletType);
+      setWalletProofResult({
+        walletSignature: proof.walletSignature,
+        walletPublicKey: proof.walletPublicKey,
+        proofTimestamp: proof.proofTimestamp,
+      });
+      setLinkedNostrPublicKey(proof.nostrPublicKey);
+      setWalletLinkStatus('Proof created, ready to link wallet.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet proof';
+      setWalletLinkError(errorMessage);
+      toast.error(errorMessage);
+      console.error('Wallet proof creation error:', err);
+    }
+  };
+
+  const handleLinkWallet = async () => {
+    setWalletLinking(true);
+    setWalletLinkStatus('Linking wallet proof...');
+    setWalletLinkError('');
+
+    try {
+      if (!address) {
+        throw new Error('Wallet address is required');
+      }
+      if (!walletProofResult) {
+        throw new Error('Create a wallet proof before linking');
+      }
+      if (!linkedNostrPublicKey) {
+        throw new Error('Nostr public key is required');
+      }
+
+      await createWalletLinkProof({
+        address,
+        nostrPublicKey: linkedNostrPublicKey,
+        walletType: walletType ?? 'leather',
+        walletSignature: walletProofResult.walletSignature,
+        walletPublicKey: walletProofResult.walletPublicKey,
+        proofMessage: buildWalletProofMessage(address, linkedNostrPublicKey, walletProofResult.proofTimestamp),
+        proofTimestamp: walletProofResult.proofTimestamp,
+      });
+
+      setWalletLinkStatus('Wallet proof linked successfully!');
+      toast.success('Wallet linked to Nostr key');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to link wallet proof';
+      setWalletLinkError(errorMessage);
+      toast.error(errorMessage);
+      console.error('Wallet link error:', err);
+    } finally {
+      setWalletLinking(false);
     }
   };
 
@@ -843,6 +926,71 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {isExtensionWallet && (
+            <Card className="bg-accent-background border-gray-200 dark:border-gray-700 mt-8">
+              <CardHeader>
+                <CardTitle>Wallet Proof Linking</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-400">
+                  Link your Stacks browser wallet address to your Nostr public key for ownership proof.
+                </p>
+
+                {!isNostrKeyAvailable && (
+                  <div className="rounded-lg bg-yellow-100 dark:bg-yellow-900/20 p-4 text-yellow-900 dark:text-yellow-100">
+                    No valid Nostr public key is available. Unlock your encrypted wallet or configure your Nostr key first.
+                  </div>
+                )}
+
+                {isNostrKeyAvailable && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-xs font-medium uppercase text-gray-500">Stacks Wallet</label>
+                        <p className="mt-1 text-sm text-foreground">{address}</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium uppercase text-gray-500">Nostr Public Key</label>
+                        <p className="mt-1 text-sm text-foreground break-all">{currentWallet?.nostrPublicKey}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <Button
+                        type="button"
+                        onClick={handleCreateWalletProof}
+                        disabled={!canLinkWallet || walletLinking}
+                        className="w-full bg-slate-700 hover:bg-slate-800 text-white"
+                      >
+                        Create Proof
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleLinkWallet}
+                        disabled={!walletProofResult || walletLinking}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        {walletLinking ? 'Linking...' : 'Link Wallet'}
+                      </Button>
+                    </div>
+
+                    {walletLinkStatus && (
+                      <div className="rounded-lg bg-green-100 dark:bg-green-900/20 p-3 text-green-900 dark:text-green-100 text-sm">
+                        {walletLinkStatus}
+                      </div>
+                    )}
+
+                    {walletLinkError && (
+                      <div className="rounded-lg bg-red-100 dark:bg-red-900/20 p-3 text-red-900 dark:text-red-100 text-sm">
+                        {walletLinkError}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <div className="mt-8 flex gap-4">
             <Button

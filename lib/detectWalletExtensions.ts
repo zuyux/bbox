@@ -33,7 +33,7 @@ export function detectWalletExtensions() {
   }
   
   // Xverse Wallet
-  if (window.XverseProviders && window.XverseProviders.StacksProvider) {
+  if ((window.XverseProviders && window.XverseProviders.StacksProvider) || window.StacksProvider) {
     wallets.push({
       id: 'xverse',
       name: 'Xverse',

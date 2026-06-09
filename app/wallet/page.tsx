@@ -42,10 +42,15 @@ const abbreviateAddress = (value: string, chars = 5) => {
   return `${value.slice(0, chars)}...${value.slice(-chars)}`;
 };
 
-// Extend the Window interface to include StacksProvider
+// Extend the Window interface to include StacksProvider and Xverse provider helpers
 declare global {
   interface Window {
     StacksProvider?: unknown;
+    XverseProviders?: {
+      StacksProvider?: unknown;
+      [key: string]: unknown;
+    };
+    LeatherProvider?: unknown;
   }
 }
 
@@ -230,7 +235,7 @@ export default function WalletPage() {
     : 'Your encrypted wallet password unlocks the private key locally to sign this sBTC transfer.';
   // Detect if Hiro Wallet extension is available and connected (optional, can remove if not needed)
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.StacksProvider) {
+    if (typeof window !== 'undefined' && (window.StacksProvider || window.XverseProviders?.StacksProvider)) {
       setExtensionAvailable(true);
     } else {
       setExtensionAvailable(false);

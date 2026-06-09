@@ -50,6 +50,54 @@ const buildPayload = (appId: number, address: string, message: string) => {
   });
 };
 
+export type WalletProofResult = {
+  walletType: SupportedWalletType;
+  walletSignature: string;
+  walletPublicKey?: string;
+  proofMessage: string;
+  proofTimestamp: string;
+  walletAddress: string;
+  nostrPublicKey: string;
+};
+
+export const buildWalletProofMessage = (
+  address: string,
+  nostrPublicKey: string,
+  timestamp: string
+): string => {
+  return JSON.stringify({
+    action: 'link_nostr',
+    address,
+    nostrPublicKey,
+    timestamp,
+    origin: typeof window !== 'undefined' ? window.location.origin : 'bbox',
+  });
+};
+
+export const createWalletProof = async (
+  address: string,
+  nostrPublicKey: string,
+  walletType: SupportedWalletType
+): Promise<WalletProofResult> => {
+  if (!address) throw new Error('Wallet address is required to create proof');
+  if (!nostrPublicKey) throw new Error('Nostr public key is required to create proof');
+  if (!walletType) throw new Error('Wallet type is required to create proof');
+
+  const timestamp = new Date().toISOString();
+  const proofMessage = buildWalletProofMessage(address, nostrPublicKey, timestamp);
+  const signatureResult = await signStacksMessage(proofMessage, walletType);
+
+  return {
+    walletType,
+    walletSignature: signatureResult.signature,
+    walletPublicKey: signatureResult.publicKey,
+    proofMessage,
+    proofTimestamp: timestamp,
+    walletAddress: address,
+    nostrPublicKey,
+  };
+};
+
 const providerSupportsRpc = (provider?: StacksProvider): provider is RpcCapableStacksProvider => {
   return !!provider && typeof (provider as RpcCapableStacksProvider).request === 'function';
 };

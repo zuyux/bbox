@@ -15,7 +15,9 @@ export async function GET(req: NextRequest, context: { params: Promise<{ address
     // Case-insensitive search for the address
     const { data, error } = await supabaseAdmin
       .from('profiles')
-      .select('username, address, display_name, avatar_url, tagline, creator_verified, verified_artist, biography, website, twitter, instagram')
+      .select(
+        'username, address, display_name, avatar_url, tagline, creator_verified, verified_artist, biography, website, twitter, instagram, linked_nostr_public_key'
+      )
       .ilike('address', address)
       .single();
 

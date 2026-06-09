@@ -708,11 +708,13 @@ async function executeBboxContractCall(options: BboxContractCallOptions): Promis
   const hasStacksProvider = typeof (window as Window & { StacksProvider?: unknown }).StacksProvider !== 'undefined';
   const hasLeatherProvider = typeof (window as Window & { LeatherProvider?: { request: (method: string, params: unknown) => Promise<unknown> } }).LeatherProvider !== 'undefined';
   const hasXverseProviders = typeof (window as Window & { XverseProviders?: unknown }).XverseProviders !== 'undefined';
+  const hasXverseStacksProvider = hasXverseProviders && typeof (window as Window & { XverseProviders?: { StacksProvider?: { request: (method: string, params: unknown) => Promise<unknown> } } }).XverseProviders?.StacksProvider !== 'undefined';
 
   console.log('🔍 Wallet providers:', {
     stacksProvider: hasStacksProvider,
     leatherProvider: hasLeatherProvider,
     xverseProviders: hasXverseProviders,
+    xverseStacksProvider: hasXverseStacksProvider,
   });
 
   if (!hasStacksProvider && !hasLeatherProvider && !hasXverseProviders) {
@@ -796,6 +798,61 @@ async function executeBboxContractCall(options: BboxContractCallOptions): Promis
     } catch (leatherError) {
       console.error('❌ Leather RPC API error details:', leatherError);
       console.warn('⚠️ Leather RPC API failed, will try fallback method');
+    }
+  }
+
+  if (hasXverseStacksProvider) {
+    console.log('📱 Using Xverse StacksProvider RPC API...');
+    try {
+      const xverseProvider = (window as Window & {
+        XverseProviders: {
+          StacksProvider: {
+            request: (
+              method: string,
+              params: Record<string, unknown>
+            ) => Promise<{ result?: { txid?: string; transaction?: string } }>;
+          };
+        };
+      }).XverseProviders.StacksProvider;
+
+      const functionArgsHex = functionArgs.map((arg) => clarityValueToHex(arg));
+      const postConditionsHex = postConditions.map((pc) => postConditionToHex(pc));
+      const requestParams: Record<string, unknown> = {
+        contract: `${contractAddress}.${contractName}`,
+        functionName,
+        functionArgs: functionArgsHex,
+        anchorMode: 'any',
+        network: resolvedNetwork,
+        postConditionMode: postConditionMode === PostConditionMode.Deny ? 'deny' : 'allow',
+      };
+      if (postConditionsHex.length > 0) {
+        requestParams.postConditions = postConditionsHex;
+      }
+
+      console.log('   Xverse RPC params:', {
+        ...requestParams,
+        functionArgs: functionArgsHex.map((arg) => `${arg.slice(0, 12)}…`),
+        postConditions: postConditionsHex.map((pc) => `${pc.slice(0, 12)}…`),
+      });
+      console.log('🔐 Calling Xverse RPC API...');
+
+      const response = await xverseProvider.request('stx_callContract', requestParams);
+
+      console.log('✅ Xverse RPC response:', response);
+
+      if (response.result?.txid) {
+        console.log('✅ Transaction submitted via Xverse RPC!');
+        console.log('   Transaction ID:', response.result.txid);
+        if (onFinish) {
+          onFinish(response.result.txid);
+        }
+        return;
+      }
+
+      console.warn('⚠️ Xverse RPC returned without txid, falling back to Connect');
+    } catch (xverseError) {
+      console.error('❌ Xverse RPC API error details:', xverseError);
+      console.warn('⚠️ Xverse RPC API failed, will try fallback method');
     }
   }
 

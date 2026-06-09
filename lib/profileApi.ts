@@ -78,6 +78,11 @@ export interface Profile {
   show_email?: boolean;
   show_location?: boolean;
   allow_direct_messages?: boolean;
+  linked_nostr_public_key?: string;
+  wallet_type?: string;
+  wallet_public_key?: string;
+  wallet_signature?: string;
+  wallet_proof_timestamp?: string;
   
   // Notifications Settings
   email_notifications?: boolean;
@@ -149,6 +154,31 @@ export async function upsertProfile(profile: Partial<Profile> & { address: strin
     updated_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
   } as Profile;
+}
+
+export interface WalletLinkProof {
+  address: string;
+  nostrPublicKey: string;
+  walletType: string;
+  walletSignature: string;
+  walletPublicKey?: string;
+  proofMessage: string;
+  proofTimestamp: string;
+}
+
+export async function createWalletLinkProof(proof: WalletLinkProof): Promise<void> {
+  const response = await fetch('/api/profile/link', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(proof),
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error || 'Failed to save wallet proof');
+  }
 }
 
 export async function updateProfileField(address: string, field: keyof Profile, value: unknown): Promise<void> {
