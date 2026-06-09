@@ -1,6 +1,6 @@
 [
   {
-    "id": 1,
+    "id": "c187795aa1",
     "name": "Muun",
     "description": "Self-custodial wallet for Bitcoin + Lightning Network",
     "category": "Wallet",
@@ -16,7 +16,7 @@
     "imgCID": "bafkreiclhwzv2cditvp3muojmhzgp3kfjcjqmrzq2cnmhxdlpm3ectigoa"
   },
   {
-    "id": 2,
+    "id": "298b5c5ffe",
     "name": "Wallet of Satoshi",
     "description": "Zero-configuration mobile wallet for Bitcoin & Lightning payments",
     "category": "Wallet",
@@ -32,7 +32,7 @@
     "imgCID": "bafkreigsn3y5ilnewkvbewpv2qeaqxfgglnugz452afuufomx4jkhxnbki"
   },
   {
-    "id": 3,
+    "id": "a6fe7fc691",
     "name": "BlueWallet",
     "description": "Lightning Network wallet with self-custody and node support",
     "category": "Wallet",
@@ -48,7 +48,7 @@
     "imgCID": "bafkreif6knxq5i3zf6nsl4da2k2fjcze5ona2zpv2qofgfddlfyplsxvpm"
   },
   {
-    "id": 4,
+    "id": "97ed1cbf0f",
     "name": "Speed",
     "description": "Bitcoin & USDT wallet supporting Lightning / USDT-L payments",
     "category": "Wallet",
@@ -64,7 +64,7 @@
     "imgCID": "bafkreihnrknuexfoogxr2xgpxmg3knvjfxm4evonurcu46nsuqpnt7n3ry"
   },
   {
-    "id": 5,
+    "id": "4ccd8434fd",
     "name": "Arkadiko",
     "description": "Decentralised stablecoin protocol built on the Stacks layer for Bitcoin",
     "category": "DeFi",
@@ -80,7 +80,7 @@
     "imgCID": "bafkreiadgtgeqirdpgeg5wq6hzreehe6oe5euecqhvzaxvizmoiinpuucy"
   },
   {
-    "id": 6,
+    "id": "ac7c492a45",
     "name": "ALEX",
     "description": "AMM & yield aggregation for Bitcoin-anchored assets on Stacks",
     "category": "DeFi",
@@ -96,7 +96,7 @@
     "imgCID": "bafybeidjvvdhd7rab5czrtvp4y7wopqr7ebnbyxzwvc65ahzdlaoal4jvm"
   },
   {
-    "id": 7,
+    "id": "f0581bcc2c",
     "name": "Alby Browser Extension",
     "description": "Bitcoin + Lightning + Nostr wallet & WebLN extension for web apps",
     "category": "Wallet",
@@ -112,7 +112,7 @@
     "imgCID": "bafkreidg3cgz4blpars2qltecylttrlrffelbmvijw4mo5texfr7h7rrbm"
   },
   {
-    "id": 8,
+    "id": "3a5c9d248e",
     "name": "Electrum",
     "description": "Lightweight Bitcoin wallet with Lightning support for desktop & mobile",
     "category": "Wallet",
@@ -128,7 +128,7 @@
     "imgCID": "bafybeihqicslsykvnryvt3uthbubykhggnzhizweeizzsbsl4d6xeh6jcu"
   },
   {
-    "id": 9,
+    "id": "9cd4cb8e9d",
     "name": "Lightning Address",
     "description": "Send Bitcoin via human-readable Lightning addresses",
     "category": "Payment",
@@ -144,7 +144,7 @@
     "imgCID": "bafkreia4nxdrbif6ns7kepj74lamewjfic6q3ebkrv2qwn6upt6e5mu2ru"
   },
   {
-    "id": 10,
+    "id": "dd5cb15438",
     "name": "Stack",
     "description": "Secure Bitcoin and Cryptocurrency wallet",
     "category": "Wallet",
@@ -160,7 +160,7 @@
     "imgCID": "bafkreiebiinio6qa7numtghv76yxx5hiy4zgfowkcnjlfehppbw2kejcdq"
   },
   {
-    "id": 11,
+    "id": "4ea3b472c5",
     "name": "Lightning Terminal",
     "description": "Liquidity management tool by Lightning Labs",
     "category": "Lightning",
@@ -176,7 +176,7 @@
     "imgCID": "bafkreiab2mo5ce6hkitmubcpbhdkz5wxgwlo5isocb5d3gwrxfpyi7ecga"
   },
   {
-    "id": 12,
+    "id": "ddc9578f5c",
     "name": "Amboss Space",
     "description": "Lightning Network analytics and node insights",
     "category": "Explorer",
@@ -192,7 +192,7 @@
     "imgCID": "bafkreid5lrdhi4nxcsw6kpn6fgnrsq3kxysowidsybpbws4sstajahlcqe"
   },
   {
-    "id": 13,
+    "id": "be01c2f5ea",
     "name": "Zeus",
     "description": "Non-custodial mobile wallet for running your own Lightning node",
     "category": "Wallet",
@@ -208,7 +208,7 @@
     "imgCID": "bafkreihrnn3quxgq2qwkeam64kmi5grlmjshg7tetepesjd2ongaajxcne"
   },
   {
-    "id": 14,
+    "id": "20be9d0a25",
     "name": "ThunderHub",
     "description": "Self-hosted dashboard for managing Lightning nodes",
     "category": "Lightning",
@@ -224,7 +224,7 @@
     "imgCID": "bafkreid7tnaopgpahyxxlkxbumcyqx4jtjs4amejsooppvvggjpxhoxjtu"
   },
   {
-    "id": 15,
+    "id": "ff84eb8602",
     "name": "Ride The Lightning (RTL)",
     "description": "Browser interface for c-lightning and LND nodes",
     "category": "Lightning",
@@ -240,7 +240,7 @@
     "imgCID": "bafybeigbzrshexis4acszhuyttsrdhth546orq4xpcaklzzbwei5divau4"
   },
   {
-    "id": 16,
+    "id": "e007c8b420",
     "name": "LNbits",
     "description": "Modular Lightning wallet and accounts system",
     "category": "Lightning",
@@ -256,7 +256,7 @@
     "imgCID": "bafkreidzzc7ae7ep2d2wqhl2zumegj2heqvf7r3isksb2a6ou2un4s22le"
   },
   {
-    "id": 17,
+    "id": "92b17b52d1",
     "name": "Nostr Relay Tools",
     "description": "Nostr relay manager and monitoring dashboard",
     "category": "Networking",
@@ -272,7 +272,7 @@
     "imgCID": "bafkreicip4fxzzzo4gskmzyn3apb6ejsxjzqdmj2zfs3ipeh2pgo44qw5u"
   },
   {
-    "id": 18,
+    "id": "5f3ab5c0e1",
     "name": "Coracle Social",
     "description": "Nostr client with focus on content curation and UX",
     "category": "Social",
@@ -288,7 +288,7 @@
     "imgCID": "bafkreigsxx2yh6y7e6qamu3fjegt42lbs4bkpemiuw6uw2acnorup56rzm"
   },
   {
-    "id": 19,
+    "id": "494d39d003",
     "name": "Primal",
     "description": "Fast Nostr client with native mobile apps",
     "category": "Social",
@@ -304,7 +304,7 @@
     "imgCID": "bafkreihbmkein72yzygve3uwweoccd73ricsy5kojrfsexuxtgbbeibsce"
   },
   {
-    "id": 20,
+    "id": "7396128801",
     "name": "Ordinals",
     "description": "Reference explorer for inscriptions and satoshi tracking",
     "category": "Explorer",
@@ -320,7 +320,7 @@
     "imgCID": "bafkreiazb2afjv4ejm4zqkryatpyyqxqyazxxpzt42rvmnkodmigmcqycu"
   },
   {
-    "id": 21,
+    "id": "082dcab69c",
     "name": "Gamma",
     "description": "Art marketplace anchored to Bitcoin",
     "category": "DeFi",
@@ -337,7 +337,7 @@
     "imgCID": "bafybeiflxby7rcqdg6vm5l5zdcaqxrabopg2ntndfhsrcqwqsnwm5nouqy"
   },
   {
-    "id": 22,
+    "id": "7096001d29",
     "name": "Hey Layer",
     "description": "NFT launchpad and marketplace on Stacks",
     "category": "DeFi",
@@ -353,7 +353,7 @@
     "imgCID": "bafkreia2oylxknsillirxqrwunxcrty6wpvjxwcveyu7bf6fb3nsb3r6hq"
   },
   {
-    "id": 23,
+    "id": "d5013b637a",
     "name": "Magic Stx",
     "description": "Wallet and asset manager for Stacks ecosystem",
     "category": "Wallet",
@@ -369,7 +369,7 @@
     "imgCID": "bafkreih4244xmnrqcaty7xo3rfntj6wkkct7n7wvzdv7duaqmda3qktuqm"
   },
   {
-    "id": 24,
+    "id": "5ae0910e84",
     "name": "Boom.money",
     "description": "NFT and tokenized asset marketplace on Stacks",
     "category": "DeFi",
@@ -385,7 +385,7 @@
     "imgCID": "bafkreidtmlm32esm73dqw7uvcjcjm7b4ymfeg67b7katagn4a5xpu2x2oi"
   },
   {
-    "id": 25,
+    "id": "1f05c534a3",
     "name": "Sigle",
     "description": "Decentralized publishing platform on Stacks",
     "category": "Creator",
@@ -401,7 +401,7 @@
     "imgCID": "bafkreia2oiuntqeitjolf65erbkt76ggsv5a6odmzo4i73yd5cnnkrr6gu"
   },
   {
-    "id": 26,
+    "id": "1a26ac9a9c",
     "name": "Unisat",
     "description": "Browser wallet for Bitcoin Ordinals, BRC-20 and Runes",
     "category": "Wallet",
@@ -417,7 +417,7 @@
     "imgCID": "bafkreih5coh4zsqy43mtebnunbnh2rb5iyuhkrkkv7ydjsl67bwoibcg7e"
   },
   {
-    "id": 27,
+    "id": "1257057f3e",
     "name": "Xverse",
     "description": "Bitcoin wallet for Ordinals, Runes, and Stacks apps",
     "category": "Wallet",
@@ -433,7 +433,7 @@
     "imgCID": "bafybeidiclse7tewrfdzs6sqnfn5n2zhb3td7qdrposbnnztpecw237yvi"
   },
   {
-    "id": 28,
+    "id": "0a2064aa48",
     "name": "Leather",
     "description": "Bitcoin & Stacks wallet tapping into the multilayered Bitcoin economy.",
     "category": "Wallet",
@@ -449,7 +449,7 @@
     "imgCID": "bafkreiglw7raaycxd45ifj57l5f2xjdrmn332sx2h4vqrrhlm4v665rxqa"
   },
   {
-    "id": 29,
+    "id": "56e60a1905",
     "name": "OrdSwap",
     "description": "Trustless Ordinals and Runes marketplace",
     "category": "DeFi",
@@ -465,7 +465,7 @@
     "imgCID": "bafkreigesbahijmfafstjggb75g7qpicop3fezveenvxhcmhnbckz7a3nm"
   },
   {
-    "id": 30,
+    "id": "bbd41bc557",
     "name": "Magic Eden (Bitcoin)",
     "description": "Multi-chain NFT marketplace supporting Bitcoin Ordinals",
     "category": "DeFi",
@@ -481,7 +481,7 @@
     "imgCID": "bafkreialvh4cxqs4ar6sf47u6xopqhj7gpssyxteba44yr7tq52rdlk644"
   },
   {
-    "id": 31,
+    "id": "30cc916b36",
     "name": "Ordinals Wallet",
     "description": "Wallet dedicated to Ordinals inscriptions & Runes",
     "category": "Wallet",
@@ -497,7 +497,7 @@
     "imgCID": "bafybeic3srominzruo35ey456o2zrrgaxmorzdickqzmgco76eec7uo2o4"
   },
   {
-    "id": 32,
+    "id": "71902a0c6e",
     "name": "BestInSlot.io",
     "description": "Analytics and minting dashboard for Bitcoin Runes",
     "category": "Explorer",
@@ -513,7 +513,7 @@
     "imgCID": "bafkreicqyw4vonooupj33cvo5sicn7vwvggb7ngkikbxlr2cexorunbkdy"
   },
   {
-    "id": 33,
+    "id": "5eeed06cd6",
     "name": "Ord.io",
     "description": "Open Bitcoin Ordinals explorer with sat visualisation",
     "category": "Explorer",
@@ -529,7 +529,7 @@
     "imgCID": "bafkreiahgh2fdrz2xlti6agw566s5i5b3hgrmmcpn5vwzv4irlk4qwtvea"
   },
   {
-    "id": 34,
+    "id": "a474ae7834",
     "name": "Mempool",
     "description": "Real-time Bitcoin and Lightning explorer",
     "category": "Explorer",
@@ -545,7 +545,7 @@
     "imgCID": "bafkreicbztoxf7ytyjxfetp3zdudj6n3cg65sxftg7uugelehnzowp36aq"
   },
   {
-    "id": 35,
+    "id": "3f59466a56",
     "name": "Ocean Mining Pool",
     "description": "Decentralized and transparent Bitcoin mining pool",
     "category": "Mining",
@@ -561,7 +561,7 @@
     "imgCID": "bafkreidfidlb7qnq56vlayf2o235wrl4frfgsfphanp4hgw5zx3xlmkuiq"
   },
   {
-    "id": 36,
+    "id": "afae63ac59",
     "name": "Braiins Pool",
     "description": "Bitcoin mining software and pool with open-source firmware",
     "category": "Mining",
@@ -577,7 +577,7 @@
     "imgCID": "bafkreiamdedgxt5lqxmkmtjbkhxfge7dypf635u3zinpjay3f4k2iomru4"
   },
   {
-    "id": 37,
+    "id": "d560263e9b",
     "name": "Luxor Mining",
     "description": "Bitcoin mining pool and hashrate marketplace",
     "category": "Mining",
@@ -593,7 +593,7 @@
     "imgCID": "bafkreihhab6mu4b7c7nozjx45so2lj5l5wlztd7my57jrwglp4vkl6hykm"
   },
   {
-    "id": 38,
+    "id": "fe405be96a",
     "name": "BitAxe",
     "description": "Open-source Bitcoin ASIC miner project",
     "category": "Mining",
@@ -609,7 +609,7 @@
     "imgCID": "bafkreihfhedjq2jnmwppycnuzjsqfburpnlbx5djgbohsc7mrpqjcw4fmm"
   },
   {
-    "id": 39,
+    "id": "1b916d308c",
     "name": "Cashu",
     "description": "Chaumian ecash protocol for Lightning-based privacy payments",
     "category": "Payment",
@@ -625,7 +625,7 @@
     "imgCID": "bafkreignkw4ynoji5gmay5baebqqc224fk4m5zwkberl33injp3lq3okoe"
   },
   {
-    "id": 40,
+    "id": "3835a332e9",
     "name": "Fedimint",
     "description": "Federated Bitcoin mint combining Lightning and privacy",
     "category": "Payment",
@@ -641,7 +641,7 @@
     "imgCID": "bafybeif6ggjbzmwv523hxhezdukdfyooe73dx3he3bc2jl4fwmrzulvvkm"
   },
   {
-    "id": 41,
+    "id": "729c4df888",
     "name": "Sparrow",
     "description": "Desktop wallet focused on privacy and coin control",
     "category": "Wallet",
@@ -657,7 +657,7 @@
     "imgCID": "bafkreibv5g26siqhmzhuupizexwpcj55rkw5dg3nplg23dtaikh7zwtooi"
   },
   {
-    "id": 42,
+    "id": "d77d5b05d8",
     "name": "Phoenix",
     "description": "Non-custodial Lightning wallet with automatic channel management",
     "category": "Wallet",
@@ -673,7 +673,7 @@
     "imgCID": "bafkreicqfusxqhirz4jtlyge3rpqvmk67uqfhnkva2bwgtklvy4o7zywce"
   },
   {
-    "id": 43,
+    "id": "6725bc3a3d",
     "name": "Nostr NIP-05 ID",
     "description": "Identity and verification service for Nostr users",
     "category": "Identity",
@@ -689,7 +689,7 @@
     "imgCID": "bafybeihdzgt2m45vyjwyq5snwxhdwebso4i4uwgq335endkvg6mi7txeta"
   },
   {
-    "id": 44,
+    "id": "64fd58c337",
     "name": "Sphinx Chat",
     "description": "Encrypted chat and podcast payments over Lightning",
     "category": "Social",
@@ -705,7 +705,7 @@
     "imgCID": "bafybeifczfg5dfanmvebfsv6qmhyiw26xirkjrak4lcy2qqtrzmz2k26cm"
   },
   {
-    "id": 45,
+    "id": "9727c53eb5",
     "name": "LN Markets",
     "description": "Bitcoin derivatives trading directly over Lightning",
     "category": "DeFi",
@@ -721,7 +721,7 @@
     "imgCID": "bafkreibpvfoks2aejoeqn2kkbra5tcby4l74pzheow6gipqa6udkgirbey"
   },
   {
-    "id": 46,
+    "id": "b9f79f44c4",
     "name": "Bitfeed",
     "description": "Block visualizer showing real-time Bitcoin transactions",
     "category": "Explorer",
@@ -737,7 +737,7 @@
     "imgCID": "bafybeidflq5rorza75p76gld4lbxklemi5s2zplbcjvlm4bxeykcbaarji"
   },
   {
-    "id": 47,
+    "id": "9f7a35285e",
     "name": "BitcoinOS",
     "description": "The Operating System for a Bitcoin Powered World",
     "category": "Infrastructure",
@@ -753,7 +753,7 @@
     "imgCID": "bafkreidtxvpxfja2swd35tj2kbbb6xx3f6kt7uxsdx2zughvz2oz54nl4y"
   },
   {
-    "id": 48,
+    "id": "2fe1955cec",
     "name": "Stacks Explorer",
     "description": "Official blockchain explorer for the Stacks network",
     "category": "Explorer",
@@ -769,7 +769,7 @@
     "imgCID": "bafybeiegrgc5tz3r4yzjk7gb2eogk5u4qz7fjfagm5wq3jzf5ozsaakrhu"
   },
   {
-    "id": 49,
+    "id": "5988725890",
     "name": "Hiro Developer Tools",
     "description": "SDKs and APIs for building Bitcoin-anchored smart contracts",
     "category": "Developer",
@@ -785,7 +785,7 @@
     "imgCID": "bafkreiaucjevmvx32y4gxv2tquiz2ojqds3y24oe6i4gpgsrqirx3ovyma"
   },
   {
-    "id": 50,
+    "id": "0fbb5d50f7",
     "name": "OpenNode",
     "description": "Bitcoin payment processor and API gateway for merchants",
     "category": "Payment",
@@ -801,7 +801,7 @@
     "imgCID": "bafkreicuodjvf7hci6ec5yhxkpniw5s5d4umdbhagwe7flwmgxjjy6el7y"
   },
   {
-    "id": 51,
+    "id": "26c8f88941",
     "name": "Club Orange",
     "description": "Bitcoiners built Club Orange to connect locally during the 2022 bear.",
     "category": "Community",
@@ -818,7 +818,7 @@
     "imgCID": "bafybeibl4betjrolpbfyfrqvdhsggidj4ogq5ycfq3xpv6yejp6dedgw6a"
   },
   {
-    "id": 52,
+    "id": "dd3ddb8f51",
     "name": "BitVMX",
     "description": "BitVMX is a Bitcoin-native platform for secure, off-chain execution with on-chain optimistic verification.",
     "category": "Infrastructure",
@@ -834,7 +834,7 @@
     "imgCID": "bafkreigsztktyv37l7opzptni7h4kye7s5ofcleyhjynmxseexfjhemepm"
   },
   {
-    "id": 53,
+    "id": "e0d1902fec",
     "name": "Zaprite",
     "description": "Zaprite enables seamless Bitcoin and fiat payments with unified tools for businesses.",
     "category": "Payment",
@@ -849,7 +849,7 @@
     "imgCID": "bafkreifkkexuy7sbf3iqjxo6jk4kcmtg3x3yd7se7wak6smk6jl6p2luea"
   },
   {
-    "id": 54,
+    "id": "6e4824f4a4",
     "name": "BTC Map",
     "description": "Find places to spend sats wherever you are.",
     "category": "Infrastructure",
@@ -864,7 +864,7 @@
     "imgCID": "bafkreigkwcq5ildffojx2htarm4mbdlc4erejoiujm4g5c7v4jali7n4am"
   },
   {
-    "id": 55,
+    "id": "1c8dda0959",
     "name": "NostrApps",
     "description": "Directory covering the newest Nostr clients, relays, and tooling.",
     "category": "Nostr",
@@ -880,7 +880,7 @@
     "imgCID": "bafkreibid2mmntqv5n5z25j2b6hg4d3rg2qqzh7gy34bjxivo4qkfaev7m"
   },
   {
-    "id": 56,
+    "id": "d36983c1e5",
     "name": "DMND",
     "description": "The first FULLY #StratumV2 Bitcoin Mining Pool. Build your own BLOCK. Secure. Efficient. More \u20bf for Miners.",
     "category": "Mining",
@@ -894,9 +894,8 @@
     "link": "https://dmnd.work/",
     "imgCID": "bafkreightwh7lgxn7e7zjoi5eyhjyrwvx5yyc3ulegln5rpd7kcrltihtm"
   },
-
   {
-    "id": 57,
+    "id": "6e09e69ed3",
     "name": "Samourai",
     "description": "Samourai is a free, open-source, and privacy-focused Bitcoin wallet.",
     "category": "Wallet",
@@ -912,7 +911,7 @@
     "imgCID": "bafkreifhlat7yxkgmykrm576efbkwhq75cmvibplmp3juyvf7yb6mjrovy"
   },
   {
-    "id": 58,
+    "id": "c6858a65c7",
     "name": "BTCPay Server",
     "description": "Open-source Bitcoin payment processor for merchants and self-hosted stores.",
     "category": "Payment",
@@ -928,7 +927,7 @@
     "imgCID": "bafkreie3ld67npqk23y7j6t3k77rull67br2sudz6tcef3n2mzthv2uhbe"
   },
   {
-    "id": 59,
+    "id": "fe27cc9b76",
     "name": "Umbrel",
     "description": "Personal Bitcoin and Lightning node platform with an easy-to-use app marketplace.",
     "category": "Infrastructure",
@@ -944,7 +943,7 @@
     "imgCID": "bafkreieihbi4ooziglscss6l6c5abetjcbvnhm7xvajbjieu2ifusfnzvq"
   },
   {
-    "id": 60,
+    "id": "14055c8512",
     "name": "RaspiBlitz",
     "description": "DIY Bitcoin and Lightning node distribution for hobbyists and self-hosters.",
     "category": "Infrastructure",
@@ -960,7 +959,7 @@
     "imgCID": "bafkreifxdjy6szedrjynsrnxl2davpa4o3jfcshcf2op35oo7wfqpf46jq"
   },
   {
-    "id": 61,
+    "id": "98df45af70",
     "name": "Wasabi",
     "description": "Privacy-focused Bitcoin desktop wallet with CoinJoin support.",
     "category": "Wallet",
@@ -976,7 +975,7 @@
     "imgCID": "bafkreidqel2crxzlvcs662hgvto47sebmd5carkwx4rhlqq3s2xvpxh4ui"
   },
   {
-    "id": 62,
+    "id": "605d11a401",
     "name": "Nunchuk",
     "description": "Mobile Bitcoin Lightning wallet with seamless on-ramp and transaction UX.",
     "category": "Wallet",
@@ -992,7 +991,7 @@
     "imgCID": "bafkreih5radd3anmwg3ixfby4vemkxwch2hexrpyl4hglisof2l3kogazq"
   },
   {
-    "id": 63,
+    "id": "a4ec793ed8",
     "name": "Blockstream",
     "description": "Secure Bitcoin wallet with multi-sig and hardware wallet support.",
     "category": "Wallet",
@@ -1008,7 +1007,7 @@
     "imgCID": "bafkreibfbrjbdmrjtj7pmjwenryswuxayydcssq4q3tyiqngevelczs2mu"
   },
   {
-    "id": 64,
+    "id": "96d02e6ef1",
     "name": "Breez",
     "description": "Lightning wallet with built-in point-of-sale and streaming payment features.",
     "category": "Wallet",
@@ -1024,7 +1023,7 @@
     "imgCID": "bafkreihgqbhsoslbnpqxcu6laaj5gbbkygh22ainczgiez2s2ijo7tslbe"
   },
   {
-    "id": 65,
+    "id": "48bf32e5a8",
     "name": "HodlHodl",
     "description": "Non-custodial Bitcoin peer-to-peer trading platform.",
     "category": "DeFi",
@@ -1040,7 +1039,7 @@
     "imgCID": "bafkreigxuulqdsuatdvotu245copjelktxecd5w3e636nk2h2rfv24xzh4"
   },
   {
-    "id": 66,
+    "id": "00984fe228",
     "name": "Bitcoin Dev Kit",
     "description": "Tools and SDKs for building Bitcoin-native applications.",
     "category": "Developer",
@@ -1056,7 +1055,7 @@
     "imgCID": "bafkreihmceyasgctbhm4v3gdmhpqfqelsfjp6flj4epkpee46mh5h5akie"
   },
   {
-    "id": 67,
+    "id": "e8f7f7d830",
     "name": "OpenOrdex",
     "description": "Decentralized marketplace for Ordinals and Bitcoin-native digital assets.",
     "category": "DeFi",
@@ -1071,8 +1070,8 @@
     "link": "https://openordex.org/",
     "imgCID": "bafkreicrobuuo737n6ezl5z6tco7d52hwgidk4tcpo6laqrz4bgtdrqrve"
   },
-    {
-    "id": 68,
+  {
+    "id": "b71ff82ef3",
     "name": "BitChat",
     "description": "bitchat is a decentralized peer-to-peer messaging application that operates over bluetooth mesh networks. no internet required, no servers, no phone numbers.",
     "category": "Social",
@@ -1087,8 +1086,8 @@
     "link": "https://bitchat.free/",
     "imgCID": "bafkreicq3djwzp6jzyuu74xf4arcnmnh7j2iisvskhltlt6vvc3tdqrx4y"
   },
-    {
-    "id": 69,
+  {
+    "id": "8004dea2ff",
     "name": "Boltz",
     "description": "Non-Custodial Bitcoin Bridge. Swap between different Bitcoin layers while staying in full control.",
     "category": "DeFi",
@@ -1103,7 +1102,7 @@
     "imgCID": "bafkreie477xvfvgmp5jkhzuly4g4psbmq3xek43k7ygyp7pte5wfecdoi4"
   },
   {
-    "id": 70,
+    "id": "2f30850779",
     "name": "Sideshift",
     "description": "Trade between BTC, ETH, SOL and 200+ other coins. Sent directly to your wallet.",
     "category": "DeFi",
@@ -1119,7 +1118,7 @@
     "imgCID": "bafkreiedmm5zgu7amf3kannke5jcsi7luernxfyigfcuenu4eynm6hfzxe"
   },
   {
-    "id": 71,
+    "id": "eb9971e40d",
     "name": "Aqua",
     "description": "Aqua is a user-friendly mobile wallet designed for the Liquid Network and Bitcoin.",
     "category": "Wallet",

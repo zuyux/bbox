@@ -1,7 +1,7 @@
 import appsData from '@/db/apps.json';
 
 export interface BitcoinApp {
-  id: number;
+  id: string;
   name: string;
   description: string;
   category: string;

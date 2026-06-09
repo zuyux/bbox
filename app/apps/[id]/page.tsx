@@ -17,7 +17,7 @@ import { allApps } from '@/lib/appsUtils';
 
 export default function AppDetailPage() {
   const params = useParams();
-  const appId = parseInt(params.id as string);
+  const appId = params.id as string;
   
   const app = allApps.find(a => a.id === appId);
   
