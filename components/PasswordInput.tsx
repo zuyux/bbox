@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Eye, EyeOff, Shield, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { validatePassphraseStrength } from '@/lib/encryptedStorage';
 
 interface PasswordInputProps {
@@ -281,18 +281,6 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           )}
         </div>
       </form>
-
-      {/* Security Notice */}
-      {mode === 'create' && (
-        <div className="p-3 bg-transparent border border-primary/30 rounded-lg">
-          <p className="text-primary text-xs flex items-start gap-2">
-            <Shield className="h-4 w-4 mt-0.5 flex-shrink-0" />
-            <span>
-              Your password encrypts your private keys locally. Make sure you remember it—it cannot be recovered if lost. Consider using a password manager.
-            </span>
-          </p>
-        </div>
-      )}
     </div>
   );
 };

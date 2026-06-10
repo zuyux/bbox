@@ -29,9 +29,18 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 
   const [walletError] = useState<string | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [importModalMode, setImportModalMode] = useState<'wallets' | 'email'>('wallets');
   const [showEncryptedWalletFlow, setShowEncryptedWalletFlow] = useState(false);
   const [encryptedWalletMode, setEncryptedWalletMode] = useState<'unlock' | 'create'>('unlock');
   const [createWalletError, setCreateWalletError] = useState<string | null>(null);
+
+  const walletOptions = [
+    { id: 'xverse', label: 'Xverse', icon: '/xverse.svg', mode: 'wallets' as const },
+    { id: 'leather', label: 'Leather', icon: '/leather.svg', mode: 'wallets' as const },
+    { id: 'alby', label: 'Alby', icon: '/alby.svg', mode: 'wallets' as const },
+    { id: 'nostria', label: 'Nostria Signer', icon: '/nostria.svg', mode: 'wallets' as const },
+  ];
+
   const persistWalletContext = (newAddress: string) => {
     setAddress(newAddress);
     setWalletType('imported');
@@ -273,7 +282,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {encryptedWalletMode === 'create' 
-                    ? 'Create a password to encrypt your wallet locally'
+                    ? 'Create an account with password'
                     : 'Enter your password to unlock your encrypted wallet'
                   }
                 </p>
@@ -316,20 +325,55 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
           ) : (
             /* Main Auth Options */
             <>
-              {/* Connect Wallet */}
-              <div>
+              <div className="grid grid-cols-2 gap-2">
+                {walletOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => {
+                      setImportModalMode(option.mode);
+                      setShowImportModal(true);
+                    }}
+                    className="group flex flex-col items-center justify-center gap-2 rounded-[13px] border border-border bg-surface px-3 py-4 text-center transition hover:border-blue-500"
+                  >
+                    <Image
+                      src={option.icon}
+                      alt={option.label}
+                      width={36}
+                      height={36}
+                      className="mx-auto mb-1 h-9 w-9 rounded-md bg-transparent object-contain"
+                      unoptimized
+                    />
+                    <span className="text-sm font-semibold text-foreground">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {walletError && (
+                <div className="text-red-500 text-xs mt-2 text-center">{walletError}</div>
+              )}
+
+              <div className="mt-2">
                 <Button
-                  onClick={() => setShowImportModal(true)}
-                  className="w-full h-12 rounded-[9px] bg-accent-foreground text-foreground hover:text-foreground hover:bg-accent-foreground font-semibold text-base border border-foreground cursor-pointer flex items-center px-4"
+                  onClick={() => {
+                    setImportModalMode('email');
+                    setShowImportModal(true);
+                  }}
+                  className="w-full h-12 rounded-[9px] bg-surface text-foreground font-semibold text-base cursor-pointer flex items-center px-4 border border-border hover:bg-muted"
                   type="button"
                 >
-                  <Image src="/wallet-ico.svg" alt="Wallet" width={18} height={18} className="dark:invert mr-2"/>
-                  <span className="text-center flex-1">Connect Wallet</span>
+                  <Image
+                    src="/wallet.svg"
+                    alt="Login With Email"
+                    width={18}
+                    height={18}
+                    className="mr-3"
+                    unoptimized
+                  />
+                  <span className="text-center flex-1">Login With Email</span>
                 </Button>
-                {walletError && (
-                  <div className="text-red-500 text-xs mt-2 text-center">{walletError}</div>
-                )}
               </div>
+
               {/* Encrypted Wallet Option */}
               <div>
                 <Button
@@ -352,6 +396,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         {/* Import Wallet Modal */}
         {showImportModal && (
           <ConnectModal
+            initialConnectMode={importModalMode}
             onClose={() => setShowImportModal(false)}
             onSuccess={() => {
               setShowImportModal(false);
@@ -361,7 +406,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         )}
         {/* Terms */}
         <div className="w-full rounded-b-2xl text-center text-xs text-foreground tracking-wider p-6 px-8">
-          By Connecting, you agree to our <Link href="/terms" className="hover:text-accent-primary hover:underline">Terms of Service</Link> and <Link href="/privacy" className="hover:text-accent-primary hover:underline">Privacy Policy</Link>
+          By Connecting into, you agree to our <Link href="/terms" className="hover:text-accent-primary hover:underline">Terms of Service</Link> and <Link href="/privacy" className="hover:text-accent-primary hover:underline">Privacy Policy</Link>
         </div>
       </div>
     </div>

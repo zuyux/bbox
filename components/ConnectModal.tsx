@@ -4,11 +4,12 @@ import { request as satsRequest } from 'sats-connect';
 import { useWallet, type WalletType } from './WalletProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { X, Wallet, Mail } from 'lucide-react';
 import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
-import { getConnectedAccountByEmail, getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
+import { getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
 import { decryptPortableEncryptedWallet, type WalletData } from '@/lib/encryptedStorage';
 // Password verification utility for settings changes
 // Usage: await verifyPassphraseForSettings(address, passphrase, privateKey)
@@ -37,6 +38,7 @@ interface ConnectModalProps {
   onClose: () => void;
   onSuccess?: () => void;
   onError?: (err: string) => void;
+  initialConnectMode?: ConnectMode;
 }
 
 type ConnectMode = 'wallets' | 'email';
@@ -91,8 +93,8 @@ const isEmailAccountPayload = (payload: unknown): payload is EmailAccountPayload
 };
 
 // Destructure props at the top of your component
-export default function ConnectModal({ onClose, onSuccess, onError }: ConnectModalProps) {
-  const [connectMode, setConnectMode] = useState<ConnectMode>('wallets');
+export default function ConnectModal({ onClose, onSuccess, onError, initialConnectMode }: ConnectModalProps) {
+  const [connectMode, setConnectMode] = useState<ConnectMode>(initialConnectMode ?? 'wallets');
   const [wallets, setWallets] = useState<Array<{id: string, name: string, url: string, installed: boolean}>>([]);
   React.useEffect(() => {
     setWallets(detectWalletExtensions());
@@ -103,7 +105,7 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
   const [password, setPassword] = useState('');
   const { setAddress, setWalletType } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   const { createEncryptedWallet } = useEncryptedWallet();
   const router = useRouter();
@@ -260,12 +262,12 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[101] select-none">
-      <div className="bg-white rounded-2xl w-[400px] max-w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+      <div className="bg-foreground text-black rounded-2xl w-[400px] max-w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+          <h2 className="text-black text-xl font-semibold flex items-center">
             <Wallet className="w-5 h-5 mr-2" />
-            Connect a wallet
+            Sign in with email
           </h2>
           <button 
             onClick={onClose}
@@ -436,36 +438,38 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
             </>
           )}
           {connectMode === 'email' && (
-            <div className="space-y-4">
-              <div>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    className="bg-white text-black focus:bg-white ring-0 border border-border cursor-pointer"
-                  />
+            <div className="space-y-4 text-black">
+              <div className="space-y-2">
+                <Label htmlFor="email" className='hidden'>Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="bg-white px-4 py-3 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                />
               </div>
-              <div>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your wallet password"
-                    className="bg-white text-black focus:bg-white ring-0 border border-border cursor-pointer"
-                  />
+              <div className="space-y-2">
+                <Label htmlFor="password" className="hidden">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="bg-white px-4 py-3 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                />
               </div>
               <Button 
                 onClick={handleEmailConnect} 
                 disabled={!email || !password || isLoading} 
-                className="w-full cursor-pointer bg-foreground text-background hover:bg-foreground hover:text-black transition-colors border border-[#555]"
+                className="w-full"
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
               {emailMessage && (
-                <div style={{ color: emailStatus === 'error' ? 'red' : 'green', marginTop: 8 }} className="text-sm">
+                <div className="text-sm" style={{ color: emailStatus === 'error' ? 'red' : 'green', marginTop: 8 }}>
                   {emailMessage}
                 </div>
               )}

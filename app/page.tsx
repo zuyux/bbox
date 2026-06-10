@@ -345,7 +345,7 @@ export default function HomePage() {
           </Lead>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/apps">
-              <Button size="lg">
+              <Button size="lg" className='bg-orange-500 text-foreground hover:text-white hover:bg-orange-400'>
                 Explore
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
