@@ -493,12 +493,12 @@ export default function HomePage() {
               <div className="text-sm text-muted-foreground">Bitcoin Apps</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">{Math.floor(appStats.totalDownloads / 1000000)}M+</div>
+              <div className="text-3xl font-bold text-orange-500 mb-2">1M+</div>
               <div className="text-sm text-muted-foreground">Downloads</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">3</div>
-              <div className="text-sm text-muted-foreground">Funded Projects</div>
+              <div className="text-sm text-muted-foreground">Submitted Projects</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">10+</div>
