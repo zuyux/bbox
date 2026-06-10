@@ -20,7 +20,6 @@ interface PasswordInputProps {
   showStrengthIndicator?: boolean;
   autoFocus?: boolean;
   onCancel?: () => void;
-  confirmRequired?: boolean;
 }
 
 export const PasswordInput: React.FC<PasswordInputProps> = ({
@@ -32,13 +31,10 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   showStrengthIndicator = false,
   autoFocus = true,
   onCancel,
-  confirmRequired = false,
 }) => {
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [email, setEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [strengthInfo, setStrengthInfo] = useState<{
     isValid: boolean;
     score: number;
@@ -74,11 +70,6 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
       }
     }
     
-    // Validate password match for create/change modes
-    if (confirmRequired && password !== confirmPassword) {
-      return; // Error will be shown by validation logic below
-    }
-    
     // Validate strength for create/change modes
     if ((mode === 'create' || mode === 'change') && strengthInfo && !strengthInfo.isValid) {
       return; // Error will be shown by strength indicator
@@ -88,7 +79,6 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
       await onSubmit(password, mode === 'create' ? email : undefined);
       // Clear form on success
       setPassword('');
-      setConfirmPassword('');
       setEmail('');
       setTouched(false);
     } catch (error) {
@@ -111,11 +101,9 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
     return 'Strong';
   };
 
-  const passwordMatch = !confirmRequired || password === confirmPassword;
   const emailValid = mode !== 'create' || (email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
-  const isFormValid = password.trim() && 
+  const isFormValid = password.trim() &&
     emailValid &&
-    (!confirmRequired || (confirmPassword && passwordMatch)) &&
     (!strengthInfo || strengthInfo.isValid);
 
   return (
@@ -167,41 +155,6 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
             </button>
           </div>
         </div>
-
-        {/* Confirm Password Input */}
-        {confirmRequired && (
-          <div className="space-y-2">
-            <div className="relative">
-              <Input
-                id="confirmPassword"
-                type={showConfirm ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your password"
-                className={`pr-12 bg-background text-foreground border-[1px] border-foreground/10 focus:border-foreground/50 py-6 ${
-                  confirmPassword && !passwordMatch ? 'border-destructive' : ''
-                }`}
-                disabled={isLoading}
-                autoComplete="new-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200"
-                tabIndex={-1}
-                disabled={isLoading}
-              >
-                {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {confirmPassword && !passwordMatch && (
-              <p className="text-red-400 text-xs flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                Passwords do not match
-              </p>
-            )}
-          </div>
-        )}
 
         {/* Strength Indicator */}
         {showStrengthIndicator && strengthInfo && touched && (

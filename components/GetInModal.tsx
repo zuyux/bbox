@@ -413,7 +413,6 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 isLoading={encryptedLoading}
                 error={encryptedWalletMode === 'create' ? createWalletError : encryptedAuthError}
                 showStrengthIndicator={encryptedWalletMode === 'create'}
-                confirmRequired={encryptedWalletMode === 'create'}
                 onCancel={() => setShowEncryptedWalletFlow(false)}
               />
 
