@@ -291,15 +291,15 @@ export default function AddressPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 mt-10">
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="rounded-3xl border border-border bg-card/80 p-6">
             <div className="grid gap-4 md:grid-cols-[160px_1fr] items-center">
-              <Skeleton className="h-28 w-28 rounded-full" />
+              <Skeleton className="h-28 w-28 rounded-full bg-white/10" />
               <div className="space-y-3">
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-5 w-1/2" />
-                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-8 w-3/4 bg-white/10" />
+                <Skeleton className="h-5 w-1/2 bg-white/10" />
+                <Skeleton className="h-4 w-full bg-white/10" />
               </div>
             </div>
           </div>
@@ -307,10 +307,10 @@ export default function AddressPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="rounded-3xl border border-border bg-card/80 p-6 space-y-4">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <Skeleton className="h-5 w-5/6" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-10 w-10 rounded-full bg-white/10" />
+                <Skeleton className="h-5 w-5/6 bg-white/10" />
+                <Skeleton className="h-4 w-full bg-white/10" />
+                <Skeleton className="h-4 w-4/5 bg-white/10" />
               </div>
             ))}
           </div>
