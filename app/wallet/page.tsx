@@ -507,7 +507,7 @@ export default function WalletPage() {
       return;
     }
     setTxLoading(true);
-    fetchRecentTransactions(address, currentNetwork, 10)
+    fetchRecentTransactions<RecentTransaction>(address, currentNetwork, 10)
       .then(setTransactions)
       .catch(() => setTransactions([]))
       .finally(() => setTxLoading(false));

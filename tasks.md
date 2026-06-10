@@ -11,11 +11,11 @@
 
 - Harden wallet connection error handling for Stacks, BTC, and browser wallets ✓
 - Add clear recovery and backup guidance for encrypted wallets ✓
-- Improve session persistence and reconnect behavior after refresh
+- Improve session persistence and reconnect behavior after refresh ✓
 
 ## 3. Data reliability
 
-- Add retry and caching logic for external APIs (Hiro, Supabase, Pinata, IPFS)
+- Add retry and caching logic for external APIs (Hiro, Supabase, Pinata, IPFS) ✓
 - Surface network status / offline mode when RPC or backend fails
 - Validate and sanitize metadata before rendering app listings and comments
 

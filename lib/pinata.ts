@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { retryAsync } from './externalApi';
 
 // Pinata configuration using environment variables
 const PINATA_JWT = process.env.PINATA_JWT;
@@ -7,6 +8,12 @@ const PINATA_GATEWAY_URL = process.env.PINATA_GATEWAY_URL || 'https://gateway.pi
 // Validate Pinata configuration
 if (!PINATA_JWT) {
   console.error('Pinata configuration missing. Please check environment variables.');
+}
+
+function isRetryableAxiosError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return true;
+  if (!error.response) return true;
+  return [429, 500, 502, 503, 504].includes(error.response.status);
 }
 
 // Upload file to IPFS via Pinata
@@ -33,15 +40,26 @@ export async function uploadToPinata(file: File): Promise<{ cid: string; url: st
     });
     formData.append('pinataOptions', options);
 
-    const response = await axios.post(
-      'https://api.pinata.cloud/pinning/pinFileToIPFS',
-      formData,
+    const response = await retryAsync(
+      async () => {
+        return axios.post(
+          'https://api.pinata.cloud/pinning/pinFileToIPFS',
+          formData,
+          {
+            maxBodyLength: Infinity,
+            headers: {
+              'Content-Type': `multipart/form-data`,
+              'Authorization': `Bearer ${PINATA_JWT}`,
+            },
+            timeout: 30000,
+          }
+        );
+      },
       {
-        maxBodyLength: Infinity,
-        headers: {
-          'Content-Type': `multipart/form-data`,
-          'Authorization': `Bearer ${PINATA_JWT}`,
-        },
+        attempts: 3,
+        delayMs: 1000,
+        backoffFactor: 2,
+        shouldRetry: isRetryableAxiosError,
       }
     );
 
@@ -58,10 +76,10 @@ export async function uploadToPinata(file: File): Promise<{ cid: string; url: st
 // Get IPFS URL from CID using Pinata gateway
 export function getIPFSUrl(cid: string): string {
   if (!cid) return '';
-  
+
   // Remove any ipfs:// prefix if present
   const cleanCid = cid.replace('ipfs://', '');
-  
+
   // Use Pinata gateway for better reliability
   return `${PINATA_GATEWAY_URL}/ipfs/${cleanCid}`;
 }
@@ -81,20 +99,31 @@ export async function uploadJSONToPinata(data: Record<string, unknown>, name: st
       },
     };
 
-    const response = await axios.post(
-      'https://api.pinata.cloud/pinning/pinJSONToIPFS',
-      {
-        pinataContent: data,
-        pinataMetadata: metadata,
-        pinataOptions: {
-          cidVersion: 1,
-        },
+    const response = await retryAsync(
+      async () => {
+        return axios.post(
+          'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+          {
+            pinataContent: data,
+            pinataMetadata: metadata,
+            pinataOptions: {
+              cidVersion: 1,
+            },
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${PINATA_JWT}`,
+            },
+            timeout: 30000,
+          }
+        );
       },
       {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${PINATA_JWT}`,
-        },
+        attempts: 3,
+        delayMs: 1000,
+        backoffFactor: 2,
+        shouldRetry: isRetryableAxiosError,
       }
     );
 

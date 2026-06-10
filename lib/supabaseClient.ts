@@ -1,8 +1,13 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { fetchWithRetry } from './externalApi';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!
 const supabaseServiceKey = process.env.SUPABASE_SECRET_KEY
+
+function supabaseFetch(input: string | Request | URL, init?: RequestInit) {
+  return fetchWithRetry(input, init);
+}
 
 // Only log on server-side to avoid exposing environment info in browser
 if (typeof window === 'undefined') {
@@ -25,7 +30,10 @@ export const supabase = globalForSupabase.supabase ?? (
     auth: {
       persistSession: true,
       storageKey: 'bbox-auth',
-    }
+    },
+    global: {
+      fetch: supabaseFetch,
+    },
   })
 );
 
@@ -39,6 +47,9 @@ function createSupabaseAdminClient(): SupabaseClient {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    global: {
+      fetch: supabaseFetch,
     },
   });
 }

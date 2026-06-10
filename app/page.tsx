@@ -341,7 +341,7 @@ export default function HomePage() {
             Our Open App Store
           </H1>
           <Lead className="mb-8 max-w-1xl mx-auto select-text">
-            Get milestone-based funding for open-source Bitcoin projects without opaque gatekeepers.
+            Get milestone-based funding for open-source projects without opaque gatekeepers.
           </Lead>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/apps">
@@ -490,7 +490,7 @@ export default function HomePage() {
           <div className="title grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">{appStats.totalApps}+</div>
-              <div className="text-sm text-muted-foreground">Bitcoin Apps</div>
+              <div className="text-sm text-muted-foreground">Apps</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">1M+</div>
@@ -509,9 +509,9 @@ export default function HomePage() {
 
         {/* Call to Action */}
         <div className="text-center mt-8">
-          <h3 className="title text-5xl font-bold mb-8">Build the Bitcoin Economy</h3>
+          <h3 className="title text-5xl font-bold mb-8">Join the Next Economy</h3>
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            Join thousands of developers building open-source applications for Bitcoin and its Layer-2 ecosystems.
+            Thousands of developers are building open-source applications for Bitcoin and its Layer-2 ecosystems. Get in.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" className='cursor-pointer' asChild>

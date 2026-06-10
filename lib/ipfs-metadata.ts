@@ -1,4 +1,5 @@
 import { getIPFSUrl } from './pinataUpload';
+import { fetchJsonWithRetry } from './externalApi';
 
 /**
  * IPFS Metadata Upload Utilities for BBOX App Submissions
@@ -118,21 +119,26 @@ export async function fetchAppMetadataFromIPFS(
       `https://cloudflare-ipfs.com/ipfs/${ipfsHash}`,
     ];
 
+    const fetchOptions = {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+    } as const;
+
+    const retryOptions = {
+      attempts: 3,
+      delayMs: 800,
+      timeoutMs: 10000,
+      cacheTtlSeconds: 300,
+    };
+
     for (const gateway of gateways) {
       try {
-        const response = await fetch(gateway, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const metadata = await response.json();
-          return metadata as AppMetadata;
-        }
-      } catch {
-        // Try next gateway
+        const metadata = await fetchJsonWithRetry<AppMetadata>(gateway, fetchOptions, retryOptions);
+        return metadata;
+      } catch (error) {
+        console.warn(`Failed to load metadata from gateway ${gateway}:`, error instanceof Error ? error.message : error);
         continue;
       }
     }

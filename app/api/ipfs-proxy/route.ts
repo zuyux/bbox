@@ -42,6 +42,9 @@ export async function GET(request: NextRequest) {
         },
         // Add timeout for slower gateways
         signal: AbortSignal.timeout(10000), // 10 second timeout per gateway
+        next: {
+          revalidate: 86400,
+        },
       });
 
       if (imageResponse.ok) {

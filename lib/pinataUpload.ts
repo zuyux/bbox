@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { retryAsync } from './externalApi';
 
 export interface PinataUploadResponse {
   IpfsHash: string;
@@ -34,6 +35,13 @@ function normalizePinataError(error: unknown): string {
   } catch {
     return 'Upload failed. Please try again.';
   }
+}
+
+function isPinataRetryableError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return true;
+  if (!error.response) return true;
+  const status = error.response.status;
+  return [429, 500, 502, 503, 504].includes(status);
 }
 
 /**
@@ -115,23 +123,33 @@ export async function uploadFileToPinata(
     });
     formData.append('pinataOptions', options);
 
-    // Upload to Pinata
-    const response = await axios.post(
-      'https://api.pinata.cloud/pinning/pinFileToIPFS',
-      formData,
+    // Upload to Pinata with retry logic
+    const response = await retryAsync(
+      async () => {
+        return axios.post(
+          'https://api.pinata.cloud/pinning/pinFileToIPFS',
+          formData,
+          {
+            maxBodyLength: Infinity,
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              ...(pinataJWT 
+                ? { 'Authorization': `Bearer ${pinataJWT}` }
+                : { 
+                    pinata_api_key: pinataApiKey,
+                    pinata_secret_api_key: pinataSecretApiKey 
+                  }
+              ),
+            },
+            timeout: 30000, // 30 second timeout
+          }
+        );
+      },
       {
-        maxBodyLength: Infinity,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          ...(pinataJWT 
-            ? { 'Authorization': `Bearer ${pinataJWT}` }
-            : { 
-                pinata_api_key: pinataApiKey,
-                pinata_secret_api_key: pinataSecretApiKey 
-              }
-          ),
-        },
-        timeout: 30000, // 30 second timeout
+        attempts: 3,
+        delayMs: 1000,
+        backoffFactor: 2,
+        shouldRetry: isPinataRetryableError,
       }
     );
 
@@ -242,12 +260,23 @@ export async function unpinFromPinata(cid: string): Promise<boolean> {
       return false;
     }
 
-    const response = await axios.delete(
-      `https://api.pinata.cloud/pinning/unpin/${cid}`,
+    const response = await retryAsync(
+      async () => {
+        return axios.delete(
+          `https://api.pinata.cloud/pinning/unpin/${cid}`,
+          {
+            headers: {
+              Authorization: `Bearer ${pinataJWT}`,
+            },
+            timeout: 15000,
+          }
+        );
+      },
       {
-        headers: {
-          Authorization: `Bearer ${pinataJWT}`,
-        },
+        attempts: 3,
+        delayMs: 1000,
+        backoffFactor: 2,
+        shouldRetry: isPinataRetryableError,
       }
     );
 
