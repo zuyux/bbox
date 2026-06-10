@@ -131,11 +131,10 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
         <div className='fixed top-5 right-5 md:right-5 z-100'>
           <Button
             onClick={() => setShowGetInModal(true)}
-            className="title rounded-md px-0 md:px-4 md:pr-2 py-4 md:py-2 text-md md:text-md bg-background/50 border-border border-[1px] hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-200 text-foreground cursor-pointer select-none"
+            className="title rounded-md px-1 md:px-3 py-3 md:py-2 text-md md:text-md bg-background/50 border-border border-[1px] hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-200 text-foreground cursor-pointer select-none"
             {...buttonProps}
           >
-            <span className='py-4'>CONNECT</span>
-            <Image src="/r.svg" height={21} width={21} alt="" />
+            <User/>
           </Button>
         </div>
       )}

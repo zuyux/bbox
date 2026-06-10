@@ -1131,5 +1131,20 @@
     "verified": true,
     "link": "https://aqua.net/",
     "imgCID": "bafkreie5b5wqo5gqrhwosj2zqrlkkh3xqohm52d6vlezhbdcbaan3puiqy"
+  },
+  {
+    "id": "f632a29401",
+    "name": "Nostria",
+    "description": "Social Network Nostr client built for use across multiple platforms",
+    "category": "Nostr",
+    "tags": [
+      "Nostr",
+      "Client"
+    ],
+    "downloads": "N/A",
+    "rating": 4.8,
+    "verified": true,
+    "link": "https://nostria.app/",
+    "imgCID": "bafkreihytiqd3nqvfusm2rm3lejsyrpj5bgqo4c6fh72awn5iomrq22feq"
   }
 ]

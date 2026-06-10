@@ -4,12 +4,11 @@ import { request as satsRequest } from 'sats-connect';
 import { useWallet, type WalletType } from './WalletProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, Wallet, Mail, Key } from 'lucide-react';
-import { validateAndGenerateWallet } from '@/lib/walletHelpers';
+import { X, Wallet, Mail } from 'lucide-react';
 import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
-import { upsertConnectedAccountPasskey, getConnectedAccountByEmail, getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
+import { getConnectedAccountByEmail, getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
 import { decryptPortableEncryptedWallet, type WalletData } from '@/lib/encryptedStorage';
 // Password verification utility for settings changes
 // Usage: await verifyPassphraseForSettings(address, passphrase, privateKey)
@@ -30,12 +29,6 @@ import CryptoJS from 'crypto-js';
 
 declare global {
   interface Window {
-    tempImportData?: {
-      mnemonic: string;
-      privateKey: string;
-      address: string;
-      label: string;
-    };
     LeatherProvider?: unknown;
   }
 }
@@ -46,7 +39,7 @@ interface ConnectModalProps {
   onError?: (err: string) => void;
 }
 
-type ConnectMode = 'wallets' | 'email' | 'mnemonic';
+type ConnectMode = 'wallets' | 'email';
 
 interface EmailAccountPayload {
   account: {
@@ -104,20 +97,13 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
   React.useEffect(() => {
     setWallets(detectWalletExtensions());
   }, []);
-  const [mnemonic, setMnemonic] = useState('');
   const [email, setEmail] = useState('');
   const [emailStatus, setEmailStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [emailMessage, setEmailMessage] = useState('');
   const [password, setPassword] = useState('');
-  const [passphrase, setPassphrase] = useState('');
-  const [confirmPassphrase, setConfirmPassphrase] = useState('');
-  const [walletLabel, setWalletLabel] = useState('');
   const { setAddress, setWalletType } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<'import' | 'encrypt'>('import');
-  const [existingAddressAccount, setExistingAddressAccount] = useState<{ address: string; email?: string | null } | null>(null);
-  const [addressNotice, setAddressNotice] = useState<string | null>(null);
 
   const { createEncryptedWallet } = useEncryptedWallet();
   const router = useRouter();
@@ -165,141 +151,9 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
     }
   }, []);
 
-  const handleMnemonicImport = async () => {
-    const normalizedMnemonic = mnemonic.trim().replace(/\s+/g, ' ');
-    if (!normalizedMnemonic) {
-      setError('Please enter your mnemonic phrase');
-      onError?.('Please enter your mnemonic phrase');
-      return;
-    }
 
-    try {
-      setIsLoading(true);
-      setError(null);
-      setExistingAddressAccount(null);
-      setAddressNotice(null);
 
-      // Validate mnemonic and generate wallet
-      const { privateKey, address } = await validateAndGenerateWallet(normalizedMnemonic);
-      
-      if (!privateKey || !address) {
-        setError('Invalid mnemonic phrase');
-        onError?.('Invalid mnemonic phrase');
-        setIsLoading(false);
-        return;
-      }
 
-      // Store temporary data for encryption step
-      window.tempImportData = {
-        mnemonic: normalizedMnemonic,
-        privateKey,
-        address,
-        label: walletLabel
-      };
-
-      try {
-        const existingAccount = await getConnectedAccountByAddress(address);
-        if (existingAccount) {
-          setExistingAddressAccount({ address, email: existingAccount.email ?? null });
-          setAddressNotice('This mainnet address already exists in BBOX. Enter a new password below to re-encrypt it and rotate your passkey.');
-        } else {
-          setExistingAddressAccount(null);
-          setAddressNotice(null);
-        }
-      } catch (lookupError) {
-        console.warn('Failed to look up connected account by address:', lookupError);
-      }
-
-      setStep('encrypt');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Invalid mnemonic phrase';
-      setError(msg);
-      onError?.(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCreateEncryptedWallet = async () => {
-    if (!passphrase) {
-      setError('Please enter a passphrase');
-      return;
-    }
-
-    if (passphrase !== confirmPassphrase) {
-      setError('Passphrases do not match');
-      return;
-    }
-
-    if (passphrase.length < 8) {
-      setError('Passphrase must be at least 8 characters');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const tempData = window.tempImportData;
-      if (!tempData) {
-        throw new Error('Import data not found');
-      }
-
-      // Check if email is already registered in connected_accounts
-      if (email) {
-        const existingAccount = await getConnectedAccountByEmail(email);
-        if (existingAccount && existingAccount.address !== tempData.address) {
-          // Email already registered for a DIFFERENT address: send connection link and show alert
-          setIsLoading(false);
-          setError('Email is already registered. A connection link has been sent to your email.');
-          try {
-            await fetch('/api/wallet-connect/send-link', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: email.trim() }),
-            });
-          } catch {}
-          return;
-        }
-      }
-
-      const walletData = {
-        mnemonic: tempData.mnemonic,
-        privateKey: tempData.privateKey,
-        address: tempData.address,
-        label: tempData.label
-      };
-
-      await createEncryptedWallet(walletData, passphrase);
-      setAddress(walletData.address);
-      setWalletType('imported');
-      await persistSessionForWallet(walletData.address, 'imported');
-
-      // Update connected_accounts: remove previous passkey and insert new one (hash of privateKey + passphrase)
-      try {
-        const passkeyHash = CryptoJS.SHA256(walletData.privateKey + passphrase).toString();
-        await upsertConnectedAccountPasskey(walletData.address, passkeyHash);
-      } catch (e) {
-        console.warn('Failed to update connected_accounts passkey:', e);
-      }
-      
-      // Clean up temp data
-      delete window.tempImportData;
-      setExistingAddressAccount(null);
-      setAddressNotice(null);
-
-      // Redirect to welcome page with email if available
-      const emailParam = email ? `?email=${encodeURIComponent(email)}` : '';
-      router.push(`/welcome${emailParam}`);
-      
-      if (onSuccess) onSuccess();
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to encrypt wallet');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleEmailConnect = async () => {
     const trimmedEmail = email.trim();
@@ -578,14 +432,7 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
                 <Mail className="w-5 h-5 mr-2" />
                 Sign In with Email
               </Button>
-              <Button
-                onClick={() => setConnectMode('mnemonic')}
-                className="w-full h-12 rounded-lg bg-white text-gray-900 border border-gray-300 font-semibold text-base flex items-center px-4 hover:bg-gray-50 cursor-pointer"
-                type="button"
-              >
-                <Key className="w-5 h-5 mr-2" />
-                Import with Mnemonic
-              </Button>
+
             </>
           )}
           {connectMode === 'email' && (
@@ -624,114 +471,11 @@ export default function ConnectModal({ onClose, onSuccess, onError }: ConnectMod
               )}
             </div>
           )}
-          {connectMode === 'mnemonic' && step === 'import' && (
-            <div className="space-y-4">
-              <div>
-                  <Input
-                    value={walletLabel}
-                    onChange={(e) => setWalletLabel(e.target.value)}
-                    placeholder="Wallet Label"
-                    className="bg-white text-black border border-border"
-                  />
-              </div>
-              <div>
-                <textarea
-                  value={mnemonic}
-                  onChange={(e) => setMnemonic(e.target.value)}
-                  placeholder="Enter your 12 or 24 word mnemonic phrase..."
-                  className="w-full h-32 p-3 bg-white text-black border border-border rounded-md placeholder-gray-400 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Separate words with spaces. Your mnemonic will be encrypted and stored securely.
-                </p>
-              </div>
-              {error && (
-                <div className="text-red-400 text-sm bg-red-900/20 p-3 rounded-md">
-                  {error}
-                </div>
-              )}
-              <Button
-                onClick={handleMnemonicImport}
-                disabled={isLoading || !mnemonic.trim()}
-                className="w-full cursor-pointer bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Validating...' : 'Import Wallet'}
-              </Button>
-            </div>
-          )}
-          
-          {/* Encryption Step (unchanged) */}
-          {step === 'encrypt' && (
-            <div className="space-y-4">
-              <div className="text-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Secure Your Wallet</h3>
-                <p className="text-gray-700 text-sm">
-                  Create a passphrase to encrypt your wallet. This will be required to access your wallet.
-                </p>
-              </div>
-              {addressNotice && (
-                <div className="rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-sm p-3">
-                  <p>{addressNotice}</p>
-                  {existingAddressAccount?.email && (
-                    <p className="mt-1 text-xs opacity-80">
-                      Registered email: {existingAddressAccount.email}
-                    </p>
-                  )}
-                  <p className="mt-1 text-xs font-mono break-all">
-                    {existingAddressAccount?.address}
-                  </p>
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Passphrase
-                </label>
-                  <Input
-                    type="password"
-                    value={passphrase}
-                    onChange={(e) => setPassphrase(e.target.value)}
-                    placeholder="Enter a secure passphrase"
-                    className="bg-white text-black border border-border"
-                  />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Passphrase
-                </label>
-                  <Input
-                    type="password"
-                    value={confirmPassphrase}
-                    onChange={(e) => setConfirmPassphrase(e.target.value)}
-                    placeholder="Confirm your passphrase"
-                    className="bg-white text-black border border-border"
-                  />
-              </div>
-              {error && (
-                <div className="text-red-400 text-sm bg-red-900/20 p-3 rounded-md">
-                  {error}
-                </div>
-              )}
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setStep('import');
-                    setExistingAddressAccount(null);
-                    setAddressNotice(null);
-                  }}
-                  className="flex-1 cursor-pointer hover:bg-gray-100 hover:text-gray-900 transition-colors"
-                  disabled={isLoading}
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={handleCreateEncryptedWallet}
-                  disabled={isLoading || !passphrase || !confirmPassphrase}
-                  className="flex-1 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:cursor-not-allowed"
-                >
-                  {isLoading ? 'Creating...' : 'Create Wallet'}
-                </Button>
-              </div>
+          {/* Mnemonic import disabled for security */}
+          {false && (
+            <div className="text-center py-8">
+              <p className="text-gray-600 font-medium">Mnemonic import has been disabled for security reasons.</p>
+              <p className="text-gray-500 text-sm mt-2">Use email registration to create a new wallet or connect with Leather/Xverse.</p>
             </div>
           )}
         </div>
