@@ -12,6 +12,7 @@ import { PasswordInput } from '@/components/PasswordInput';
 import ConnectModal from './ConnectModal';
 import { request as satsRequest } from 'sats-connect';
 import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
+import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 import { formatStxAddress } from '@/lib/address-utils';
 import { getStoredEncryptedWallet } from '@/lib/encryptedStorage';
 
@@ -99,21 +100,14 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         return;
       }
 
-      setWalletError(response.error?.message || 'Failed to connect to Xverse.');
+      setWalletError(response.error ? getWalletErrorMessage(response.error, 'Failed to connect to Xverse.') : 'Failed to connect to Xverse.');
     } catch (err: unknown) {
-      let errorMsg = 'Failed to connect to Xverse.';
-      if (
-        typeof err === 'object' &&
-        err !== null &&
-        'error' in err &&
-        typeof (err as { error?: { message?: string } }).error === 'object' &&
-        (err as { error?: { message?: string } }).error?.message
-      ) {
-        errorMsg = (err as { error: { message: string } }).error.message;
-      } else if (err instanceof Error) {
-        errorMsg = err.message;
+      const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Xverse.');
+      if (isWalletRequestCancelled(err)) {
+        setWalletError('Wallet connection was cancelled. Please try again.');
+      } else {
+        setWalletError(errorMsg);
       }
-      setWalletError(errorMsg);
       console.error('Xverse connect error:', err);
     }
   };
@@ -161,19 +155,12 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 
       setWalletError('No Stacks address found in Leather. Please check your wallet and try again.');
     } catch (err: unknown) {
-      let errorMsg = 'Failed to connect to Leather.';
-      if (
-        typeof err === 'object' &&
-        err !== null &&
-        'error' in err &&
-        typeof (err as { error?: { message?: string } }).error === 'object' &&
-        (err as { error?: { message?: string } }).error?.message
-      ) {
-        errorMsg = (err as { error: { message: string } }).error.message;
-      } else if (err instanceof Error) {
-        errorMsg = err.message;
+      const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Leather.');
+      if (isWalletRequestCancelled(err)) {
+        setWalletError('Wallet connection was cancelled. Please try again.');
+      } else {
+        setWalletError(errorMsg);
       }
-      setWalletError(errorMsg);
       setWalletInstallUrl('https://leather.io');
       console.error('Leather connect error:', err);
     }

@@ -3,6 +3,7 @@ import type { StacksProvider } from '@stacks/connect/dist/types';
 import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 
 import { getPersistedNetwork } from '@/lib/network';
+import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 
 type SignatureData = {
   signature: string;
@@ -133,18 +134,6 @@ const providerNotFoundMessage = (walletType: SupportedWalletType) => {
   }
 };
 
-const extractErrorMessage = (error: unknown): string | undefined => {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  if (typeof error === 'object' && error !== null) {
-    const maybeMessage = (error as { message?: unknown }).message;
-    if (typeof maybeMessage === 'string') return maybeMessage;
-    const nested = (error as { error?: { message?: unknown } }).error;
-    if (nested && typeof nested.message === 'string') return nested.message;
-  }
-  return undefined;
-};
-
 const unwrapSignatureResult = (response: unknown): SignatureData => {
   const payload = (response as { result?: SignatureData })?.result ?? (response as SignatureData);
   if (!payload || typeof payload.signature !== 'string') {
@@ -158,11 +147,11 @@ const requestSignatureViaRpc = async (provider: RpcCapableStacksProvider, payloa
     const response = await provider.request('stx_signMessage', { message: payload });
     return unwrapSignatureResult(response);
   } catch (error) {
-    const message = extractErrorMessage(error);
-    if (message && /cancel|reject/i.test(message)) {
+    const message = getWalletErrorMessage(error, 'Unable to sign message with wallet');
+    if (isWalletRequestCancelled(error) || /cancel|reject/i.test(message.toLowerCase())) {
       throw new Error('Signature was cancelled');
     }
-    throw new Error(message || 'Unable to sign message with wallet');
+    throw new Error(message);
   }
 };
 

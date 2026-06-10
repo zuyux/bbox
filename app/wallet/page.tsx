@@ -59,6 +59,7 @@ import { makeSTXTokenTransfer, broadcastTransaction } from "@stacks/transactions
 import { getApiUrl } from "@/lib/stacks-api";
 import { getPersistedNetwork, inferNetworkFromAddress, persistNetwork, type Network } from "@/lib/network";
 import { getSBTCContract } from "@/lib/contracts";
+import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 
 import { Copy, X, LoaderCircle, Wallet } from "lucide-react";
 import { toast } from "sonner";
@@ -442,26 +443,8 @@ export default function WalletPage() {
         } catch (err: unknown) {
           // Log the error object for debugging
           console.error('Extension transaction error:', err);
-          let errorMsg = 'Extension transaction failed';
-          let isUserCancel = false;
-          if (err && typeof err === 'object' && err !== null) {
-            if ('message' in err && typeof (err as Record<string, unknown>).message === 'string') {
-              errorMsg = (err as { message: string }).message;
-              if (errorMsg.includes('User canceled the request')) {
-                isUserCancel = true;
-              }
-            } else if ('error' in err && typeof (err as Record<string, unknown>).error === 'string') {
-              errorMsg = (err as { error: string }).error;
-              if (errorMsg.includes('User canceled the request')) {
-                isUserCancel = true;
-              }
-            } else {
-              try {
-                errorMsg = JSON.stringify(err);
-              } catch {}
-            }
-          }
-          if (!isUserCancel) {
+          const errorMsg = getWalletErrorMessage(err, 'Extension transaction failed');
+          if (!isWalletRequestCancelled(err)) {
             toast.error(errorMsg);
           }
         }
@@ -545,9 +528,24 @@ export default function WalletPage() {
     const accountUrl = `${apiBaseUrl}/v2/accounts/${address}`;
 
     fetch(accountUrl)
-      .then(res => {
+      .then(async (res) => {
         if (!res.ok) {
-          throw new Error(`Account lookup failed with ${res.status}`);
+          let message = `Account lookup failed with ${res.status}`;
+          try {
+            const payload = await res.json();
+            if (payload && typeof payload === 'object') {
+              const errorValue = (payload as { error?: unknown }).error;
+              if (typeof errorValue === 'string') {
+                message = errorValue;
+              } else if (typeof errorValue === 'object' && errorValue !== null) {
+                const text = getWalletErrorMessage(errorValue, message);
+                if (text) message = text;
+              }
+            }
+          } catch {
+            // ignore parse failures
+          }
+          throw new Error(message);
         }
         return res.json();
       })
@@ -583,7 +581,7 @@ export default function WalletPage() {
           setBtcAddressError(null);
         } else {
           setBtcAddress(null);
-          setBtcAddressError('Unable to derive Bitcoin address. Try again later.');
+          setBtcAddressError(getWalletErrorMessage(error, 'Unable to derive Bitcoin address. Check your wallet connection and network.'));
         }
       })
       .finally(() => setBtcAddressLoading(false));

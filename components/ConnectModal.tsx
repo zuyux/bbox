@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X, Wallet, Mail } from 'lucide-react';
 import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
+import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
 import { getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
@@ -105,7 +106,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
   const [password, setPassword] = useState('');
   const { setAddress, setWalletType } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
-  const [, setError] = useState<string | null>(null);
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   const { createEncryptedWallet } = useEncryptedWallet();
   const router = useRouter();
@@ -307,6 +308,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                       <Button
                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-lg text-sm font-semibold cursor-pointer"
                         onClick={async () => {
+                            setWalletError(null);
                           try {
                             if (w.id === 'leather' && window.LeatherProvider) {
                               const provider = window.LeatherProvider;
@@ -329,13 +331,15 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                   onClose();
                                   router.push(`/${stxAddress}`);
                                 } else {
-                                  setError('No Stacks address found in Leather.');
-                                  onError?.('No Stacks address found in Leather.');
+                                  const errorMsg = 'No Stacks address found in Leather. Please check your wallet and try again.';
+                                  setWalletError(errorMsg);
+                                  onError?.(errorMsg);
                                   console.warn('No Stacks address found in Leather.');
                                 }
                               } else {
-                                setError('Leather provider does not support request.');
-                                onError?.('Leather provider does not support request.');
+                                const errorMsg = 'Leather provider does not support request. Unlock the wallet and refresh the page.';
+                                setWalletError(errorMsg);
+                                onError?.(errorMsg);
                                 console.warn('Leather provider does not support request.');
                               }
                             } else if (w.id === 'xverse') {
@@ -355,53 +359,46 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                     onClose();
                                     router.push(`/${stxAddress}`);
                                   } else {
-                                    setError('No Stacks address found in Xverse.');
-                                    onError?.('No Stacks address found in Xverse.');
+                                    const errorMsg = 'No Stacks address found in Xverse. Please check your wallet and try again.';
+                                    setWalletError(errorMsg);
+                                    onError?.(errorMsg);
                                     console.warn('No Stacks address found in Xverse.');
                                   }
                                 } else {
-                                  setError(response.error?.message || 'Failed to connect to Xverse.');
-                                  onError?.(response.error?.message || 'Failed to connect to Xverse.');
+                                  const errorMsg = response.error
+                                    ? getWalletErrorMessage(response.error, 'Failed to connect to Xverse.')
+                                    : 'Failed to connect to Xverse.';
+                                  setWalletError(errorMsg);
+                                  onError?.(errorMsg);
                                   console.warn('Xverse connect error:', response.error);
                                 }
                               } catch (err: unknown) {
-                                let errorMsg = 'Failed to connect to Xverse.';
-                                if (
-                                  typeof err === 'object' &&
-                                  err !== null &&
-                                  'error' in err &&
-                                  typeof (err as { error?: { message?: string } }).error === 'object' &&
-                                  (err as { error?: { message?: string } }).error &&
-                                  typeof (err as { error?: { message?: string } }).error!.message === 'string'
-                                ) {
-                                  errorMsg = (err as { error: { message: string } }).error.message;
+                                const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Xverse.');
+                                if (isWalletRequestCancelled(err)) {
+                                  setWalletError('Wallet connection was cancelled. Please try again.');
+                                  onError?.('Wallet connection was cancelled. Please try again.');
+                                } else {
+                                  setWalletError(errorMsg);
+                                  onError?.(errorMsg);
                                 }
-                                setError(errorMsg);
-                                onError?.(errorMsg);
                                 console.error('Xverse connect error:', err);
                               }
                             } else {
-                              setError('Wallet provider not found.');
-                              onError?.('Wallet provider not found.');
+                              const errorMsg = 'Wallet provider not found. Please enable your wallet extension and refresh.';
+                              setWalletError(errorMsg);
+                              onError?.(errorMsg);
                               console.warn('Wallet provider not found for:', w.id);
                             }
                           } catch (err: unknown) {
-                            let msg = 'Failed to connect wallet.';
-                            if (err && typeof err === 'object') {
-                              // Handle JSON-RPC error shape
-                              if ('error' in err && typeof (err as { error?: { message?: string; code?: number } }).error === 'object') {
-                                const rpcError = (err as { error?: { message?: string; code?: number } }).error;
-                                if (typeof rpcError?.message === 'string') {
-                                  msg = rpcError.message;
-                                } else if (typeof rpcError?.code === 'number') {
-                                  msg = `Wallet error code: ${rpcError.code}`;
-                                }
-                              } else if ('message' in err && typeof (err as { message?: string }).message === 'string') {
-                                msg = (err as { message?: string }).message!;
-                              }
+                            const msg = getWalletErrorMessage(err, 'Failed to connect wallet.');
+                            if (isWalletRequestCancelled(err)) {
+                              const cancelMsg = 'Wallet connection was cancelled. Please try again.';
+                              setWalletError(cancelMsg);
+                              onError?.(cancelMsg);
+                            } else {
+                              setWalletError(msg);
+                              onError?.(msg);
                             }
-                            setError(msg);
-                            onError?.(msg);
                             console.error('Wallet connect error:', err);
                           }
                         }}
@@ -421,6 +418,11 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                   </div>
                 ))}
               </div>
+              {walletError && (
+                <div className="mt-4 px-4 py-3 rounded-lg bg-red-50 text-sm text-red-700 border border-red-200">
+                  {walletError}
+                </div>
+              )}
               <div className="flex items-center my-4">
                 <div className="flex-grow border-t border-gray-200"></div>
                 <span className="mx-2 text-xs text-gray-400">or</span>
