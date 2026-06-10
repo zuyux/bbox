@@ -16,7 +16,7 @@
 ## 3. Data reliability
 
 - Add retry and caching logic for external APIs (Hiro, Supabase, Pinata, IPFS) ✓
-- Surface network status / offline mode when RPC or backend fails
+- Surface network status / offline mode when RPC or backend fails ✓
 - Validate and sanitize metadata before rendering app listings and comments
 
 ## 4. Accessibility
@@ -60,3 +60,7 @@
 - Add analytics or telemetry to identify most-used pages and pain points
 - Create a prioritized backlog for milestone funding, DAO voting, and app registry verification
 - Improve discovery with filters, categories, and search ranking
+
+## Additional
+
+- make profile page loading faster.

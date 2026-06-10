@@ -29,8 +29,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   error = null,
   placeholder = 'Enter your password',
   showStrengthIndicator = false,
-  autoFocus = true,
-  onCancel,
+  autoFocus = true
 }) => {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -221,17 +220,6 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
             )}
           </Button>
           
-          {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-              className="bg-transparent border-border hover:bg-secondary cursor-pointer"
-            >
-              Cancel
-            </Button>
-          )}
         </div>
       </form>
     </div>
