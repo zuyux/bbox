@@ -22,7 +22,14 @@ export const Navbar = () => {
             {/* Left: Logo */}
             <div className="flex justify-start">
               <Link href="/" className="flex items-center gap-2">
-                <Image src="/bbox.png" alt="bbox Logo" width={27} height={27} className="object-contain"/>
+                <Image
+                  src="/bbox.png"
+                  alt="bbox Logo"
+                  width={27}
+                  height={27}
+                  className="object-contain"
+                  style={{ width: 'auto', height: 'auto' }}
+                />
                 <span className="title text-3xl mt-1 ml-1 ">BBOX</span>
               </Link>
             </div>

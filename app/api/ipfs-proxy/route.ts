@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
           'User-Agent': 'Mozilla/5.0 (compatible; SBTC-ImageProxy/1.0)',
           'Cache-Control': 'max-age=31536000',
         },
-        // Add timeout for faster fallback
-        signal: AbortSignal.timeout(5000), // 5 second timeout per gateway
+        // Add timeout for slower gateways
+        signal: AbortSignal.timeout(10000), // 10 second timeout per gateway
       });
 
       if (imageResponse.ok) {

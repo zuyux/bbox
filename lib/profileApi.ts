@@ -4,7 +4,6 @@ import { createNostrMetadataEvent, fetchNostrProfileByAddress, publishNostrEvent
 // Test Supabase connectivity
 export async function testSupabaseConnection() {
   try {
-    console.log('Testing Supabase connection...');
     const { data, error } = await supabase
       .from('profiles')
       .select('count', { count: 'exact', head: true });
@@ -14,7 +13,6 @@ export async function testSupabaseConnection() {
       return false;
     }
     
-    console.log('Supabase connection test successful, count result:', data);
     return true;
   } catch (error) {
     console.error('Supabase connection test error:', error);
@@ -102,15 +100,12 @@ export interface Profile {
 
 export async function getProfile(address: string): Promise<Profile | null> {
   try {
-    console.log(`Attempting to fetch profile for address: ${address}`);
     const profile = await fetchNostrProfileByAddress(address);
 
     if (!profile) {
-      console.log(`No Nostr profile event found for address: ${address}`);
       return null;
     }
 
-    console.log(`Nostr profile loaded successfully for address: ${address}`);
     return profile as Profile;
   } catch (error) {
     console.error('Complete error in getProfile:', {

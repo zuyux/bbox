@@ -69,6 +69,7 @@ export default function AppDetailPage() {
                     alt={`${app.name} logo`}
                     className="object-cover"
                     fill
+                    sizes="96px"
                   />
                 ) : (
                   app.name.charAt(0)
@@ -208,6 +209,7 @@ export default function AppDetailPage() {
                           alt={`${relatedApp.name} logo`}
                           className="object-cover"
                           fill
+                          sizes="96px"
                         />
                       ) : (
                         relatedApp.name.charAt(0)

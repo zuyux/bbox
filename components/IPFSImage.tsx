@@ -12,6 +12,8 @@ interface IPFSImageProps {
   height?: number;
   fill?: boolean;
   priority?: boolean;
+  sizes?: string;
+  loading?: 'eager' | 'lazy';
   onError?: () => void;
   onLoad?: () => void;
 }
@@ -24,6 +26,8 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
   height,
   fill,
   priority,
+  sizes,
+  loading,
   onError,
   onLoad
 }) => {
@@ -60,22 +64,29 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
           // Test if the image loads
           await new Promise<void>((resolve, reject) => {
             const img = document.createElement('img');
-            img.onload = () => resolve();
-            img.onerror = () => reject();
+            const timeoutId = window.setTimeout(() => {
+              img.onload = null;
+              img.onerror = null;
+              reject(new Error('Timeout'));
+            }, 10000);
+
+            img.onload = () => {
+              window.clearTimeout(timeoutId);
+              resolve();
+            };
+            img.onerror = () => {
+              window.clearTimeout(timeoutId);
+              reject(new Error('Load failed'));
+            };
+            img.crossOrigin = 'anonymous';
             img.src = testUrl;
-            
-            // Add timeout for each gateway attempt
-            setTimeout(() => reject(new Error('Timeout')), 5000);
           });
 
           // If we get here, the image loaded successfully
-          console.log(`Successfully loaded image from: ${gateway}`);
           setCurrentSrc(optimizeIPFSUrl(testUrl));
           setIsLoading(false);
           return;
-
-        } catch (error) {
-          console.warn(`Failed to load image from ${gateway}:`, error);
+        } catch {
           continue;
         }
       }
@@ -126,10 +137,13 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
     onError: handleImageError,
     onLoad: handleImageLoad,
     priority,
-    ...(fill ? { fill: true } : { width: width || 400, height: height || 400 })
+    unoptimized: true,
+    ...(fill
+      ? { fill: true, sizes: sizes || '100vw', ...(loading ? { loading } : {}) }
+      : { width: width || 400, height: height || 400, ...(loading ? { loading } : {}) }),
   };
 
-  return <Image {...imageProps} alt={alt || 'IPFS Image'} />;
+  return <Image {...imageProps} />;
 };
 
 export default IPFSImage;

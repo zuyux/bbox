@@ -55,6 +55,7 @@ const AppLogo = ({ name, imgCID }: { name: string; imgCID?: string }) => {
           alt={`${name} logo`}
           className="object-cover"
           fill
+          sizes="80px"
           onError={() => setImageFailed(true)}
         />
       ) : (
@@ -62,6 +63,7 @@ const AppLogo = ({ name, imgCID }: { name: string; imgCID?: string }) => {
           src={DEFAULT_APP_IMAGE}
           alt={`Default logo for ${name}`}
           fill
+          sizes="80px"
           className="object-cover"
         />
       )}

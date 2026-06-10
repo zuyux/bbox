@@ -334,11 +334,6 @@ export function extendSession(): boolean {
     encryptedData.lastAccessed = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(encryptedData));
     
-    console.log('Session extended:', {
-      address: encryptedData.address,
-      newLastAccessed: new Date(encryptedData.lastAccessed).toLocaleString()
-    });
-    
     // Dispatch event for session activity
     window.dispatchEvent(new Event('bbox-session-accessed'));
     
@@ -371,17 +366,6 @@ export function isSessionExpired(): boolean {
     const timeoutMs = 60 * 60 * 1000;
     const timeDiff = now - encryptedData.lastAccessed;
     const isExpired = timeDiff > timeoutMs;
-
-    // Debug logging
-    console.log('Session expiry check:', {
-      sessionTimeoutMinutes: 60,
-      timeoutMs,
-      lastAccessed: new Date(encryptedData.lastAccessed).toLocaleString(),
-      now: new Date(now).toLocaleString(),
-      timeDiffMs: timeDiff,
-      timeDiffMinutes: Math.round(timeDiff / (60 * 1000) * 100) / 100,
-      isExpired
-    });
 
     return isExpired;
   } catch {
@@ -430,7 +414,6 @@ export function resetSessionConfig(): void {
   if (typeof window === 'undefined') return;
   
   localStorage.setItem(CONFIG_KEY, JSON.stringify(DEFAULT_CONFIG));
-  console.log('Session config reset to default:', DEFAULT_CONFIG);
 }
 
 /**

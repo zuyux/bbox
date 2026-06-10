@@ -2,7 +2,7 @@
 
 ### 1. UI / UX polish
 - Improve mobile and tablet responsiveness across pages ✓
-- Standardize spacing, typography, and button styles
+- Standardize spacing, typography, and button styles ✓
 - Add loading skeletons and better async fallbacks
 - Improve onboarding flow for wallet connection and recovery
 
