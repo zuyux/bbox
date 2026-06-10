@@ -10,6 +10,8 @@ import { createStacksAccount } from '@/lib/stacksWallet';
 import { useRouter } from 'next/navigation';
 import { PasswordInput } from '@/components/PasswordInput';
 import ConnectModal from './ConnectModal';
+import { request as satsRequest } from 'sats-connect';
+import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { formatStxAddress } from '@/lib/address-utils';
 import { getStoredEncryptedWallet } from '@/lib/encryptedStorage';
 
@@ -27,7 +29,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   } = useEncryptedWallet();
   const router = useRouter();
 
-  const [walletError] = useState<string | null>(null);
+  const [walletError, setWalletError] = useState<string | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importModalMode, setImportModalMode] = useState<'wallets' | 'email'>('wallets');
   const [showEncryptedWalletFlow, setShowEncryptedWalletFlow] = useState(false);
@@ -41,10 +43,140 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     { id: 'nostria', label: 'Nostria Signer', icon: '/nostria.svg', mode: 'wallets' as const },
   ];
 
-  const persistWalletContext = (newAddress: string) => {
+  const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' = 'imported') => {
     setAddress(newAddress);
-    setWalletType('imported');
-    console.log('[GetInModal] Persisted wallet session via WalletProvider', { newAddress });
+    setWalletType(type);
+    console.log('[GetInModal] Persisted wallet session via WalletProvider', { newAddress, type });
+  };
+
+  const [xverseInstalled, setXverseInstalled] = useState(false);
+  const [leatherInstalled, setLeatherInstalled] = useState(false);
+  const [walletInstallUrl, setWalletInstallUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const wallets = detectWalletExtensions();
+    setXverseInstalled(wallets.some((wallet) => wallet.id === 'xverse' && wallet.installed));
+    setLeatherInstalled(wallets.some((wallet) => wallet.id === 'leather' && wallet.installed));
+  }, []);
+
+  const handleXverseConnect = async () => {
+    setWalletError(null);
+    setWalletInstallUrl(null);
+
+    if (!xverseInstalled) {
+      setWalletError(
+        'Xverse wallet was not detected. Install Xverse or enable it for this page, then refresh and try again.'
+      );
+      setWalletInstallUrl('https://xverse.app');
+      return;
+    }
+
+    try {
+      const response = await satsRequest('wallet_connect', null) as {
+        status: string;
+        result?: {
+          addresses?: Array<{ purpose?: string; address?: string }>;
+        };
+        error?: { message?: string };
+      };
+      if (response.status === 'success') {
+        const stacksAddressItem = Array.isArray(response.result?.addresses)
+          ? response.result.addresses.find((address) => address.purpose === 'stacks')
+          : undefined;
+        const stxAddress = stacksAddressItem?.address;
+
+        if (stxAddress) {
+          persistWalletContext(stxAddress, 'xverse');
+          localStorage.setItem('walletAddress', stxAddress);
+          localStorage.setItem('walletType', 'xverse');
+          if (onClose) onClose();
+          router.push(`/${stxAddress}`);
+          return;
+        }
+
+        setWalletError('No Stacks address found in Xverse. Please check your wallet and try again.');
+        return;
+      }
+
+      setWalletError(response.error?.message || 'Failed to connect to Xverse.');
+    } catch (err: unknown) {
+      let errorMsg = 'Failed to connect to Xverse.';
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'error' in err &&
+        typeof (err as { error?: { message?: string } }).error === 'object' &&
+        (err as { error?: { message?: string } }).error?.message
+      ) {
+        errorMsg = (err as { error: { message: string } }).error.message;
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      }
+      setWalletError(errorMsg);
+      console.error('Xverse connect error:', err);
+    }
+  };
+
+  const handleLeatherConnect = async () => {
+    setWalletError(null);
+    setWalletInstallUrl(null);
+
+    if (!leatherInstalled) {
+      setWalletError(
+        'Leather wallet was not detected. Install Leather or enable it for this page, then refresh and try again.'
+      );
+      setWalletInstallUrl('https://leather.io');
+      return;
+    }
+
+    try {
+      const provider = window.LeatherProvider;
+      if (
+        !provider ||
+        typeof provider !== 'object' ||
+        !('request' in provider) ||
+        typeof (provider as { request?: unknown }).request !== 'function'
+      ) {
+        setWalletError('Leather wallet provider is not available. Please enable Leather for this page.');
+        setWalletInstallUrl('https://leather.io');
+        return;
+      }
+
+      const response = await (provider as { request: (method: string, params?: unknown) => Promise<unknown> }).request('getAddresses');
+      const stxAddress = Array.isArray((response as { result?: { addresses?: { symbol: string; address: string }[] } })?.result?.addresses)
+        ? ((response as { result: { addresses: { symbol: string; address: string }[] } }).result.addresses.find(
+            (addr) => addr.symbol === 'STX'
+          )?.address)
+        : undefined;
+
+      if (stxAddress) {
+        persistWalletContext(stxAddress, 'leather');
+        localStorage.setItem('walletAddress', stxAddress);
+        localStorage.setItem('walletType', 'leather');
+        if (onClose) onClose();
+        router.push(`/${stxAddress}`);
+        return;
+      }
+
+      setWalletError('No Stacks address found in Leather. Please check your wallet and try again.');
+    } catch (err: unknown) {
+      let errorMsg = 'Failed to connect to Leather.';
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'error' in err &&
+        typeof (err as { error?: { message?: string } }).error === 'object' &&
+        (err as { error?: { message?: string } }).error?.message
+      ) {
+        errorMsg = (err as { error: { message: string } }).error.message;
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      }
+      setWalletError(errorMsg);
+      setWalletInstallUrl('https://leather.io');
+      console.error('Leather connect error:', err);
+    }
   };
 
   useEffect(() => {
@@ -331,6 +463,14 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                     key={option.id}
                     type="button"
                     onClick={() => {
+                      if (option.id === 'xverse') {
+                        handleXverseConnect();
+                        return;
+                      }
+                      if (option.id === 'leather') {
+                        handleLeatherConnect();
+                        return;
+                      }
                       setImportModalMode(option.mode);
                       setShowImportModal(true);
                     }}
@@ -350,7 +490,21 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
               </div>
 
               {walletError && (
-                <div className="text-red-500 text-xs mt-2 text-center">{walletError}</div>
+                <div className="text-red-500 text-xs mt-2 text-center">
+                  {walletError}
+                  {walletInstallUrl && (
+                    <div className="mt-1">
+                      <a
+                        href={walletInstallUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline text-current hover:text-accent-primary"
+                      >
+                        Install Wallet
+                      </a>
+                    </div>
+                  )}
+                </div>
               )}
 
               <div className="mt-2">

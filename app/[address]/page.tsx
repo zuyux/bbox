@@ -6,10 +6,9 @@ import Link from 'next/link';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 import { getProfile, Profile } from '@/lib/profileApi';
-import { User, MapPin, Calendar, Briefcase, Globe, Pen, Code, Download, Star } from 'lucide-react';
+import { User, MapPin, Calendar, Briefcase, Globe, Pen, Code, Download, Star, LoaderCircle } from 'lucide-react';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from '@/components/SafariOptimizedImage';
-import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 
 interface SubmittedApp {
@@ -150,16 +149,9 @@ function BitcoinAppsSection({ apps, loading }: { apps: SubmittedApp[]; loading: 
       </div>
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="animate-pulse rounded-lg border border-border bg-background p-4 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-muted/70" />
-              <div className="h-5 w-3/4 bg-muted/70 rounded" />
-              <div className="h-4 w-full bg-muted/70 rounded" />
-              <div className="h-4 w-5/6 bg-muted/70 rounded" />
-              <div className="h-8 w-full bg-muted/70 rounded" />
-            </div>
-          ))}
+        <div className="flex flex-col items-center justify-center py-12">
+          <LoaderCircle className="h-10 w-10 animate-spin text-primary" />
+          <p className="mt-4 text-sm text-muted-foreground">Loading apps...</p>
         </div>
       ) : apps.length === 0 ? (
         <div className="text-center py-8">
@@ -292,28 +284,10 @@ export default function AddressPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 mt-10">
-        <div className="mx-auto max-w-4xl space-y-6">
-          <div className="rounded-3xl border border-border bg-card/80 p-6">
-            <div className="grid gap-4 md:grid-cols-[160px_1fr] items-center">
-              <Skeleton className="h-28 w-28 rounded-full bg-white/10" />
-              <div className="space-y-3">
-                <Skeleton className="h-8 w-3/4 bg-white/10" />
-                <Skeleton className="h-5 w-1/2 bg-white/10" />
-                <Skeleton className="h-4 w-full bg-white/10" />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="rounded-3xl border border-border bg-card/80 p-6 space-y-4">
-                <Skeleton className="h-10 w-10 rounded-full bg-white/10" />
-                <Skeleton className="h-5 w-5/6 bg-white/10" />
-                <Skeleton className="h-4 w-full bg-white/10" />
-                <Skeleton className="h-4 w-4/5 bg-white/10" />
-              </div>
-            ))}
-          </div>
+        <div className="mx-auto max-w-4xl rounded-3xl border border-border bg-card/80 p-10 text-center">
+          <LoaderCircle className="mx-auto h-12 w-12 animate-spin text-primary" />
+          <p className="mt-4 text-lg font-semibold text-foreground">Loading profile...</p>
+          <p className="mt-2 text-sm text-muted-foreground">Please wait while we load this profile.</p>
         </div>
       </div>
     );
