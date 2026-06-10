@@ -106,15 +106,13 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
           setIsAuthenticated(true);
           setIsSessionLocked(false);
         } else {
-          // Check session status
+          setCurrentWallet(null);
+          setIsAuthenticated(false);
           setIsSessionLocked(checkSessionLocked());
           
-          // Check for session expiry
-          const expired = autoLockIfExpired();
-          if (expired) {
+          // Check for session expiry and lock if needed
+          if (autoLockIfExpired()) {
             setIsSessionLocked(true);
-            setIsAuthenticated(false);
-            setCurrentWallet(null);
           }
         }
       } else {
@@ -128,7 +126,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
 
     initialize();
 
-    // Listen for storage events
+    // Listen for session events and cross-tab storage updates
     const handleStorageEvents = (event: Event) => {
       switch (event.type) {
         case 'bbox-encrypted-session-created':
@@ -158,12 +156,34 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
       }
     };
 
+    const handleNativeStorage = (event: StorageEvent) => {
+      if (event.storageArea !== localStorage) return;
+      const watchedKeys = ['bbox_encrypted_session', 'bbox_session_locked', 'bbox_session_config', 'bbox_session'];
+      if (!event.key || !watchedKeys.includes(event.key)) return;
+
+      const hasWallet = hasEncryptedWallet();
+      setIsWalletEncrypted(hasWallet);
+      setWalletInfo(getWalletInfo());
+
+      if (hasWallet && isSessionActive()) {
+        const restoredWallet = tryRestoreSession();
+        setCurrentWallet(restoredWallet);
+        setIsAuthenticated(true);
+        setIsSessionLocked(false);
+      } else {
+        setCurrentWallet(null);
+        setIsAuthenticated(false);
+        setIsSessionLocked(checkSessionLocked());
+      }
+    };
+
     // Add event listeners
     window.addEventListener('bbox-encrypted-session-created', handleStorageEvents);
     window.addEventListener('bbox-session-locked', handleStorageEvents);
     window.addEventListener('bbox-session-unlocked', handleStorageEvents);
     window.addEventListener('bbox-session-deleted', handleStorageEvents);
     window.addEventListener('bbox-session-accessed', handleStorageEvents);
+    window.addEventListener('storage', handleNativeStorage);
 
     return () => {
       window.removeEventListener('bbox-encrypted-session-created', handleStorageEvents);
@@ -171,6 +191,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
       window.removeEventListener('bbox-session-unlocked', handleStorageEvents);
       window.removeEventListener('bbox-session-deleted', handleStorageEvents);
       window.removeEventListener('bbox-session-accessed', handleStorageEvents);
+      window.removeEventListener('storage', handleNativeStorage);
     };
   }, []);
 
@@ -242,6 +263,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
     
     try {
       await storeEncryptedWallet(walletData, passphrase);
+      unlockSession();
       setCurrentWallet(walletData);
       setIsAuthenticated(true);
       setIsWalletEncrypted(true);
@@ -282,10 +304,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
     setAuthError(null);
 
     try {
-      // Clean up previous session/config before unlocking (robust session logic)
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('bbox_encrypted_session');
-        localStorage.removeItem('bbox_session_config');
         localStorage.removeItem('bbox_session_locked');
       }
 

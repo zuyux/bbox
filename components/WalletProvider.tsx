@@ -17,17 +17,31 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [walletType, setWalletType] = useState<WalletType | null>(null);
 
   // Persist wallet address for Xverse and Leather
-  useEffect(() => {
-    // On mount, restore address if present (only run once on mount)
-    const saved = localStorage.getItem('walletAddress');
-    const savedType = localStorage.getItem('walletType') as WalletType | null;
+  const restoreWalletState = () => {
+    if (typeof window === 'undefined') return;
 
-    if (saved) {
-      setAddress(saved);
-    }
-    if (savedType) {
-      setWalletType(savedType);
-    }
+    const savedAddress = localStorage.getItem('walletAddress');
+    const rawSavedType = localStorage.getItem('walletType');
+    const savedType = rawSavedType === 'leather' || rawSavedType === 'xverse' || rawSavedType === 'imported'
+      ? (rawSavedType as WalletType)
+      : null;
+
+    setAddress(savedAddress);
+    setWalletType(savedType);
+  };
+
+  useEffect(() => {
+    restoreWalletState();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.storageArea !== localStorage) return;
+      if (event.key === 'walletAddress' || event.key === 'walletType') {
+        restoreWalletState();
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []); // Intentionally empty - only run on mount to restore saved address
 
   useEffect(() => {

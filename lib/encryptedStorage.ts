@@ -362,8 +362,8 @@ export function isSessionExpired(): boolean {
     if (!config.autoLock) return false;
 
     const now = Date.now();
-    // Always use 60 minutes (1 hour) for expiration regardless of config
-    const timeoutMs = 60 * 60 * 1000;
+    const timeoutMinutes = typeof config.sessionTimeout === 'number' ? config.sessionTimeout : DEFAULT_CONFIG.sessionTimeout;
+    const timeoutMs = timeoutMinutes * 60 * 1000;
     const timeDiff = now - encryptedData.lastAccessed;
     const isExpired = timeDiff > timeoutMs;
 
@@ -530,24 +530,40 @@ export function tryRestoreSession(): WalletData | null {
     
     // Try to get session data from localStorage
     const sessionData = localStorage.getItem('bbox_session');
-    if (!sessionData) return null;
-    
-    const session = JSON.parse(sessionData);
-    if (!session.address || !session.encrypted) return null;
-    
-    // Get wallet info to verify it matches
-    const walletInfo = getWalletInfo();
-    if (!walletInfo || walletInfo.address !== session.address) return null;
-    
-    // Create minimal wallet data for UI (without sensitive data)
-    return {
-      mnemonic: '', // Don't expose sensitive data
-      privateKey: '', // Don't expose sensitive data  
-      bitcoinAddress: walletInfo.bitcoinAddress,
-      rootstockAddress: walletInfo.rootstockAddress,
-      address: session.address,
-      label: session.label || 'Encrypted Wallet',
-    };
+    if (sessionData) {
+      const session = JSON.parse(sessionData);
+      if (!session.address || !session.encrypted) return null;
+      
+      const walletInfo = getWalletInfo();
+      if (!walletInfo || walletInfo.address !== session.address) return null;
+      
+      return {
+        mnemonic: '',
+        privateKey: '',
+        bitcoinAddress: walletInfo.bitcoinAddress,
+        rootstockAddress: walletInfo.rootstockAddress,
+        liquidAddress: walletInfo.liquidAddress,
+        address: session.address,
+        label: session.label || 'Encrypted Wallet',
+      };
+    }
+
+    // Fallback: if a valid encrypted wallet exists and it is not locked, restore minimal session data from wallet info.
+    if (isSessionActive()) {
+      const walletInfo = getWalletInfo();
+      if (!walletInfo) return null;
+      return {
+        mnemonic: '',
+        privateKey: '',
+        bitcoinAddress: walletInfo.bitcoinAddress,
+        rootstockAddress: walletInfo.rootstockAddress,
+        liquidAddress: walletInfo.liquidAddress,
+        address: walletInfo.address,
+        label: walletInfo.label || 'Encrypted Wallet',
+      };
+    }
+
+    return null;
   } catch (error) {
     console.error('Failed to restore session:', error);
     return null;
