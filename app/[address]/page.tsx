@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 import { getProfile, Profile } from '@/lib/profileApi';
-import { User, MapPin, Calendar, Briefcase, Globe, Pen, LoaderCircle, Code, Download, Star, Hash } from 'lucide-react';
+import { User, MapPin, Calendar, Briefcase, Globe, Pen, Code, Download, Star } from 'lucide-react';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from '@/components/SafariOptimizedImage';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -111,8 +111,7 @@ function ProfileDisplay({ profile, isOwnProfile, nostrPublicKey }: {
           )}
           {isOwnProfile && nostrPublicKey && (
             <div className="flex items-center justify-center gap-2 max-w-full truncate">
-              <Hash size={16} />
-              <span className="truncate">Nostr: {nostrPublicKey}</span>
+              <span className="truncate">{nostrPublicKey}</span>
             </div>
           )}
           <div className="flex items-center justify-center gap-2 col-span-1 sm:col-span-2">
