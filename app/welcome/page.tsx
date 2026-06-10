@@ -159,7 +159,7 @@ export default function WelcomePage() {
               </div>
               <CardTitle className="text-2xl text-foreground mb-2">Back Up Your Recovery Phrase</CardTitle>
               <p className="text-muted-foreground">
-                This 24-word phrase is the only way to recover your wallet. Store it safely!
+                This 24-word phrase is the only way to restore your encrypted wallet if browser storage is lost. Write it down offline and keep it private.
               </p>
             </CardHeader>
 
@@ -217,7 +217,7 @@ export default function WelcomePage() {
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2 text-red-400">•</span>
-                    Store it in a safe, offline location
+                    Store it in a safe, offline location like paper or a hardware safe
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2 text-red-400">•</span>

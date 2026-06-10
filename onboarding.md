@@ -86,7 +86,9 @@ graph LR
 // Creates encrypted wallet stored locally
 - Email → Generate Wallet → Encrypt with Passphrase → SessionStorage/LocalStorage
 - Generates: Stacks Address, Bitcoin Address, Nostr Key
-- Backup: Seed phrase shown in Welcome page (one-time, not stored permanently)
+- Backup: 24-word seed phrase shown in Welcome page (one-time, not stored permanently)
+- Recovery guidance: Write the phrase down on paper or into a secure offline backup. Do not store it in screenshots, cloud notes, or share it.
+- Wallet access: This phrase is the only way to restore your encrypted wallet if local browser data is lost. Losing it means permanent loss of the wallet.
 ```
 
 ### Path 2: Mnemonic/Private Key Import
@@ -175,8 +177,10 @@ sequenceDiagram
 2. **Backup Seed Phrase**
    - Display mnemonic (masked option)
    - One-click copy to clipboard
-   - Confirmation toast
-   - **Critical**: User must acknowledge backup
+   - Clear guidance that this is the only wallet backup
+   - Encourage offline storage in one or more secure physical locations
+   - **Critical**: User must acknowledge backup and understand the phrase is required for recovery
+   - Store backup safely and never share it or keep it in cloud storage
    - Button: "Continue to Security"
 
 3. **Security Tips**

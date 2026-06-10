@@ -9,8 +9,8 @@
 
 ## 2. Wallet / auth flow
 
-- Harden wallet connection error handling for Stacks, BTC, and browser wallets
-- Add clear recovery and backup guidance for encrypted wallets
+- Harden wallet connection error handling for Stacks, BTC, and browser wallets ✓
+- Add clear recovery and backup guidance for encrypted wallets ✓
 - Improve session persistence and reconnect behavior after refresh
 
 ## 3. Data reliability
