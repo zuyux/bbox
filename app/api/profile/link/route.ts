@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const { error } = await supabaseAdmin
       .from('profiles')
-      .upsert([payload], { onConflict: ['address'] });
+      .upsert([payload], { onConflict: 'address' });
 
     if (error) {
       console.error('Error saving wallet link proof:', error);

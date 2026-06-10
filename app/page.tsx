@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import GetInModal from '@/components/GetInModal';
 import { Button } from '@/components/ui/button';
+import { H1, Lead } from '@/components/ui/typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowRight } from 'lucide-react';
@@ -65,7 +66,7 @@ const featuredAppsByCategory = Object.entries(
 export default function HomePage() {
   const router = useRouter();
   const [isDragging, setIsDragging] = useState(false);
-  const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
   const [showGetInModal, setShowGetInModal] = useState(false);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
@@ -77,7 +78,7 @@ export default function HomePage() {
   const suppressClickRef = useRef(false);
   const prefersReducedMotionRef = useRef(false);
   const currentAddress = useCurrentAddress();
-  const markImageLoaded = useCallback((appId: number) => {
+  const markImageLoaded = useCallback((appId: string) => {
     setLoadedImages(prev => {
       if (prev[appId]) {
         return prev;
@@ -336,21 +337,21 @@ export default function HomePage() {
       <div className="container mx-auto px-4 pt-20 pb-12">
         {/* Hero Section */}
         <div className="flex flex-col items-center justify-center text-center mb-16 h-[36vh]">
-          <h1 className="title text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent select-text">
+          <H1 className="title mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent select-text">
             Our Open App Store
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-1xl mx-auto select-text">
+          </H1>
+          <Lead className="mb-8 max-w-1xl mx-auto select-text">
             Get milestone-based funding for open-source Bitcoin projects without opaque gatekeepers.
-          </p>
+          </Lead>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600" asChild>
-              <Link href="/apps" className='text-white'>
+            <Link href="/apps">
+              <Button size="lg">
                 Explore
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
             <Link href="/submit" className="text-sm underline">
-              <Button size="lg" variant="secondary" className='cursor-pointer'>
+              <Button size="lg" variant="secondary">
                 Submit Your App
               </Button>
             </Link>

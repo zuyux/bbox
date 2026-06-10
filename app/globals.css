@@ -158,32 +158,107 @@
   --border-secondary: #475569;
 }
 
-html, body {
+html {
   font-family: var(--font-work-sans);
+  color-scheme: light;
+  font-smooth: always;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+}
+
+body {
   margin: 0;
-  padding: 0;
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-work-sans);
+  line-height: 1.75;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-
-
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  :root {
+    font-size: 16px;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-  
-  /* Global text selection styling */
-  ::selection {
-    background-color: white;
-    color: black;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply scroll-m-20 font-semibold tracking-tight text-foreground;
   }
-  
-  ::-moz-selection {
-    background-color: white;
-    color: black;
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  p,
+  ul,
+  ol,
+  blockquote,
+  dl,
+  figure,
+  pre,
+  table {
+    @apply mb-6 leading-7;
+  }
+
+  a {
+    @apply text-accent underline-offset-4 hover:underline;
+  }
+
+  strong {
+    @apply font-semibold;
+  }
+
+  small {
+    @apply text-sm text-muted-foreground;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    @apply font-sans;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  ::selection {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
   }
 }
 
