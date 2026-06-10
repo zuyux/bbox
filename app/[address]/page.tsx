@@ -9,6 +9,7 @@ import { getProfile, Profile } from '@/lib/profileApi';
 import { User, MapPin, Calendar, Briefcase, Globe, Pen, LoaderCircle, Code, Download, Star, Hash } from 'lucide-react';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from '@/components/SafariOptimizedImage';
+import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 
 interface SubmittedApp {
@@ -150,8 +151,16 @@ function BitcoinAppsSection({ apps, loading }: { apps: SubmittedApp[]; loading: 
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <LoaderCircle className="w-6 h-6 animate-spin text-muted-foreground" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="animate-pulse rounded-lg border border-border bg-background p-4 space-y-4">
+              <div className="h-12 w-12 rounded-lg bg-muted/70" />
+              <div className="h-5 w-3/4 bg-muted/70 rounded" />
+              <div className="h-4 w-full bg-muted/70 rounded" />
+              <div className="h-4 w-5/6 bg-muted/70 rounded" />
+              <div className="h-8 w-full bg-muted/70 rounded" />
+            </div>
+          ))}
         </div>
       ) : apps.length === 0 ? (
         <div className="text-center py-8">
@@ -284,8 +293,28 @@ export default function AddressPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <LoaderCircle className="w-8 h-8 animate-spin text-primary" />
+        <div className="mx-auto max-w-4xl space-y-6">
+          <div className="rounded-3xl border border-border bg-card/80 p-6">
+            <div className="grid gap-4 md:grid-cols-[160px_1fr] items-center">
+              <Skeleton className="h-28 w-28 rounded-full" />
+              <div className="space-y-3">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-5 w-1/2" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="rounded-3xl border border-border bg-card/80 p-6 space-y-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-5 w-5/6" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
