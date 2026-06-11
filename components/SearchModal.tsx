@@ -4,7 +4,7 @@ import { X, Search, Code, User, Download, Star, Shield } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from './SafariOptimizedImage';
-import { searchApps, BitcoinApp } from '@/lib/appsUtils';
+import type { BitcoinApp } from '@/lib/appsUtils';
 
 interface SearchModalProps {
   open: boolean;
@@ -38,10 +38,24 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
     { id: 'users' as TabType, label: 'Users', icon: User },
   ];
 
-  // Search apps function using utility
-  const handleSearchApps = useCallback((query: string) => {
-    const results = searchApps(query, 20);
-    setFilteredApps(results);
+  // Search apps function using bbox_apps API
+  const handleSearchApps = useCallback(async (query: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/bbox-apps?search=${encodeURIComponent(query)}`, { cache: 'no-store' });
+      const result = await response.json();
+
+      if (!response.ok || !result?.apps) {
+        throw new Error(result?.error || 'Unable to search apps');
+      }
+
+      setFilteredApps(result.apps);
+    } catch (err) {
+      console.error('Error searching apps:', err);
+      setFilteredApps([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   // Search users function

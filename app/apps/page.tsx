@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import IPFSImage from '@/components/IPFSImage';
 import { extractIPFSHash } from '@/lib/ipfs-utils';
+import type { BitcoinApp } from '@/lib/appsUtils';
+import { getCategoryStats } from '@/lib/appsUtils';
 import { 
   Search, 
   Star, 
@@ -21,7 +23,6 @@ import {
   Globe,
   ArrowRight
 } from 'lucide-react';
-import { getAppsByCategory, getCategoryStats, searchApps } from '@/lib/appsUtils';
 
 const categoryIcons: { [key: string]: typeof Shield } = {
   'Wallet': Shield,
@@ -78,10 +79,38 @@ export default function AppsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [visibleCount, setVisibleCount] = useState(CHUNK_SIZE);
+  const [apps, setApps] = useState<BitcoinApp[]>([]);
+  const [appsLoading, setAppsLoading] = useState(true);
+  const [appsError, setAppsError] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   
-  const categoryStats = useMemo(() => getCategoryStats(), []);
+  const categoryStats = useMemo(() => getCategoryStats(apps), [apps]);
   const categories = useMemo(() => Object.keys(categoryStats), [categoryStats]);
+
+  useEffect(() => {
+    const fetchApps = async () => {
+      try {
+        setAppsLoading(true);
+        setAppsError(null);
+
+        const response = await fetch('/api/bbox-apps', { cache: 'no-store' });
+        const result = await response.json();
+
+        if (!response.ok || !result?.apps) {
+          throw new Error(result?.error || 'Unable to load apps');
+        }
+
+        setApps(result.apps);
+      } catch (error) {
+        console.error('Failed to load apps', error);
+        setAppsError(error instanceof Error ? error.message : 'Unable to load apps');
+      } finally {
+        setAppsLoading(false);
+      }
+    };
+
+    fetchApps();
+  }, []);
 
   const updateCategorySelection = useCallback((nextCategory: string) => {
     setSelectedCategory(nextCategory);
@@ -98,13 +127,18 @@ export default function AppsPage() {
     router.replace(nextUrl, { scroll: false });
   }, [pathname, router, searchParams]);
   
-  const filteredApps = selectedCategory === 'all' 
-    ? searchApps(searchQuery)
-    : getAppsByCategory(selectedCategory).filter(app => 
-        app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
+  const filteredApps = useMemo(() => {
+    const normalizedSearchQuery = searchQuery.toLowerCase();
+    const categoryFiltered = selectedCategory === 'all'
+      ? apps
+      : apps.filter(app => app.category.toLowerCase() === selectedCategory.toLowerCase());
+
+    return categoryFiltered.filter(app =>
+      app.name.toLowerCase().includes(normalizedSearchQuery) ||
+      app.description.toLowerCase().includes(normalizedSearchQuery) ||
+      app.tags.some(tag => tag.toLowerCase().includes(normalizedSearchQuery))
+    );
+  }, [apps, selectedCategory, searchQuery]);
 
   const visibleApps = filteredApps.slice(0, visibleCount);
   const hasMoreApps = visibleCount < filteredApps.length;
@@ -192,6 +226,16 @@ export default function AppsPage() {
             />
           </div>
         </div>
+
+        {appsLoading && (
+          <div className="text-center py-8 text-sm text-muted-foreground">Loading apps...</div>
+        )}
+
+        {appsError && (
+          <div className="rounded-3xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive mb-6">
+            {appsError}
+          </div>
+        )}
 
         {/* Category Pills - 2 Rows */}
         <div className="mb-8 w-full mx-auto">

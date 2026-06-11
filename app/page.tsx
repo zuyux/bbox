@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -13,29 +13,29 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ArrowRight } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import type { BitcoinApp } from '@/lib/appsUtils';
-import { allApps, getCategoryStats, getAppStats } from '@/lib/appsUtils';
+import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 
-// Calculate actual categories from the data
-const calculateCategories = () => {
-  const categoryCount = getCategoryStats();
+const categoryIcons: Record<string, string> = {
+  Wallet: '/icons/wallet.svg',
+  Lightning: '/icons/lightning.svg',
+  Payment: '/icons/payment.svg',
+  Explorer: '/icons/explore.svg',
+  Infrastructure: '/icons/infra.svg',
+  Mining: '/icons/mining.svg',
+  DeFi: '/icons/defi.svg',
+  Social: '/icons/social.svg',
+  Networking: '/icons/network.svg',
+  Identity: '/icons/id.svg',
+  Developer: '/icons/dev.svg',
+  Creator: '/icons/creator.svg',
+  Nostr: '/icons/nostr.svg'
+};
 
-  const categoryIcons: Record<string, string> = {
-    Wallet: '/icons/wallet.svg',
-    Lightning: '/icons/lightning.svg',
-    Payment: '/icons/payment.svg',
-    Explorer: '/icons/explore.svg',
-    Infrastructure: '/icons/infra.svg',
-    Mining: '/icons/mining.svg',
-    DeFi: '/icons/defi.svg',
-    Social: '/icons/social.svg',
-    Networking: '/icons/network.svg',
-    Identity: '/icons/id.svg',
-    Developer: '/icons/dev.svg',
-    Creator: '/icons/creator.svg',
-    Nostr: '/icons/nostr.svg'
-  };
-  const defaultCategoryIcon = '/icons/explore.svg';
+const defaultCategoryIcon = '/icons/explore.svg';
+
+const calculateCategories = (apps: BitcoinApp[]) => {
+  const categoryCount = getCategoryStats(apps);
 
   return Object.entries(categoryCount).map(([name, count]) => ({
     name,
@@ -43,25 +43,6 @@ const calculateCategories = () => {
     count
   }));
 };
-
-const categories = calculateCategories();
-const appStats = getAppStats();
-const duplicatedCategories = [...categories, ...categories];
-
-const featuredAppsByCategory = Object.entries(
-  allApps.reduce<Record<string, BitcoinApp[]>>((acc, app) => {
-    acc[app.category] = acc[app.category] || [];
-    acc[app.category].push(app);
-    return acc;
-  }, {})
-)
-  .map(([category, apps]) => ({
-    category,
-    apps: apps.sort((a, b) => b.rating - a.rating).slice(0, 6),
-    total: apps.length,
-  }))
-  .sort((a, b) => b.total - a.total)
-  .slice(0, 5);
 
 export default function HomePage() {
   const router = useRouter();
@@ -78,6 +59,9 @@ export default function HomePage() {
   const suppressClickRef = useRef(false);
   const prefersReducedMotionRef = useRef(false);
   const currentAddress = useCurrentAddress();
+  const [apps, setApps] = useState<BitcoinApp[]>([]);
+  const [appsLoading, setAppsLoading] = useState(true);
+  const [appsError, setAppsError] = useState<string | null>(null);
   const markImageLoaded = useCallback((appId: string) => {
     setLoadedImages(prev => {
       if (prev[appId]) {
@@ -330,6 +314,56 @@ export default function HomePage() {
   const handleGetInModalClose = useCallback(() => {
     setShowGetInModal(false);
   }, []);
+
+  useEffect(() => {
+    const fetchApps = async () => {
+      try {
+        setAppsLoading(true);
+        setAppsError(null);
+
+        const response = await fetch('/api/bbox-apps', { cache: 'no-store' });
+        const result = await response.json();
+
+        if (!response.ok || !result?.apps) {
+          throw new Error(result?.error || 'Unable to load apps');
+        }
+
+        setApps(result.apps);
+      } catch (error) {
+        console.error('Failed to load apps', error);
+        setAppsError(error instanceof Error ? error.message : 'Unable to load apps');
+      } finally {
+        setAppsLoading(false);
+      }
+    };
+
+    fetchApps();
+  }, []);
+
+  const categories = useMemo(() => calculateCategories(apps), [apps]);
+  const duplicatedCategories = useMemo(() => [...categories, ...categories], [categories]);
+  const appStats = useMemo(() => getAppStats(apps), [apps]);
+  const featuredAppsByCategory = useMemo(() =>
+    Object.entries(
+      apps.reduce<Record<string, BitcoinApp[]>>((acc, app) => {
+        acc[app.category] = acc[app.category] || [];
+        acc[app.category].push(app);
+        return acc;
+      }, {})
+    )
+      .map(([category, categoryApps]) => ({
+        category,
+        apps: categoryApps
+          .slice()
+          .sort((a, b) => b.rating - a.rating)
+          .slice(0, 6),
+        total: categoryApps.length,
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5),
+    [apps]
+  );
+
   return (
     <div className="bg-background l-dotted-grid-background min-h-screen">
       <Navbar />
@@ -357,6 +391,18 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
+
+        {appsError && (
+          <div className="rounded-3xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive mb-8">
+            {appsError}
+          </div>
+        )}
+
+        {appsLoading && (
+          <div className="rounded-3xl border border-border/50 bg-muted/10 p-5 text-center text-sm text-muted-foreground mb-8">
+            Loading apps from the public app database...
+          </div>
+        )}
 
         {/* Categories */}
         <div className="mb-12">

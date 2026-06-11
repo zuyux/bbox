@@ -125,12 +125,12 @@ export function SubmissionComments({ appId, appName }: SubmissionCommentsProps) 
 
   const infoBanner = useMemo(() => {
     if (!address) {
-      return 'Connect Leather or Xverse to sign your reviewer notes.';
+      return 'Connect a Stacks browser wallet to sign your review.';
     }
     if (walletType === 'xverse') {
-      return 'Posting will trigger an Xverse signing prompt for this comment.';
+      return 'Posting will trigger an Xverse signing prompt for this review.';
     }
-    return 'Posting will open a Stacks signature prompt to attest this note.';
+    return 'Posting will open a Stacks signature prompt to attest this review.';
   }, [address, walletType]);
 
   return (
@@ -139,9 +139,9 @@ export function SubmissionComments({ appId, appName }: SubmissionCommentsProps) 
         <div>
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />
-            Reviewer Notes
+            Review Notes
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Signed comments for {appName}</p>
+          <p className="text-sm text-muted-foreground">Signed review comments for {appName}</p>
         </div>
         <Button variant="outline" size="sm" onClick={fetchComments} className="cursor-pointer" disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
@@ -180,12 +180,12 @@ export function SubmissionComments({ appId, appName }: SubmissionCommentsProps) 
           <Textarea
             value={commentValue}
             onChange={(event) => setCommentValue(event.target.value)}
-            placeholder="Share reviewer context, risk assessment, or follow-up steps…"
+            placeholder="Share your review, feedback, or follow-up notes…"
             className="min-h-[120px] border-foreground"
           />
           <div className="flex flex-wrap items-center gap-3 justify-between">
             <span className="text-xs text-muted-foreground">
-              Comment signs with {walletType ?? 'your connected wallet'}.
+              Review will be signed with {walletType ?? 'your connected wallet'}.
             </span>
             <Button
               onClick={handleSubmit}
@@ -194,7 +194,7 @@ export function SubmissionComments({ appId, appName }: SubmissionCommentsProps) 
             >
               {status === 'signing' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {status === 'posting' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {status === 'signing' ? 'Awaiting signature…' : status === 'posting' ? 'Saving…' : 'Sign & Post'}
+              {status === 'signing' ? 'Awaiting signature…' : status === 'posting' ? 'Saving…' : 'Sign & Review'}
             </Button>
           </div>
         </div>

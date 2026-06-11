@@ -16,23 +16,24 @@ export interface BitcoinApp {
 export const allApps: BitcoinApp[] = appsData;
 
 // Get apps by category
-export const getAppsByCategory = (category: string): BitcoinApp[] => {
+export const getAppsByCategory = (category: string, apps: BitcoinApp[] = allApps): BitcoinApp[] => {
   const normalizedCategory = category.toLowerCase();
 
   if (normalizedCategory === 'nostr') {
-    return allApps.filter(app => {
+    return apps.filter(app => {
       const matchesCategory = app.category.toLowerCase() === 'nostr';
       const matchesTags = app.tags.some(tag => tag.toLowerCase() === 'nostr');
       return matchesCategory || matchesTags;
     });
   }
 
-  return allApps.filter(app => app.category.toLowerCase() === normalizedCategory);
+  return apps.filter(app => app.category.toLowerCase() === normalizedCategory);
 };
 
 // Get featured apps (top rated and verified)
-export const getFeaturedApps = (limit: number = 8): BitcoinApp[] => {
-  return allApps
+export const getFeaturedApps = (limit: number = 8, apps: BitcoinApp[] = allApps): BitcoinApp[] => {
+  return apps
+    .slice()
     .sort((a, b) => {
       // Prioritize verified apps, then by rating
       if (a.verified && !b.verified) return -1;
@@ -43,13 +44,13 @@ export const getFeaturedApps = (limit: number = 8): BitcoinApp[] => {
 };
 
 // Search apps
-export const searchApps = (query: string, limit?: number): BitcoinApp[] => {
+export const searchApps = (query: string, apps: BitcoinApp[] = allApps, limit?: number): BitcoinApp[] => {
   if (!query.trim()) {
-    return limit ? allApps.slice(0, limit) : allApps;
+    return limit ? apps.slice(0, limit) : apps;
   }
 
   const searchTerm = query.toLowerCase();
-  const results = allApps
+  const results = apps
     .filter(app => 
       app.name.toLowerCase().includes(searchTerm) ||
       app.description.toLowerCase().includes(searchTerm) ||
@@ -61,13 +62,13 @@ export const searchApps = (query: string, limit?: number): BitcoinApp[] => {
 };
 
 // Get category statistics
-export const getCategoryStats = () => {
+export const getCategoryStats = (apps: BitcoinApp[] = allApps) => {
   const categoryCount: { [key: string]: number } = {};
-  allApps.forEach(app => {
+  apps.forEach(app => {
     categoryCount[app.category] = (categoryCount[app.category] || 0) + 1;
   });
 
-  const nostrCount = allApps.filter(app => {
+  const nostrCount = apps.filter(app => {
     const appCategory = app.category.toLowerCase() === 'nostr';
     const tagMatch = app.tags.some(tag => tag.toLowerCase() === 'nostr');
     return appCategory || tagMatch;
@@ -82,13 +83,13 @@ export const getCategoryStats = () => {
 };
 
 // Get app statistics
-export const getAppStats = () => {
-  const totalApps = allApps.length;
-  const verifiedApps = allApps.filter(app => app.verified).length;
-  const categories = Object.keys(getCategoryStats()).length;
+export const getAppStats = (apps: BitcoinApp[] = allApps) => {
+  const totalApps = apps.length;
+  const verifiedApps = apps.filter(app => app.verified).length;
+  const categories = Object.keys(getCategoryStats(apps)).length;
   
   // Calculate estimated total downloads
-  const totalDownloads = allApps.reduce((sum, app) => {
+  const totalDownloads = apps.reduce((sum, app) => {
     const downloadStr = app.downloads.toLowerCase();
     if (downloadStr.includes('k')) {
       return sum + parseInt(downloadStr) * 1000;
@@ -105,6 +106,6 @@ export const getAppStats = () => {
     verifiedApps,
     categories,
     totalDownloads,
-    averageRating: allApps.reduce((sum, app) => sum + app.rating, 0) / totalApps
+    averageRating: totalApps === 0 ? 0 : apps.reduce((sum, app) => sum + app.rating, 0) / totalApps
   };
 };
