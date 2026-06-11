@@ -512,9 +512,7 @@ export default function HomePage() {
                                   className={`object-cover w-full h-full transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                                 />
                               </div>
-                              <p className="text-sm font-medium text-foreground truncate">{app.name}</p>
-                              <p className="text-xs text-foreground/60 mt-1 truncate">{app.category}</p>
-                            </Link>
+                              <p className="text-sm font-medium text-foreground truncate mb-0">{app.name}</p>                            </Link>
                           </TooltipTrigger>
                           <TooltipContent side="bottom" sideOffset={8} className="bg-background text-foreground max-w-xs text-center border border-foreground/10">
                             <p className="text-xs text-foreground leading-snug mt-1">

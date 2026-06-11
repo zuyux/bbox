@@ -206,12 +206,23 @@ export async function uploadFileToPinata(
  * Get IPFS URL from CID
  * Uses ipfs.io as the default gateway
  */
+const PINATA_GATEWAY_KEY = process.env.NEXT_PUBLIC_PINATA_GATEWAY_KEY || process.env.PINATA_GATEWAY_KEY;
+
 export function getIPFSUrl(cid: string): string {
-  // Use ipfs.io as the primary gateway
-  const gatewayUrl = process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL || 
-                     process.env.PINATA_GATEWAY_URL || 
-                     'https://ipfs.io'; // Default to ipfs.io
-  return `${gatewayUrl}/ipfs/${cid}`;
+  // Use the configured gateway URL or fallback to ipfs.io
+  const gatewayUrl = process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL ||
+                     process.env.PINATA_GATEWAY_URL ||
+                     'https://ipfs.io';
+
+  const cleanCid = cid.replace(/^ipfs:\/\//, '');
+  const url = new URL(`${gatewayUrl.replace(/\/$/, '')}/ipfs/${cleanCid}`);
+
+  if (PINATA_GATEWAY_KEY && gatewayUrl.includes('pinata.cloud')) {
+    url.searchParams.set('pinata_gateway_key', PINATA_GATEWAY_KEY);
+    url.searchParams.set('pinataGatewayKey', PINATA_GATEWAY_KEY);
+  }
+
+  return url.toString();
 }
 
 /**
@@ -227,8 +238,15 @@ export function getIPFSFallbackUrls(cid: string): string[] {
     'https://gateway.pinata.cloud',
     'https://nftstorage.link',
   ];
-  
-  return fallbackGateways.map(gateway => `${gateway}/ipfs/${cid}`);
+
+  return fallbackGateways.map((gateway) => {
+    const url = new URL(`${gateway.replace(/\/$/, '')}/ipfs/${cid}`);
+    if (PINATA_GATEWAY_KEY && gateway.includes('pinata.cloud')) {
+      url.searchParams.set('pinata_gateway_key', PINATA_GATEWAY_KEY);
+      url.searchParams.set('pinataGatewayKey', PINATA_GATEWAY_KEY);
+    }
+    return url.toString();
+  });
 }
 
 /**
@@ -238,14 +256,19 @@ export function getOptimizedIPFSUrl(cid: string, width?: number, height?: number
   const gatewayUrl = process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL || 
                      process.env.PINATA_GATEWAY_URL || 
                      'https://ipfs.io';
-  const baseUrl = `${gatewayUrl}/ipfs/${cid}`;
-  const params = new URLSearchParams();
+  const cleanCid = cid.replace(/^ipfs:\/\//, '');
+  const url = new URL(`${gatewayUrl.replace(/\/$/, '')}/ipfs/${cleanCid}`);
+
+  if (PINATA_GATEWAY_KEY && gatewayUrl.includes('pinata.cloud')) {
+    url.searchParams.set('pinata_gateway_key', PINATA_GATEWAY_KEY);
+    url.searchParams.set('pinataGatewayKey', PINATA_GATEWAY_KEY);
+  }
+
+  if (width) url.searchParams.set('img-width', width.toString());
+  if (height) url.searchParams.set('img-height', height.toString());
+  if (quality) url.searchParams.set('img-quality', quality.toString());
   
-  if (width) params.append('img-width', width.toString());
-  if (height) params.append('img-height', height.toString());
-  if (quality) params.append('img-quality', quality.toString());
-  
-  return params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+  return url.toString();
 }
 
 /**

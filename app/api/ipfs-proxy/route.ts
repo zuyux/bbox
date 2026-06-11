@@ -29,23 +29,37 @@ export async function GET(request: NextRequest) {
     'Cache-Control': 'public, max-age=31536000, immutable, stale-while-revalidate=86400',
   };
 
+  const pinataGatewayKey = process.env.PINATA_GATEWAY_KEY;
+
   for (const gateway of gateways) {
     try {
-      const imageUrl = `${gateway}${ipfsHash}`;
+      let imageUrl = `${gateway}${ipfsHash}`;
+      if (pinataGatewayKey && gateway.includes('gateway.pinata.cloud')) {
+        const url = new URL(imageUrl);
+        url.searchParams.set('pinata_gateway_key', pinataGatewayKey);
+        url.searchParams.set('pinataGatewayKey', pinataGatewayKey);
+        imageUrl = url.toString();
+      }
       console.log(`Trying gateway: ${imageUrl}`);
       
+      const headers: Record<string, string> = {
+        'Accept': 'image/*, */*',
+        'User-Agent': 'Mozilla/5.0 (compatible; SBTC-ImageProxy/1.0)',
+        'Cache-Control': 'max-age=31536000',
+      };
+
+      if (pinataGatewayKey && gateway.includes('gateway.pinata.cloud')) {
+        headers['Pinata-Gateway-Key'] = pinataGatewayKey;
+      }
+
       const imageResponse = await fetch(imageUrl, {
-        headers: {
-          'Accept': 'image/*, */*',
-          'User-Agent': 'Mozilla/5.0 (compatible; SBTC-ImageProxy/1.0)',
-          'Cache-Control': 'max-age=31536000',
-        },
+        headers,
         // Add timeout for slower gateways
         signal: AbortSignal.timeout(10000), // 10 second timeout per gateway
         next: {
           revalidate: 86400,
         },
-      });
+      } as RequestInit);
 
       if (imageResponse.ok) {
         const imageBuffer = await imageResponse.arrayBuffer();

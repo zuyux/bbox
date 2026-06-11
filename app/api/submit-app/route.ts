@@ -1,5 +1,19 @@
+import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
+
+function generateAppId(length = 10) {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let id = '';
+  while (id.length < length) {
+    const bytes = crypto.randomBytes(length - id.length);
+    for (const byte of bytes) {
+      if (id.length >= length) break;
+      id += alphabet[byte % alphabet.length];
+    }
+  }
+  return id;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,57 +39,29 @@ export async function POST(request: NextRequest) {
     const contractNetwork = typeof body.contract_network === 'string' ? body.contract_network.trim() : '';
     const contractAppId = typeof body.contract_app_id === 'number' ? body.contract_app_id : null;
 
-    // Prepare the app data
+    // Prepare the app data with only the known bbox_apps columns.
     const appData: Record<string, unknown> = {
+      id: typeof body.id === 'string' && body.id.trim() ? body.id.trim() : generateAppId(10),
       name: body.name,
       description: body.description,
       category: body.category,
-      tags: body.tags || [],
-      version: body.version || '1.0.0',
-      icon_cid: body.icon_cid || '',
-      website_url: body.website_url || '',
-      github_url: body.github_url || '',
-      documentation_url: body.documentation_url || '',
-      platforms: body.platforms || [],
-      supported_networks: body.supported_networks || [],
-      license: body.license || 'MIT',
-      pricing_model: body.pricing_model || 'free',
-      price_usd: body.price_usd || 0,
-      accepts_lightning: body.accepts_lightning || false,
-      lightning_address: body.lightning_address || '',
-      privacy_policy_url: body.privacy_policy_url || '',
-      terms_of_service_url: body.terms_of_service_url || '',
-      data_collection_summary: body.data_collection_summary || '',
-      open_source: body.open_source !== false,
-      publisher_address: body.publisher_address,
-      publisher_name: body.publisher_name || '',
-      publisher_email: body.publisher_email,
-      status: 'pending',
+      tags: Array.isArray(body.tags)
+        ? body.tags
+        : typeof body.tags === 'string'
+        ? body.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
+        : [],
+      downloads: '0',
+      rating: 0,
       verified: false,
-      featured: false,
-      downloads: 0,
-      rating: 0.0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      link: body.website_url || '',
+      imgcid: body.icon_cid || '',
     };
 
-    if (metadataCid) {
-      appData.metadata_cid = metadataCid;
-    }
-    if (contractTxId) {
-      appData.contract_txid = contractTxId;
-    }
-    if (contractAppId !== null) {
-      appData.contract_app_id = contractAppId;
-    }
-    if (contractNetwork) {
-      appData.contract_network = contractNetwork;
-    }
     // Signatures are logged for debugging only; they are no longer stored on the apps table
 
-    // Insert the app into the database
+    // Insert the app into the Supabase bbox_apps table
     const { data, error } = await supabaseAdmin
-      .from('apps')
+      .from('bbox_apps')
       .insert([appData])
       .select()
       .single();

@@ -26,10 +26,6 @@ export default function AppLoader({ isLoading }: AppLoaderProps) {
       >
         <div className="flex items-center gap-4 mb-8">
           <LoaderCircle className="animate-spin text-primary" size={38} />
-          <div>
-            <p className="text-lg font-semibold text-foreground">Preparing BBOX</p>
-            <p className="text-sm text-muted-foreground">Loading essential resources. This should be quick.</p>
-          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
