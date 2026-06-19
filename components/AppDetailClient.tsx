@@ -233,7 +233,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
             className="p-0 h-auto text-sm text-blue-500 hover:text-blue-600"
             onClick={() => setShowReviewModal(true)}
           >
-            See All Reviews
+            See all reviews / Add your review
             <ArrowRight className="ml-1 h-3 w-3" />
           </Button>
         </div>

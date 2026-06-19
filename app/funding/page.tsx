@@ -434,9 +434,9 @@ export default function FundingDashboardPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-2">Funding Desk</p>
-            <h1 className="text-3xl font-bold">Support Bitcoin apps</h1>
+            <h1 className="text-3xl font-bold">Support open-source apps</h1>
             <p className="text-muted-foreground max-w-2xl">
-              Back builders directly with sBTC, upvote promising apps on-chain.
+              Back builders directly with sBTC and upvote promising verified software on-chain.
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               Showing Supabase submissions (linked to <span className="font-mono">{contractId}</span> when on-chain)

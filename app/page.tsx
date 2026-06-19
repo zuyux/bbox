@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { H1, Lead } from '@/components/ui/typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Blocks, Code2, Coins, Compass, Github, Layers3, ShieldCheck, Sparkles, Store, Users } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import type { BitcoinApp } from '@/lib/appsUtils';
 import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
@@ -33,6 +33,47 @@ const categoryIcons: Record<string, string> = {
 };
 
 const defaultCategoryIcon = '/icons/explore.svg';
+
+const bboxHighlights = [
+  {
+    title: 'Discover sovereign software',
+    description: 'Browse Bitcoin apps, privacy tools, developer utilities, safe AI projects, and off-chain open-source systems in one verified index.',
+    icon: Compass,
+  },
+  {
+    title: 'Fund visible progress',
+    description: 'Support open-source teams through milestone-based funding, public roadmaps, and transparent delivery signals.',
+    icon: Coins,
+  },
+  {
+    title: 'Build with reputation',
+    description: 'Publish your app profile, connect verified identities, and give users a clean way to evaluate your work.',
+    icon: ShieldCheck,
+  },
+];
+
+const ecosystemPillars = [
+  {
+    label: 'Universal registry',
+    detail: 'Publisher-controlled metadata for open-source apps across Bitcoin, other chains, and independent off-chain software.',
+    icon: Store,
+  },
+  {
+    label: 'Builder launchpad',
+    detail: 'Submissions, profiles, media, reviews, and documentation designed for teams shipping in public.',
+    icon: Code2,
+  },
+  {
+    label: 'Funding layer',
+    detail: 'Milestones and escrow-oriented flows that make grants, research, and public-goods funding easier to inspect before money moves.',
+    icon: Layers3,
+  },
+  {
+    label: 'Open-source commons',
+    detail: 'A neutral surface where users, contributors, communities, and DAOs can coordinate around high-integrity software.',
+    icon: Users,
+  },
+];
 
 const calculateCategories = (apps: BitcoinApp[]) => {
   const categoryCount = getCategoryStats(apps);
@@ -368,45 +409,127 @@ export default function HomePage() {
     <div className="bg-background l-dotted-grid-background min-h-screen">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-20 pb-12">
+      <div className="container mx-auto px-4 pt-24 pb-16">
         {/* Hero Section */}
-        <div className="flex flex-col items-center justify-center text-center mb-16 h-[36vh]">
-          <H1 className="title mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent select-text">
-            Our Open App Store
-          </H1>
-          <Lead className="mb-8 max-w-1xl mx-auto select-text">
-            Get milestone-based funding for open-source projects without opaque gatekeepers.
-          </Lead>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/apps">
-              <Button size="lg" className='bg-orange-500 text-foreground hover:text-white hover:bg-orange-400'>
-                Explore
-                <ArrowRight className="ml-2 h-4 w-4" />
+        <section className="mb-16 grid min-h-[64vh] items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="max-w-3xl">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-orange-500/25 bg-orange-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-orange-600 dark:text-orange-300">
+              <Blocks className="h-4 w-4" />
+              HUMANS SANDBOX
+            </div>
+            <H1 className="title mb-6 max-w-4xl text-left text-5xl leading-[0.95] md:text-7xl lg:text-8xl">
+              BBOX is the universal registry for verified open-source apps.
+            </H1>
+            <Lead className="mb-8 max-w-2xl text-left text-base text-muted-foreground md:text-xl">
+              Discover sovereign software, evaluate real developer proof-of-work, and fund builders through transparent milestones instead of opaque gatekeepers.
+            </Lead>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600" asChild>
+                <Link href="/apps">
+                  Explore Apps
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button> 
+              <Button size="lg" variant="secondary" asChild>
+                <Link href="/submit">
+                  Submit Your App
+                </Link>
               </Button>
-            </Link>
-            <Link href="/submit" className="text-sm underline">
-              <Button size="lg" variant="secondary">
-                Submit Your App
+              <Button size="lg" variant="ghost" asChild>
+                <Link href="https://github.com/zuyux/bbox" target="_blank" rel="noreferrer">
+                  <Github className="mr-2 h-4 w-4" />
+                  Source
+                </Link>
               </Button>
-            </Link>
+            </div>
           </div>
-        </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 rounded-lg border border-orange-500/20 bg-orange-500/5 translate-x-3 translate-y-3" aria-hidden="true" />
+            <div className="relative overflow-hidden rounded-lg border border-border bg-card/95 shadow-2xl shadow-black/10">
+              <div className="flex items-center justify-between border-b border-border px-5">
+                  <Sparkles className="h-5 w-5 text-orange-500" />
+                  <p className="font-mono text-xs pt-2">Open App Registry</p>
+              </div>
+              <div className="grid grid-cols-2 gap-px bg-border">
+                <div className="bg-card p-5">
+                  <p className="title text-4xl text-orange-500">{appStats.totalApps}+</p>
+                  <p className="mb-0 text-sm text-muted-foreground">listed apps</p>
+                </div>
+                <div className="bg-card p-5">
+                  <p className="title text-4xl text-orange-500">{categories.length || 13}</p>
+                  <p className="mb-0 text-sm text-muted-foreground">categories</p>
+                </div>
+                <div className="bg-card p-5">
+                  <p className="title text-4xl text-orange-500">BAR</p>
+                  <p className="mb-0 text-sm text-muted-foreground">Bitcoin anchored</p>
+                </div>
+                <div className="bg-card p-5">
+                  <p className="title text-4xl text-orange-500">OSS</p>
+                  <p className="mb-0 text-sm text-muted-foreground">public goods</p>
+                </div>
+              </div>
+              <div className="space-y-3 p-5">
+                {bboxHighlights.map(({ title, description, icon: Icon }) => (
+                  <div key={title} className="flex gap-3 rounded-md border border-border bg-background/70 p-4">
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-orange-500/10 text-orange-500">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <h2 className="mb-1 text-sm font-semibold">{title}</h2>
+                      <p className="mb-0 text-sm leading-6 text-muted-foreground">{description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {appsError && (
-          <div className="rounded-3xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive mb-8">
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive mb-8">
             {appsError}
           </div>
         )}
 
         {appsLoading && (
-          <div className="rounded-3xl border border-border/50 bg-muted/10 p-5 text-center text-sm text-muted-foreground mb-8">
+          <div className="rounded-lg border border-border/50 bg-muted/10 p-5 text-center text-sm text-muted-foreground mb-8">
             Loading apps from the public app database...
           </div>
         )}
 
+        <section className="mb-20">
+          <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.28em] text-orange-500">What BBOX does</p>
+              <h2 className="title text-3xl font-bold md:text-4xl">Discovery, coordination, and funding in one place.</h2>
+            </div>
+            <p className="mb-0 max-w-xl text-sm leading-6 text-muted-foreground">
+              BBOX maps high-integrity open-source software and gives builders a public surface for submissions, reviews, grants, and milestone accountability anchored by the Bitcoin App Registry.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {ecosystemPillars.map(({ label, detail, icon: Icon }) => (
+              <article key={label} className="rounded-lg border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-orange-500/50 hover:shadow-lg">
+                <span className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-md bg-foreground text-background">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <h3 className="mb-2 text-base font-semibold">{label}</h3>
+                <p className="mb-0 text-sm leading-6 text-muted-foreground">{detail}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         {/* Categories */}
         <div className="mb-12">
-          <h2 className="title text-2xl font-bold mb-6">Browse by Category</h2>
+          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.28em] text-orange-500">Explore the map</p>
+              <h2 className="title text-3xl font-bold">Browse by Category</h2>
+            </div>
+            <p className="mb-0 max-w-md text-sm text-muted-foreground">Drag the rail, pick a category, and jump straight into projects building useful sovereign software.</p>
+          </div>
           <div className="relative overflow-hidden">
             <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent z-10" aria-hidden="true" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent z-10" aria-hidden="true" />
@@ -420,7 +543,7 @@ export default function HomePage() {
                 ref={sliderTrackRef}
                 className="category-slider-track"
                 role="list"
-                aria-label="Bitcoin app categories"
+                aria-label="Open-source app categories"
               >
                 {duplicatedCategories.map((category, index) => (
                   <Card
@@ -432,7 +555,7 @@ export default function HomePage() {
                     onKeyDown={(event) => handleCategoryKeyDown(event, category.name)}
                   >
                     <CardContent className="p-4 text-center">
-                      <div className="w-36 h-36 mx-auto mb-3 flex items-center justify-center rounded-full bg-muted/30">
+                      <div className="w-28 h-28 mx-auto mb-3 flex items-center justify-center rounded-md">
                         <Image
                           src={category.iconSrc}
                           alt={`${category.name} icon`}
@@ -442,7 +565,7 @@ export default function HomePage() {
                         />
                       </div>
                       <h3 className="font-medium text-sm mb-1">{category.name}</h3>
-                      <p className="text-xs text-muted-foreground">{category.count} apps</p>
+                      <p className="text-xs text-muted-foreground mb-0">{category.count} apps</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -494,9 +617,9 @@ export default function HomePage() {
                             <Link
                               href={`/apps/${app.id}`}
                               aria-label={`View ${app.name}`}
-                              className="flex flex-col items-center justify-center text-center rounded-3xl border border-border bg-background p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
+                              className="flex flex-col items-center justify-center rounded-lg border border-border bg-background p-4 text-center transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
-                              <div className="relative w-24 h-24 mb-4 rounded-3xl overflow-hidden bg-muted/10 transition-transform duration-200 hover:scale-105">
+                              <div className="relative w-24 h-24 mb-4 overflow-hidden rounded-lg bg-muted/10 transition-transform duration-200 hover:scale-105">
                                 {!isLoaded && (
                                   <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
                                     <span className="h-6 w-6 border-2 border-muted-foreground/30 border-t-orange-500 rounded-full animate-spin" aria-hidden="true" />
@@ -530,7 +653,7 @@ export default function HomePage() {
         </div>
 
         {/* Stats Section */}
-        <div className="bg-background/50 rounded-lg border border-border p-8 mb-12 my-24">
+        <div className="bg-card/85 rounded-lg border border-border p-8 mb-12 my-24 shadow-sm">
           <div className="title grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">{appStats.totalApps}+</div>
@@ -552,20 +675,26 @@ export default function HomePage() {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-8">
-          <h3 className="title text-5xl font-bold mb-8">Join the Next Economy</h3>
-          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            Thousands of developers are building open-source applications for Bitcoin and its Layer-2 ecosystems. Get in.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className='cursor-pointer' asChild>
-              <Link href="/documentation">
-                Developer Guide
-              </Link>
-            </Button>
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-[#fff] cursor-pointer" onClick={handleStartBuilding}>
-              Start Building
-            </Button>
+        <div className="mt-8 overflow-hidden rounded-lg border border-border bg-foreground text-background">
+          <div className="grid gap-8 p-8 md:grid-cols-[1fr_auto] md:items-center md:p-10">
+            <div>
+              <p className="mb-3 text-sm uppercase tracking-[0.28em] text-orange-300">Join the sovereign software commons</p>
+              <h3 className="title mb-4 text-4xl font-bold md:text-5xl">Ship, list, and fund verified open-source software.</h3>
+              <p className="mb-0 max-w-2xl text-sm leading-6 text-background/70 md:text-base">
+                Use BBOX to move from scattered links to a readable public profile: app metadata, source code, milestones, reviews, and funding context together.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
+              <Button size="lg" variant="secondary" className="cursor-pointer" asChild>
+                <Link href="/documentation">
+                  Developer Guide
+                </Link>
+              </Button>
+              <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer" onClick={handleStartBuilding}>
+                Start Building
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

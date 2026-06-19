@@ -1,50 +1,47 @@
-# 🟧 BBOX — Bitcoin Builders Open Extension
+# BBOX: Universal Registry for Verified Software
 
-**BBOX** is a decentralized app directory and funding layer for Bitcoin and its Layer-2 ecosystems.
-It helps users discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and contracts.
+**BBOX** is a universal coordination layer and sovereign registry for high-integrity open-source software.
+It accepts apps that interact with Bitcoin, other chains, or no chain at all: privacy tools, developer utilities, safe AI applications, infrastructure projects, wallets, social protocols, and public-good software.
 
----
+BBOX uses the **Bitcoin App Registry (BAR)** protocol as an immutable coordination anchor. Publishers retain control over their metadata while every canonical registration and update can be audited through a public Bitcoin Layer 1 history.
 
-## 🚀 Vision
+## Vision
 
-BBOX aims to become the **App Store of the Bitcoin economy** — permissionless, open-source, and community-governed.
+BBOX is a parallel distribution and funding infrastructure for software that should remain verifiable, fundable, and permanent.
 
-- Curate and verify apps built on Bitcoin L1 + L2 networks.  
-- Enable milestone-based funding and bounties in BTC, STX, or other Bitcoin-anchored assets.  
-- Provide a unified UX for builders, users, and DAOs to coordinate development transparently.  
-- Support local Bitcoin communities and hackathons through **BBOX Grants**.
+- Register open-source apps across Bitcoin, multi-chain, and off-chain ecosystems.
+- Preserve canonical app metadata through publisher-controlled BAR records.
+- Help users, contributors, investors, and grant committees screen real developer proof-of-work.
+- Coordinate milestone-based funding for public goods, research, and production software.
+- Support specialized work such as Bitcoin L2s, privacy tools, safe AI, and post-quantum Bitcoin research.
 
----
-
-## 🧩 Core Features
+## Core Features
 
 | Feature | Description |
-|----------|-------------|
-| **App Index** | Decentralized registry of Bitcoin and Layer-2 applications. |
-| **Milestone Funding** | Clarity smart contracts release funds only after milestone completion. |
-| **DAO Governance** | Multisig or quadratic voting for project curation and grants. |
-| **Profiles & Badges** | Developer and project verification via GitHub or Stacks ID. |
-| **Bridge SDK** | Integration layer for apps to register metadata or trigger BBOX events. |
-| **Privacy Layer (coming soon)** | Optional zk-proof system for KYC-less funding approvals. |
+| --- | --- |
+| **Universal App Index** | Registry for verified open-source software across chains and independent off-chain tools. |
+| **BAR Anchoring** | Bitcoin App Registry records provide immutable, publisher-controlled app history on Bitcoin L1. |
+| **Milestone Funding** | Smart-contract flows release funds only after visible development stages are completed. |
+| **Developer Proof-of-Work** | Public profiles, source links, reviews, and history help evaluate builder seniority. |
+| **Sovereign Distribution** | A no-gatekeeper directory for software that should remain discoverable and censorship resistant. |
+| **Community Coordination** | A shared surface for users, builders, DAOs, grant programs, and investors to inspect progress. |
 
----
+## Architecture
 
-## 🧱 Architecture
+- **Frontend:** Next.js / React / Tailwind
+- **Contracts:** Clarity on Stacks for current listing and funding flows
+- **Registry:** BAR metadata anchored to Bitcoin L1
+- **Storage:** IPFS + GitHub metadata
+- **Indexing:** BBOX APIs, Hiro APIs, and BAR-compatible indexers
+- **Governance:** Multisig and DAO-oriented grant workflows
 
-- **Frontend:** Next.js / React / Tailwind  
-- **Contracts:** Clarity (Stacks network)  
-- **Storage:** IPFSs + GitHub metadata  
-- **Indexing:** Hiro API + BBOX Registry  
-- **Governance:** sBTC multisig DAO (Zuyux DAO prototype)
-
----
-
-## ⚙️ Setup
+## Setup
 
 ### Prerequisites
-- Node.js ≥ 20  
-- Clarinet ≥ 2.0  
-- Git + pnpm  
+
+- Node.js >= 20
+- Clarinet >= 2.0
+- Git + pnpm or npm
 
 ### Installation
 
@@ -53,36 +50,30 @@ git clone https://github.com/zuyux/bbox.git
 cd bbox
 npm install
 npm run dev
-````
----
+```
 
-## 🧪 Development Roadmap
+## Roadmap
 
-| Phase    | Focus                            | Status         |
-| -------- | -------------------------------- | -------------- |
-| **v0.1** | Static app index + metadata      | ✅ Done         |
-| **v0.2** | Smart contract milestone funding | 🚧 In progress |
-| **v0.3** | DAO governance + grant voting    | 🕒 Planned     |
-| **v1.0** | Fully decentralized BBOX dApp    | 🔜 Q2 2026     |
+| Phase | Focus | Status |
+| --- | --- | --- |
+| **v0.1** | Public app index + metadata | Done |
+| **v0.2** | On-chain listings and milestone funding | In progress |
+| **v0.3** | BAR indexing, grant review, and governance workflows | Planned |
+| **v1.0** | Fully decentralized BBOX registry and funding layer | Planned |
 
----
+## Contributors
 
-## 👥 Contributors
+BBOX is developed by **ZUYUX**, a research and development collective.
 
-BBOX is developed by **ZUYUX** — a research & development collective based in Earth.
 Lead: [@fabohax](https://github.com/fabohax)
 Contributors: [@anthozg](https://github.com/anthozg), [@stackslabs](https://stackslabs.com)
 
----
+## License
 
-## 🪙 License
-
-MIT 2025 zuyux
+MIT 2025 zuyux.
 Free to use, modify, and distribute under open-source terms.
 
----
+## Links
 
-## 🌐 Links
-
-* [bbox.lol](https://bbox.lol)
-* [@zuyuxxyz](https://x.com/zuyuxxyz)
+- [bbox.lol](https://bbox.lol)
+- [@zuyuxxyz](https://x.com/zuyuxxyz)

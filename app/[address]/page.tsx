@@ -156,7 +156,7 @@ function BitcoinAppsSection({ apps, loading }: { apps: SubmittedApp[]; loading: 
       ) : apps.length === 0 ? (
         <div className="text-center py-8">
           <Code className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-muted-foreground">No Bitcoin apps published yet</p>
+          <p className="text-muted-foreground">No open-source apps published yet</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

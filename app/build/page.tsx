@@ -113,10 +113,10 @@ export default function BuildPage() {
       <main className="container mx-auto px-4 pt-16 pb-20">
         <section className="text-center mb-16">
           <p className="text-sm uppercase tracking-[0.35em] text-orange-500 mb-4">Start Building</p>
-          <h1 className="title text-4xl md:text-5xl font-bold mb-6">Everything You Need to Ship on Bitcoin</h1>
+          <h1 className="title text-4xl md:text-5xl font-bold mb-6">Everything You Need to Ship Sovereign Software</h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Explore the definitive documentation for Bitcoin Layer 1 and Layer 2 development. These resources cover nodes,
-            wallets, channel protocols, scaling systems, and the SDKs that power production apps in the BBOX ecosystem.
+            Start with the Bitcoin Layer 1 and Layer 2 foundations that anchor BBOX, then extend into the wallets,
+            protocols, scaling systems, and SDKs that power production sovereign apps.
           </p>
         </section>
 
@@ -164,7 +164,7 @@ export default function BuildPage() {
             <CardHeader>
               <CardTitle className="text-2xl">Share Your Favorite Stack</CardTitle>
               <CardDescription>
-                Missing a guide or SDK? Let us know so every builder hitting /build lands on the most current map of the Bitcoin stack.
+                Missing a guide or SDK? Let us know so every builder hitting /build lands on the most current map of sovereign software infrastructure.
               </CardDescription>
             </CardHeader>
             <CardContent>

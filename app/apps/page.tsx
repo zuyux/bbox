@@ -219,7 +219,7 @@ export default function AppsPage() {
           <div className="relative max-w-4xl mx-auto">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Search Bitcoin Apps..."
+              placeholder="Search open-source apps..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-12 h-12 text-base rounded-xl bg-muted/50 border-0 placeholder:text-foreground/50"

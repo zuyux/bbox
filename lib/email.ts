@@ -82,13 +82,13 @@ export const emailTemplates = {
       <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:'Jersey 10',cursive;text-align:center;max-width:480px;margin:auto;">
         <h1 style="font-size:2rem;font-weight:700;margin-bottom:12px;letter-spacing:1px;">Welcome to the BBOX Waitlist!</h1>
         <p style="font-size:1.1rem;margin-bottom:18px;">Hey <b>${email}</b>,</p>
-        <p style="font-size:1rem;margin-bottom:18px;">We're excited to have you join the revolution in Bitcoin applications and digital innovation.<br />
+        <p style="font-size:1rem;margin-bottom:18px;">We're excited to have you join the registry for verified open-source software and digital sovereignty.<br />
         You'll be the first to know about exclusive features, updates, and early access opportunities.</p>
         <div style="margin:24px 0;">
           <a href="https://bbox.app" style="display:inline-block;padding:12px 32px;background:#ff006a;color:#fff;border-radius:8px;font-weight:600;text-decoration:none;font-size:1.1rem;box-shadow:0 2px 8px #0002;">Visit BBOX</a>
         </div>
         <hr style="border:none;border-top:1px solid #333;margin:32px 0;" />
-        <p style="color:#898989;font-size:13px;">BBOX &mdash; The Open Bitcoin App Store</p>
+        <p style="color:#898989;font-size:13px;">BBOX &mdash; The Universal Registry for Verified Software</p>
       </div>
     `
   }),
@@ -128,7 +128,7 @@ export const emailTemplates = {
           <p style="margin:0;color:#ff6b6b;"><strong>⚠️ Important Security Notice:</strong></p>
           <p style="margin:8px 0 0 0;">Keep your mnemonic/seed phrase safe. Never share it with anyone. This is the only way to recover your wallet.</p>
         </div>
-        <p style="color:#898989;font-size:13px;">BBOX &mdash; The Open Bitcoin App Store</p>
+        <p style="color:#898989;font-size:13px;">BBOX &mdash; The Universal Registry for Verified Software</p>
       </div>
     `
   }),

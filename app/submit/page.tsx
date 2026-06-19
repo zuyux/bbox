@@ -101,13 +101,19 @@ const PLATFORMS = [
 ];
 
 const NETWORKS = [
+  'None / Off-chain',
   'Bitcoin',
   'Lightning Network',
   'Stacks',
   'Liquid Network',
   'RGB Protocol',
   'Ordinals',
-  'Runes'
+  'Runes',
+  'Ethereum',
+  'Solana',
+  'Nostr',
+  'AI / Local Models',
+  'Other'
 ];
 
 const LICENSES = [
@@ -520,9 +526,9 @@ export default function PublishPage() {
           {/* Header */}
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="title text-3xl font-bold mb-2">Publish Your Bitcoin App</h1>
+              <h1 className="title text-3xl font-bold mb-2">Publish Your Open-Source App</h1>
               <p className="text-muted-foreground">
-                Submit your application to the Bitcoin app directory. All submissions are reviewed before going live. You&apos;ll receive a confirmation email once submitted.
+                Submit your application to the universal BBOX registry. Bitcoin, multi-chain, privacy, developer, safe AI, and off-chain open-source tools are welcome.
               </p>
             </div>
             <Button
@@ -717,7 +723,7 @@ export default function PublishPage() {
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="Bitcoin Wallet"
+                      placeholder="Sovereign Notes"
                       required
                     />
                   </div>
@@ -743,7 +749,7 @@ export default function PublishPage() {
                     id="description"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    placeholder="A secure, self-custodial Bitcoin wallet with Lightning Network support..."
+                    placeholder="An open-source privacy tool, developer utility, safe AI app, or chain-integrated product with verifiable source code..."
                     rows={4}
                     required
                   />

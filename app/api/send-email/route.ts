@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
                   <li style="margin: 8px 0;">Our team will review your submission within 24-48 hours</li>
                   <li style="margin: 8px 0;">We'll verify all links and metadata</li>
                   <li style="margin: 8px 0;">You'll receive an email once your app is approved</li>
-                  <li style="margin: 8px 0;">Your app will then be live on BBOX for the Bitcoin community!</li>
+                  <li style="margin: 8px 0;">Your app will then be live on BBOX for the sovereign software community!</li>
                 </ul>
               </div>
 
@@ -78,10 +78,10 @@ export async function POST(request: NextRequest) {
 
             <div style="background: #18181b; color: #888; padding: 25px 30px; text-align: center;">
               <p style="margin: 0; font-size: 13px;">
-                <strong style="color: #ff006a;">BBOX</strong> — The Open Bitcoin App Store
+                <strong style="color: #ff006a;">BBOX</strong> — The Universal Registry for Verified Software
               </p>
               <p style="margin: 10px 0 0 0; font-size: 12px;">
-                Building the future of Bitcoin applications, one app at a time.
+                Building permanent coordination infrastructure for open-source software.
               </p>
             </div>
           </body>

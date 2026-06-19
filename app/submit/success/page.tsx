@@ -94,7 +94,7 @@ export default function SubmitSuccessPage() {
                     <div>
                       <h3 className="font-semibold mb-1">Go Live!</h3>
                       <p className="text-sm text-muted-foreground">
-                        Once approved, your app will be live on BBOX and discoverable by the entire Bitcoin community. You can update it anytime from your dashboard.
+                        Once approved, your app will be live on BBOX and discoverable by the sovereign software community. You can update it anytime from your dashboard.
                       </p>
                     </div>
                   </div>
@@ -118,7 +118,7 @@ export default function SubmitSuccessPage() {
                   </li>
                   <li className="flex gap-2">
                     <span className="text-orange-500">•</span>
-                    <span>Join our community to connect with other Bitcoin builders</span>
+                    <span>Join our community to connect with other open-source builders</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-orange-500">•</span>

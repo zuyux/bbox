@@ -1,14 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Loader2, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Loader2, Star as StarIcon, X } from 'lucide-react';
 import { CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useWallet } from '@/components/WalletProvider';
+import { signAppReview } from '@/lib/commentSigning';
 
 interface ReviewComment {
   id: number | string;
   app_id: number;
-  address: string;
-  message: string;
+  rating: number;
+  reviewer_address: string;
+  review_text: string;
   wallet_type?: string | null;
   created_at?: string | null;
 }
@@ -39,15 +45,47 @@ const formatTimestamp = (value?: string | null) => {
 };
 
 export default function ReviewModal({ open, appId, appName, onClose }: ReviewModalProps) {
+  const { address, walletType } = useWallet();
   const [comments, setComments] = useState<ReviewComment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   const numericAppId = useMemo(() => {
     const parsed = Number(appId);
     return Number.isNaN(parsed) ? null : parsed;
   }, [appId]);
+
+  const loadComments = useCallback(async (signal?: { cancelled: boolean }) => {
+    if (numericAppId === null) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`/api/app-reviews?appId=${numericAppId}`);
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error || 'Unable to load reviews');
+      }
+
+      const payload = await response.json();
+      if (!signal?.cancelled) {
+        setComments(payload.reviews || []);
+      }
+    } catch (err) {
+      if (!signal?.cancelled) {
+        const message = err instanceof Error ? err.message : 'Unable to load reviews';
+        setError(message);
+      }
+    } finally {
+      if (!signal?.cancelled) setLoading(false);
+    }
+  }, [numericAppId]);
 
   useEffect(() => {
     if (!open) return;
@@ -58,37 +96,12 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
       return;
     }
 
-    let isCancelled = false;
-    const loadComments = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await fetch(`/api/comments?appId=${numericAppId}`);
-        if (!response.ok) {
-          const payload = await response.json().catch(() => null);
-          throw new Error(payload?.error || 'Unable to load reviews');
-        }
-
-        const payload = await response.json();
-        if (!isCancelled) {
-          setComments(payload.comments || []);
-        }
-      } catch (err) {
-        if (!isCancelled) {
-          const message = err instanceof Error ? err.message : 'Unable to load reviews';
-          setError(message);
-        }
-      } finally {
-        if (!isCancelled) setLoading(false);
-      }
-    };
-
-    loadComments();
+    const cancelToken = { cancelled: false };
+    loadComments(cancelToken);
     return () => {
-      isCancelled = true;
+      cancelToken.cancelled = true;
     };
-  }, [open, numericAppId]);
+  }, [open, numericAppId, loadComments]);
 
   useEffect(() => {
     if (!open) return;
@@ -114,6 +127,64 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
     };
   }, [open, onClose]);
 
+  const handleSubmit = async () => {
+    if (!numericAppId) return;
+    if (!address || !walletType) {
+      setSubmitError('Connect a Stacks browser wallet to leave a signed review.');
+      return;
+    }
+    if (rating < 1 || rating > 5) {
+      setSubmitError('Choose a rating between 1 and 5 stars.');
+      return;
+    }
+    if (!reviewText.trim()) {
+      setSubmitError('Write a short review before submitting.');
+      return;
+    }
+
+    setSubmitError(null);
+    setSubmitting(true);
+
+    try {
+      const signature = await signAppReview({
+        appId: numericAppId,
+        rating,
+        reviewText: reviewText.trim(),
+        address,
+        walletType,
+      });
+
+      const response = await fetch('/api/app-reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appId: numericAppId,
+          reviewerAddress: address,
+          rating,
+          reviewText: reviewText.trim(),
+          walletType: signature.walletType,
+          signature: signature.signature,
+          signedPayload: signature.signedPayload,
+          publicKey: signature.publicKey,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error || 'Unable to submit review');
+      }
+
+      setRating(0);
+      setReviewText('');
+      await loadComments();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to submit review';
+      setSubmitError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (!open) return null;
 
   return (
@@ -135,6 +206,54 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
         </div>
 
         <CardContent className="space-y-4 p-5">
+          <div className="rounded-3xl border border-border/70 bg-muted/50 p-5 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="review-rating" className="text-sm font-semibold">
+                Your rating
+              </Label>
+              <div className="flex items-center gap-2" id="review-rating">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    className={`rounded-full p-2 transition ${star <= rating ? 'bg-yellow-500 text-white' : 'bg-surface text-muted-foreground hover:bg-muted'}`}
+                    aria-label={`${star} star${star > 1 ? 's' : ''}`}
+                  >
+                    <StarIcon className="h-5 w-5" />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="review-text" className="text-sm font-semibold">
+                Your review
+              </Label>
+              <Textarea
+                id="review-text"
+                value={reviewText}
+                onChange={(event) => setReviewText(event.target.value)}
+                placeholder="Share your experience with this app..."
+                rows={4}
+              />
+            </div>
+
+            {submitError && (
+              <div className="rounded-xl border border-red-700/70 bg-red-50 p-3 text-sm text-red-700">
+                {submitError}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                Reviews are signed with your connected wallet to verify authenticity.
+              </p>
+              <Button onClick={handleSubmit} disabled={submitting}>
+                {submitting ? 'Submitting review…' : 'Sign & submit review'}
+              </Button>
+            </div>
+          </div>
+
           {loading ? (
             <div className="flex items-center justify-center py-24 text-muted-foreground">
               <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading reviews…
@@ -147,7 +266,7 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
             <div className="rounded-xl border border-dashed border-muted p-6 text-sm text-muted-foreground text-center space-y-3">
               <p>No reviews have been published for this app yet.</p>
               <p className="text-xs text-muted-foreground/80">
-                If you are reviewing this app, open the app preview and leave a signed review note.
+                Leave the first signed review using the form above.
               </p>
             </div>
           ) : (
@@ -155,10 +274,20 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
               {comments.map((comment) => (
                 <div key={comment.id} className="rounded-2xl border border-border/70 p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-sm font-medium text-foreground">{formatAddress(comment.address)}</p>
+                    <div>
+                      <div className="flex items-center gap-1 text-yellow-500">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <StarIcon
+                            key={star}
+                            className={`w-3.5 h-3.5 ${star <= comment.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-sm font-medium text-foreground mt-1">{formatAddress(comment.reviewer_address)}</p>
+                    </div>
                     <p className="text-xs text-muted-foreground">{formatTimestamp(comment.created_at)}</p>
                   </div>
-                  <p className="mt-3 text-sm leading-relaxed text-foreground whitespace-pre-wrap">{comment.message}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-foreground whitespace-pre-wrap">{comment.review_text}</p>
                 </div>
               ))}
             </div>

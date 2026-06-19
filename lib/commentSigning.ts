@@ -200,6 +200,14 @@ export const signStacksMessage = async (
   };
 };
 
+interface SignReviewArgs {
+  appId: number;
+  rating: number;
+  reviewText: string;
+  address: string;
+  walletType: SupportedWalletType;
+}
+
 export const signSubmissionComment = async ({
   appId,
   message,
@@ -209,5 +217,28 @@ export const signSubmissionComment = async ({
   const payload = buildPayload(appId, address, message);
 
   // Default to Stacks-compatible signing (Leather, Hiro, Xverse, etc.)
+  return signStacksMessage(payload, walletType);
+};
+
+const buildReviewPayload = (appId: number, rating: number, reviewText: string, address: string) => {
+  return JSON.stringify({
+    action: 'bbox_app_review',
+    appId,
+    rating,
+    reviewText,
+    address,
+    timestamp: new Date().toISOString(),
+    origin: typeof window !== 'undefined' ? window.location.origin : 'bbox',
+  });
+};
+
+export const signAppReview = async ({
+  appId,
+  rating,
+  reviewText,
+  address,
+  walletType,
+}: SignReviewArgs): Promise<CommentSignatureResult> => {
+  const payload = buildReviewPayload(appId, rating, reviewText, address);
   return signStacksMessage(payload, walletType);
 };

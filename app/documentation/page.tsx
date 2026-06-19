@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
   title: 'BBOX Documentation',
-  description: 'Learn what BBOX is, how it works, and how to contribute to the open Bitcoin app store.'
+  description: 'Learn what BBOX is, how it works, and how to contribute to the universal registry for verified software.'
 };
 
 const sections = [
@@ -15,7 +15,7 @@ const sections = [
   },
   {
     title: 'Open Discovery',
-    body: 'Browse verified, community-reviewed Bitcoin apps with rich metadata and direct source links.'
+    body: 'Browse verified, community-reviewed open-source apps with rich metadata and direct source links.'
   },
   {
     title: 'Developer Friendly',
@@ -50,8 +50,8 @@ export default function DocumentationPage() {
           <p className="text-sm uppercase tracking-[0.35em] text-orange-500 mb-4">Documentation</p>
           <h1 className="title text-4xl md:text-5xl font-bold mb-6">BBOX in Plain English</h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            BBOX is an open, community-run app store for the Bitcoin stack. It combines discovery, on-chain reputation,
-            and milestone-based funding so the best ideas get attention and builders remain accountable.
+            BBOX is an open, community-run registry for verified software. It combines discovery, on-chain reputation,
+            and milestone-based funding so useful open-source projects get attention and builders remain accountable.
           </p>
         </section>
 
