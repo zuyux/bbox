@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from 'next/link';
-import { useWallet } from './WalletProvider';
+import { persistCachedWalletState, useWallet } from './WalletProvider';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -45,6 +45,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   ];
 
   const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' = 'imported') => {
+    persistCachedWalletState(newAddress, type);
     setAddress(newAddress);
     setWalletType(type);
     console.log('[GetInModal] Persisted wallet session via WalletProvider', { newAddress, type });
@@ -89,8 +90,6 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 
         if (stxAddress) {
           persistWalletContext(stxAddress, 'xverse');
-          localStorage.setItem('walletAddress', stxAddress);
-          localStorage.setItem('walletType', 'xverse');
           if (onClose) onClose();
           router.push(`/${stxAddress}`);
           return;
@@ -146,8 +145,6 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 
       if (stxAddress) {
         persistWalletContext(stxAddress, 'leather');
-        localStorage.setItem('walletAddress', stxAddress);
-        localStorage.setItem('walletType', 'leather');
         if (onClose) onClose();
         router.push(`/${stxAddress}`);
         return;
@@ -552,4 +549,3 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     </div>
   );
 }
-

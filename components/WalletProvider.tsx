@@ -3,6 +3,9 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 
 export type WalletType = 'leather' | 'xverse' | 'imported';
 
+const WALLET_ADDRESS_STORAGE_KEY = 'walletAddress';
+const WALLET_TYPE_STORAGE_KEY = 'walletType';
+
 interface WalletContextType {
   address: string | null;
   setAddress: (address: string | null) => void;
@@ -12,19 +15,50 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
+const normalizeWalletType = (value: string | null): WalletType | null => {
+  return value === 'leather' || value === 'xverse' || value === 'imported'
+    ? value
+    : null;
+};
+
+export const getCachedWalletState = () => {
+  if (typeof window === 'undefined') {
+    return { address: null, walletType: null };
+  }
+
+  return {
+    address: localStorage.getItem(WALLET_ADDRESS_STORAGE_KEY),
+    walletType: normalizeWalletType(localStorage.getItem(WALLET_TYPE_STORAGE_KEY)),
+  };
+};
+
+export const persistCachedWalletState = (address: string | null, walletType: WalletType | null) => {
+  if (typeof window === 'undefined') return;
+
+  if (address) {
+    localStorage.setItem(WALLET_ADDRESS_STORAGE_KEY, address);
+  } else {
+    localStorage.removeItem(WALLET_ADDRESS_STORAGE_KEY);
+  }
+
+  if (walletType) {
+    localStorage.setItem(WALLET_TYPE_STORAGE_KEY, walletType);
+  } else {
+    localStorage.removeItem(WALLET_TYPE_STORAGE_KEY);
+  }
+
+  window.dispatchEvent(new Event('bbox-wallet-update'));
+};
+
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [address, setAddress] = useState<string | null>(null);
-  const [walletType, setWalletType] = useState<WalletType | null>(null);
+  const [address, setAddress] = useState<string | null>(() => getCachedWalletState().address);
+  const [walletType, setWalletType] = useState<WalletType | null>(() => getCachedWalletState().walletType);
 
   // Persist wallet address for Xverse and Leather
   const restoreWalletState = () => {
     if (typeof window === 'undefined') return;
 
-    const savedAddress = localStorage.getItem('walletAddress');
-    const rawSavedType = localStorage.getItem('walletType');
-    const savedType = rawSavedType === 'leather' || rawSavedType === 'xverse' || rawSavedType === 'imported'
-      ? (rawSavedType as WalletType)
-      : null;
+    const { address: savedAddress, walletType: savedType } = getCachedWalletState();
 
     setAddress(savedAddress);
     setWalletType(savedType);
@@ -35,30 +69,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     const handleStorage = (event: StorageEvent) => {
       if (event.storageArea !== localStorage) return;
-      if (event.key === 'walletAddress' || event.key === 'walletType') {
+      if (event.key === WALLET_ADDRESS_STORAGE_KEY || event.key === WALLET_TYPE_STORAGE_KEY) {
         restoreWalletState();
       }
     };
 
+    window.addEventListener('bbox-wallet-update', restoreWalletState);
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('bbox-wallet-update', restoreWalletState);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []); // Intentionally empty - only run on mount to restore saved address
 
   useEffect(() => {
-    if (address) {
-      localStorage.setItem('walletAddress', address);
-    } else {
-      localStorage.removeItem('walletAddress');
-    }
-  }, [address]);
-
-  useEffect(() => {
-    if (walletType) {
-      localStorage.setItem('walletType', walletType);
-    } else {
-      localStorage.removeItem('walletType');
-    }
-  }, [walletType]);
+    persistCachedWalletState(address, walletType);
+  }, [address, walletType]);
 
   return (
     <WalletContext.Provider value={{ address, setAddress, walletType, setWalletType }}>
