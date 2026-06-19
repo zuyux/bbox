@@ -23,7 +23,7 @@ export default function UserModal({ onClose }: UserModalProps) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [usernameLoader, setUsernameLoader] = useState<boolean>(false);
   const router = useRouter();
-  const currentAddress = address;
+  const currentAddress = useRef(address).current;
   const modalRef = useRef<HTMLDivElement>(null);
   // Close on outside click
   useEffect(() => {
@@ -187,17 +187,9 @@ export default function UserModal({ onClose }: UserModalProps) {
     <div className="fixed top-7 right-1 z-[200]">
       <div ref={modalRef} className="relative rounded-3xl p-4 w-[340px] flex flex-col items-center shadow-xl pointer-events-auto z-[201] opacity-0 translate-y-[-24px] animate-getinmodal backdrop-blur-md border bg-white dark:bg-black border-gray-200 dark:border-white/20 text-gray-900 dark:text-white">
         <div className="flex items-center w-full mb-6">
-          {/* SUBMIT button on the left */}
-          <button
-            onClick={() => { onClose(); router.push('/submit'); }}
-            className="px-6 py-1.5 bg-background/10 border border-foreground/50 text-foreground text-xs font-medium rounded-lg hover:bg-foreground hover:text-background transition-all duration-200 cursor-pointer select-none mr-3"
-          >
-            SUBMIT
-          </button>
-          
           <Link
             href={`/${currentAddress}`}
-            className="title mr-4 text-right text-gray-900 dark:text-white text-xl font-bold tracking-wider flex-1 cursor-pointer select-none"
+            className="title mr-4 text-left text-gray-900 dark:text-white text-xl font-bold tracking-wider flex-1 cursor-pointer select-none"
             onClick={onClose}
           >
             {usernameLoader ? (

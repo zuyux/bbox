@@ -272,7 +272,7 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
             <div className="rounded-xl border border-dashed border-border/60 p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold">Fuel this builder</p>
+                  <p className="text-sm font-semibold">Support this app</p>
                   <p className="text-xs text-muted-foreground">
                     Send sBTC directly to support {app.publisher_name || app.name}.
                   </p>

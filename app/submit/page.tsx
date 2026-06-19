@@ -37,6 +37,7 @@ import { uploadFileToPinata, getIPFSUrl } from '@/lib/pinataUpload';
 import { useWallet } from '@/components/WalletProvider';
 import { signStacksMessage, type StacksSignatureResult } from '@/lib/commentSigning';
 import { uploadAppMetadataToIPFS, validateAppMetadata, createMetadataFromFormData } from '@/lib/ipfs-metadata';
+import { isDeveloperModeEnabled } from '@/lib/developerMode';
 
 // Extend Window interface for Stacks wallet
 declare global {
@@ -147,9 +148,22 @@ export default function PublishPage() {
   const [metadataCid, setMetadataCid] = useState<string | null>(null);
   const [contractTxId, setContractTxId] = useState<string | null>(null);
   const [showGetInModal, setShowGetInModal] = useState(false);
+  const [developerMode, setDeveloperMode] = useState<boolean | null>(null);
   const effectiveListingFee = listingFee ?? DEFAULT_LISTING_FEE;
   const isFallbackListingFee = listingFeeSource === 'fallback';
   const listingFeeDisplay = formatListingFee(effectiveListingFee.amount, effectiveListingFee.token);
+
+  useEffect(() => {
+    const syncDeveloperMode = () => setDeveloperMode(isDeveloperModeEnabled());
+    syncDeveloperMode();
+    window.addEventListener('storage', syncDeveloperMode);
+    window.addEventListener('bbox-developer-mode-change', syncDeveloperMode);
+
+    return () => {
+      window.removeEventListener('storage', syncDeveloperMode);
+      window.removeEventListener('bbox-developer-mode-change', syncDeveloperMode);
+    };
+  }, []);
 
   useEffect(() => {
     setSignatureResult(null);
@@ -507,6 +521,35 @@ export default function PublishPage() {
     setShowGetInModal(false);
     router.push('/');
   };
+
+  if (developerMode === null) {
+    return (
+      <div className="bg-background min-h-screen">
+        <Navbar />
+      </div>
+    );
+  }
+
+  if (developerMode === false) {
+    return (
+      <div className="bg-background min-h-screen">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-28 pb-12">
+          <Card className="mx-auto max-w-xl border-border bg-card">
+            <CardHeader>
+              <CardTitle>Developer Mode is off</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
+              <p>Publishing tools are hidden for the everyday app store experience. Turn on Developer Mode in Settings when you want to submit an app.</p>
+              <Button asChild className="w-full bg-orange-500 text-white hover:bg-orange-600">
+                <Link href="/settings#developer-mode">Open Settings</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentAddress) {
     return (

@@ -18,8 +18,8 @@ const sections = [
     body: 'Browse verified, community-reviewed open-source apps with rich metadata and direct source links.'
   },
   {
-    title: 'Developer Friendly',
-    body: 'Submit apps, attach on-chain identities, and integrate wallets through our SDKs and APIs.'
+    title: 'Readable App Records',
+    body: 'Review source links, publisher identity, funding context, and app metadata from one place.'
   }
 ];
 
@@ -32,7 +32,7 @@ const howItWorks = [
   {
     step: '2',
     title: 'Define milestones',
-    detail: 'Break work into reviewable checkpoints. BBOX escrow protects both builders and funders.'
+    detail: 'Break work into reviewable checkpoints. BBOX escrow protects both publishers and funders.'
   },
   {
     step: '3',
@@ -51,7 +51,7 @@ export default function DocumentationPage() {
           <h1 className="title text-4xl md:text-5xl font-bold mb-6">BBOX in Plain English</h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             BBOX is an open, community-run registry for verified software. It combines discovery, on-chain reputation,
-            and milestone-based funding so useful open-source projects get attention and builders remain accountable.
+            and milestone-based funding so useful open-source projects get attention and publishers remain accountable.
           </p>
         </section>
 
@@ -84,14 +84,14 @@ export default function DocumentationPage() {
         <section className="mb-20">
           <div className="grid gap-8 md:grid-cols-2">
             <div className="border border-border rounded-2xl p-8 bg-card">
-              <h2 className="title text-2xl font-semibold mb-4">For Builders</h2>
+              <h2 className="title text-2xl font-semibold mb-4">For Publishers</h2>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li>• Showcase apps with media assets, repos, and milestone history.</li>
                 <li>• Connect verified wallets and identities to earn trust.</li>
                 <li>• Receive staged payouts once reviewers confirm delivery.</li>
               </ul>
               <Button className="mt-6 bg-orange-500 hover:bg-orange-600" asChild>
-                <Link href="/submit">Submit an App</Link>
+                <Link href="/settings#developer-mode">Open Developer Mode</Link>
               </Button>
             </div>
             <div className="border border-border rounded-2xl p-8 bg-card">

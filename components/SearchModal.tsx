@@ -20,7 +20,7 @@ interface UserProfile {
   tagline?: string;
 }
 
-type TabType = 'apps' | 'developers' | 'users';
+type TabType = 'apps' | 'users';
 
 export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -29,12 +29,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredApps, setFilteredApps] = useState<BitcoinApp[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [developers, setDevelopers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(false);
 
   const tabs = [
     { id: 'apps' as TabType, label: 'Apps', icon: Code },
-    { id: 'developers' as TabType, label: 'Developers', icon: User },
     { id: 'users' as TabType, label: 'Users', icon: User },
   ];
 
@@ -84,32 +82,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
     }
   }, []);
 
-  // Search developers function (same as users for now)
-  const searchDevelopers = useCallback(async (query: string) => {
-    try {
-      setLoading(true);
-      let queryBuilder = supabase
-        .from('profiles')
-        .select('address, username, display_name, avatar_url, avatar_cid, tagline')
-        .eq('profile_public', true)
-        .order('username', { ascending: true });
-
-      if (query.trim()) {
-        queryBuilder = queryBuilder.or(`username.ilike.%${query}%,display_name.ilike.%${query}%,tagline.ilike.%${query}%`);
-      }
-
-      const { data, error } = await queryBuilder.limit(20);
-      
-      if (error) throw error;
-      
-      setDevelopers(data || []);
-    } catch (err) {
-      console.error('Error fetching developers:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -118,7 +90,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
     if (!query.trim()) {
       setFilteredApps([]);
       setUsers([]);
-      setDevelopers([]);
       setLoading(false);
       return;
     }
@@ -126,9 +97,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
     switch (activeTab) {
       case 'apps':
         handleSearchApps(query);
-        break;
-      case 'developers':
-        searchDevelopers(query);
         break;
       case 'users':
         searchUsers(query);
@@ -143,7 +111,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
     if (!searchQuery.trim()) {
       setFilteredApps([]);
       setUsers([]);
-      setDevelopers([]);
       setLoading(false);
       return;
     }
@@ -151,9 +118,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
     switch (tabId) {
       case 'apps':
         handleSearchApps(searchQuery);
-        break;
-      case 'developers':
-        searchDevelopers(searchQuery);
         break;
       case 'users':
         searchUsers(searchQuery);
@@ -200,7 +164,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search apps, developers, users..."
+              placeholder="Search apps and users..."
               value={searchQuery}
               onChange={handleSearchChange}
               className="flex-1 bg-transparent text-foreground text-lg placeholder:text-foreground/50 outline-none"
@@ -303,56 +267,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                     ) : filteredApps.length === 0 ? (
                       <div className="text-foreground text-center py-8">
                         No apps found matching your search
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              )}
-
-              {/* Developers Tab */}
-              {activeTab === 'developers' && (
-                <div className="p-4">
-
-                  <div className="space-y-1">
-                    {searchQuery.trim() && developers.map((dev) => (
-                      <Link
-                        key={dev.address}
-                        href={`/${dev.address}`}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 cursor-pointer group transition-all duration-200"
-                        onClick={onClose}
-                      >
-                        <div className="w-10 h-10 bg-gray-700 rounded-full flex-shrink-0 overflow-hidden">
-                          {dev.avatar_url || dev.avatar_cid ? (
-                            <SafariOptimizedImage
-                              src={dev.avatar_cid ? getIPFSUrl(dev.avatar_cid) : dev.avatar_url!}
-                              alt={dev.display_name || dev.username || 'Developer'}
-                              width={40}
-                              height={40}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                              <User size={16} className="text-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-foreground font-medium text-sm truncate">
-                            {dev.display_name || dev.username || 'Unknown Developer'}
-                          </div>
-                          <div className="text-foreground text-xs truncate">
-                            {dev.tagline || 'Bitcoin Developer'}
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                    {!searchQuery.trim() ? (
-                      <div className="text-foreground text-center py-8">
-                        ...
-                      </div>
-                    ) : developers.length === 0 ? (
-                      <div className="text-foreground text-center py-8">
-                        No developers found matching your search
                       </div>
                     ) : null}
                   </div>

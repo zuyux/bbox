@@ -10,6 +10,7 @@ import { getProfile, upsertProfile, createWalletLinkProof, getSkillCategories, P
 import { buildWalletProofMessage, createWalletProof } from '@/lib/commentSigning';
 import { hasEncryptedWallet } from '@/lib/encryptedStorage';
 import { isNostrPublicKey } from '@/lib/nostr';
+import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -101,12 +102,17 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
+  const [developerMode, setDeveloperMode] = useState(false);
   
   // State
   const [skillCategories, setSkillCategories] = useState<SkillCategory[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    setDeveloperMode(isDeveloperModeEnabled());
+  }, []);
 
   useEffect(() => {
     if (!address) return;
@@ -400,6 +406,12 @@ export default function SettingsPage() {
     );
   };
 
+  const handleDeveloperModeChange = (enabled: boolean) => {
+    setDeveloperMode(enabled);
+    setDeveloperModeEnabled(enabled);
+    toast.success(enabled ? 'Developer Mode enabled' : 'Developer Mode disabled');
+  };
+
   if (!address) {
     return (
   <div className="max-w-2xl mx-auto my-24 p-8 rounded-2xl border text-center bg-accent-background border-gray-200 dark:border-gray-800 text-foreground">
@@ -691,7 +703,7 @@ export default function SettingsPage() {
                       type="text"
                       value={occupation}
                       onChange={e => setOccupation(e.target.value)}
-                      placeholder="Bitcoin Developer, Protocol Engineer, etc."
+                      placeholder="Product lead, protocol engineer, designer, etc."
                     />
                   </div>
                   
@@ -1003,6 +1015,34 @@ export default function SettingsPage() {
           </div>
         </form>
       </Tabs>
+
+      <Card id="developer-mode" className="mt-8 bg-accent-background border-gray-200 dark:border-gray-700 text-foreground scroll-mt-24">
+        <CardHeader>
+          <CardTitle>Developer Mode</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex items-center justify-between gap-6">
+            <div>
+              <h4 className="text-sm font-medium">Show publishing tools</h4>
+              <p className="text-xs text-gray-400">
+                Turn this on only when you want to submit or manage app listings.
+              </p>
+            </div>
+            <Checkbox
+              checked={developerMode}
+              onCheckedChange={v => handleDeveloperModeChange(!!v)}
+              aria-label="Developer Mode"
+              className="h-6 w-6 cursor-pointer"
+            />
+          </div>
+
+          {developerMode && (
+            <Button asChild className="w-full bg-orange-500 text-white hover:bg-orange-600">
+              <Link href="/submit">Submit an App</Link>
+            </Button>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Account Management Links */}
       <div className="mt-12 pt-8 border-t border-gray-700">

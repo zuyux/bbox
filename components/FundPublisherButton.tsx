@@ -218,7 +218,7 @@ export function FundPublisherButton({ appName, publisherName, publisherAddress }
 				className="bg-foreground hover:bg-foreground text-background cursor-pointer"
 			>
 				<Coins className="h-4 w-4 mr-2" />
-				Fund this builder
+				Support this app
 			</Button>
 
 			{isModalOpen && (
@@ -363,7 +363,7 @@ export function FundPublisherButton({ appName, publisherName, publisherAddress }
 					await handleInternalDonation(password);
 				}}
 				title="Confirm sBTC donation"
-				description={`Enter your password to send funds to ${publisherName || 'this builder'}.`}
+				description={`Enter your password to send funds to ${publisherName || 'this app publisher'}.`}
 				actionText="Send"
 				isLoading={isInternalSigning}
 			/>

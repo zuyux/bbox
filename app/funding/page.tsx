@@ -27,6 +27,7 @@ import {
   voteOnApp,
   satsToBTC,
 } from '@/lib/bbox-contract';
+import { isDeveloperModeEnabled } from '@/lib/developerMode';
 
 interface FundingApp {
   id: number;
@@ -66,6 +67,7 @@ export default function FundingDashboardPage() {
   const [votingId, setVotingId] = useState<number | null>(null);
   const [donationInputs, setDonationInputs] = useState<Record<number, string>>({});
   const [donationNotes, setDonationNotes] = useState<Record<number, string>>({});
+  const [developerMode, setDeveloperMode] = useState(false);
 
   const [contractId] = useState(() => getBboxContractAddress());
   const normalizedCurrentAddress = currentAddress?.toLowerCase() ?? null;
@@ -127,6 +129,18 @@ export default function FundingDashboardPage() {
   useEffect(() => {
     fetchApps();
   }, [fetchApps]);
+
+  useEffect(() => {
+    const syncDeveloperMode = () => setDeveloperMode(isDeveloperModeEnabled());
+    syncDeveloperMode();
+    window.addEventListener('storage', syncDeveloperMode);
+    window.addEventListener('bbox-developer-mode-change', syncDeveloperMode);
+
+    return () => {
+      window.removeEventListener('storage', syncDeveloperMode);
+      window.removeEventListener('bbox-developer-mode-change', syncDeveloperMode);
+    };
+  }, []);
 
   useEffect(() => {
     getAdminAddress().then(setAdminAddress).catch((err) => {
@@ -262,7 +276,7 @@ export default function FundingDashboardPage() {
     const name = app.name || `App #${app.contractAppId ?? app.id}`;
     const description = app.description || 'Metadata pending review';
     const category = app.category || 'Uncategorized';
-    const publisherName = app.publisherName || 'Unknown builder';
+    const publisherName = app.publisherName || 'Unknown publisher';
     const publisherEmail = app.publisherEmail || 'Not provided';
     const websiteUrl = app.websiteUrl;
     const tags = app.tags ?? [];
@@ -436,18 +450,20 @@ export default function FundingDashboardPage() {
             <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-2">Funding Desk</p>
             <h1 className="text-3xl font-bold">Support open-source apps</h1>
             <p className="text-muted-foreground max-w-2xl">
-              Back builders directly with sBTC and upvote promising verified software on-chain.
+              Support promising verified software directly with sBTC and upvote useful apps on-chain.
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               Showing Supabase submissions (linked to <span className="font-mono">{contractId}</span> when on-chain)
             </p>
           </div>
-          <Button asChild className="bg-foreground hover:bg-foreground cursor-pointer">
-            <Link href="/submit" className="flex items-center gap-2">
-              <ArrowUpRight className="h-4 w-4" />
-              Submit new app
-            </Link>
-          </Button>
+          {developerMode && (
+            <Button asChild className="bg-foreground hover:bg-foreground cursor-pointer">
+              <Link href="/submit" className="flex items-center gap-2">
+                <ArrowUpRight className="h-4 w-4" />
+                Submit new app
+              </Link>
+            </Button>
+          )}
         </div>
 
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">

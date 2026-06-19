@@ -15,6 +15,7 @@ import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import type { BitcoinApp } from '@/lib/appsUtils';
 import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
 import { getIPFSUrl } from '@/lib/pinataUpload';
+import { isDeveloperModeEnabled } from '@/lib/developerMode';
 
 const categoryIcons: Record<string, string> = {
   Wallet: '/icons/wallet.svg',
@@ -37,7 +38,7 @@ const defaultCategoryIcon = '/icons/explore.svg';
 const bboxHighlights = [
   {
     title: 'Discover sovereign software',
-    description: 'Browse Bitcoin apps, privacy tools, developer utilities, safe AI projects, and off-chain open-source systems in one verified index.',
+    description: 'Browse Bitcoin apps, privacy tools, safe AI projects, and off-chain open-source systems in one verified index.',
     icon: Compass,
   },
   {
@@ -46,8 +47,8 @@ const bboxHighlights = [
     icon: Coins,
   },
   {
-    title: 'Build with reputation',
-    description: 'Publish your app profile, connect verified identities, and give users a clean way to evaluate your work.',
+    title: 'Choose with confidence',
+    description: 'Compare source links, reviews, app metadata, and public history before you install, fund, or recommend an app.',
     icon: ShieldCheck,
   },
 ];
@@ -59,13 +60,13 @@ const ecosystemPillars = [
     icon: Store,
   },
   {
-    label: 'Builder launchpad',
-    detail: 'Submissions, profiles, media, reviews, and documentation designed for teams shipping in public.',
+    label: 'App profiles',
+    detail: 'Readable listings with media, reviews, source links, and the details users need before trying something new.',
     icon: Code2,
   },
   {
     label: 'Funding layer',
-    detail: 'Milestones and escrow-oriented flows that make grants, research, and public-goods funding easier to inspect before money moves.',
+    detail: 'Milestones and funding context make grants, research, and public-goods support easier to inspect before money moves.',
     icon: Layers3,
   },
   {
@@ -90,6 +91,7 @@ export default function HomePage() {
   const [isDragging, setIsDragging] = useState(false);
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
   const [showGetInModal, setShowGetInModal] = useState(false);
+  const [developerMode, setDeveloperMode] = useState(false);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastTimestampRef = useRef<number | null>(null);
@@ -357,6 +359,18 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    const syncDeveloperMode = () => setDeveloperMode(isDeveloperModeEnabled());
+    syncDeveloperMode();
+    window.addEventListener('storage', syncDeveloperMode);
+    window.addEventListener('bbox-developer-mode-change', syncDeveloperMode);
+
+    return () => {
+      window.removeEventListener('storage', syncDeveloperMode);
+      window.removeEventListener('bbox-developer-mode-change', syncDeveloperMode);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchApps = async () => {
       try {
         setAppsLoading(true);
@@ -421,7 +435,7 @@ export default function HomePage() {
               BBOX is the universal registry for verified open-source apps.
             </H1>
             <Lead className="mb-8 max-w-2xl text-left text-base text-muted-foreground md:text-xl">
-              Discover sovereign software, evaluate real developer proof-of-work, and fund builders through transparent milestones instead of opaque gatekeepers.
+              Discover sovereign software, compare trusted app details, and support useful public goods through transparent milestones instead of opaque gatekeepers.
             </Lead>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600" asChild>
@@ -430,11 +444,13 @@ export default function HomePage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button> 
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/submit">
-                  Submit Your App
-                </Link>
-              </Button>
+              {developerMode && (
+                <Button size="lg" variant="secondary" asChild>
+                  <Link href="/submit">
+                    Submit Your App
+                  </Link>
+                </Button>
+              )}
               <Button size="lg" variant="ghost" asChild>
                 <Link href="https://github.com/zuyux/bbox" target="_blank" rel="noreferrer">
                   <Github className="mr-2 h-4 w-4" />
@@ -505,7 +521,7 @@ export default function HomePage() {
               <h2 className="title text-3xl font-bold md:text-4xl">Discovery, coordination, and funding in one place.</h2>
             </div>
             <p className="mb-0 max-w-xl text-sm leading-6 text-muted-foreground">
-              BBOX maps high-integrity open-source software and gives builders a public surface for submissions, reviews, grants, and milestone accountability anchored by the Bitcoin App Registry.
+              BBOX maps high-integrity open-source software with app profiles, reviews, grants, and milestone accountability anchored by the Bitcoin App Registry.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -669,31 +685,33 @@ export default function HomePage() {
             </div>
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">10+</div>
-              <div className="text-sm text-muted-foreground">Developers</div>
+              <div className="text-sm text-muted-foreground">Contributors</div>
             </div>
           </div>
         </div>
 
         {/* Call to Action */}
-        <div className="mt-8 overflow-hidden rounded-lg border border-border bg-foreground text-background">
+        <div className="mt-8 overflow-hidden rounded-lg border border-border bg-background/10 text-foreground">
           <div className="grid gap-8 p-8 md:grid-cols-[1fr_auto] md:items-center md:p-10">
             <div>
-              <p className="mb-3 text-sm uppercase tracking-[0.28em] text-orange-300">Join the sovereign software commons</p>
-              <h3 className="title mb-4 text-4xl font-bold md:text-5xl">Ship, list, and fund verified open-source software.</h3>
-              <p className="mb-0 max-w-2xl text-sm leading-6 text-background/70 md:text-base">
-                Use BBOX to move from scattered links to a readable public profile: app metadata, source code, milestones, reviews, and funding context together.
+              <p className="mb-3 text-sm uppercase tracking-[0.28em] text-orange-300">Explore the sovereign software commons</p>
+              <h3 className="title mb-4 text-4xl font-bold md:text-5xl">Find and support verified open-source software.</h3>
+              <p className="mb-0 max-w-2xl text-sm leading-6 text-foreground md:text-base">
+                Use BBOX to move from scattered links to readable app profiles: metadata, source code, milestones, reviews, and funding context together.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
-              <Button size="lg" variant="secondary" className="cursor-pointer" asChild>
+              <Button size="lg" variant="outline" className="cursor-pointer" asChild>
                 <Link href="/documentation">
-                  Developer Guide
+                  Learn
                 </Link>
               </Button>
-              <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer" onClick={handleStartBuilding}>
-                Start Building
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              {developerMode && (
+                <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer" onClick={handleStartBuilding}>
+                  Build
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         </div>

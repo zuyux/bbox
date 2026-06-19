@@ -6,7 +6,7 @@ export default function AboutPage() {
     <main className="max-w-2xl mx-auto py-36 px-4">
       <h1 className="title text-3xl font-bold mb-4">What is BBOX?</h1>
       <p className="mb-4">
-        <strong>BBOX</strong> is a universal registry for verified open-source software. It helps developers publish, fund, and coordinate high-integrity apps across Bitcoin, other chains, privacy tooling, developer utilities, safe AI, and independent off-chain software.
+        <strong>BBOX</strong> is a universal registry for verified open-source software. It helps people discover, compare, fund, and coordinate high-integrity apps across Bitcoin, other chains, privacy tooling, safe AI, and independent off-chain software.
       </p>
       <p className="mb-4">
         BBOX anchors canonical app records through the Bitcoin App Registry protocol, giving publishers control over their metadata while preserving a public audit trail on Bitcoin Layer 1.
