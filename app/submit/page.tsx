@@ -87,7 +87,8 @@ const CATEGORIES = [
   'Infrastructure',
   'Developer',
   'Creator',
-  'Nostr'
+  'Nostr',
+  'Gaming'
 ];
 
 const PLATFORMS = [

@@ -24,24 +24,46 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-const categoryIcons: { [key: string]: typeof Shield } = {
-  'Wallet': Shield,
-  'Lightning': Zap,
-  'DeFi': Coins,
-  'Mining': Code,
-  'Payment': Coins,
-  'Explorer': Globe,
-  'Social': Globe,
-  'Networking': Globe,
-  'Identity': Shield,
-  'Infrastructure': Code,
-  'Developer': Code,
-  'Creator': Code,
-  'Nostr': Globe
+const categoryIcons: Record<string, typeof Shield | string> = {
+  Wallet: Shield,
+  Lightning: Zap,
+  DeFi: Coins,
+  Mining: Code,
+  Payment: Coins,
+  Explorer: Globe,
+  Social: Globe,
+  Networking: Globe,
+  Identity: Shield,
+  Infrastructure: Code,
+  Developer: Code,
+  Creator: Code,
+  Nostr: Globe,
+  Gaming: '/game.svg'
 };
 
 const CHUNK_SIZE = 10;
 const DEFAULT_APP_IMAGE = '/bbox.png';
+
+const CategoryIcon = ({ category }: { category: string }) => {
+  const icon = categoryIcons[category] || Code;
+
+  if (typeof icon === 'string') {
+    return (
+      <span className="relative w-3 h-3 flex-shrink-0">
+        <Image
+          src={icon}
+          alt=""
+          fill
+          sizes="12px"
+          className="object-contain"
+        />
+      </span>
+    );
+  }
+
+  const Icon = icon;
+  return <Icon className="w-3 h-3 flex-shrink-0" />;
+};
 
 const AppLogo = ({ name, imgCID }: { name: string; imgCID?: string }) => {
   const [imageFailed, setImageFailed] = useState(false);
@@ -253,7 +275,6 @@ export default function AppsPage() {
               All Apps
             </Button>
             {categories.map(category => {
-              const Icon = categoryIcons[category] || Code;
               return (
                 <Button
                   key={category}
@@ -266,7 +287,7 @@ export default function AppsPage() {
                       : 'text-green-600 hover:bg-green-500 hover:text-foreground'
                   }`}
                 >
-                  <Icon className="w-3 h-3 flex-shrink-0" />
+                  <CategoryIcon category={category} />
                   <span className="truncate">{category}</span>
                 </Button>
               );

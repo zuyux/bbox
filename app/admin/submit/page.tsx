@@ -27,6 +27,7 @@ const CATEGORY_OPTIONS = [
   'Social',
   'Developer',
   'Creator',
+  'Gaming',
   'Other',
 ];
 

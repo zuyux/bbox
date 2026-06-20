@@ -31,7 +31,8 @@ const categoryIcons: Record<string, string> = {
   Identity: '/icons/id.svg',
   Developer: '/icons/dev.svg',
   Creator: '/icons/creator.svg',
-  Nostr: '/icons/nostr.svg'
+  Nostr: '/icons/nostr.svg',
+  Gaming: '/game.svg'
 };
 
 const defaultCategoryIcon = '/icons/explore.svg';
@@ -568,7 +569,7 @@ export default function HomePage() {
             </div>
             <p className="mb-0 max-w-md text-sm text-muted-foreground">Drag the rail, pick a category, and jump straight into projects building useful sovereign software.</p>
           </div>
-          <div className="relative overflow-hidden">
+          <div className="relative overflow-visible">
             <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent z-10" aria-hidden="true" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent z-10" aria-hidden="true" />
             <div
