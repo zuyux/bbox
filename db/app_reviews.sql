@@ -1,6 +1,6 @@
 create table public.app_reviews (
   id bigserial not null,
-  app_id bigint null,
+  app_id text not null,
   reviewer_address character varying(255) not null,
   wallet_type character varying(50) null,
   signature text null,
@@ -13,7 +13,7 @@ create table public.app_reviews (
   updated_at timestamp with time zone null default now(),
   constraint app_reviews_pkey primary key (id),
   constraint app_reviews_app_id_reviewer_address_key unique (app_id, reviewer_address),
-  constraint app_reviews_app_id_fkey foreign KEY (app_id) references apps (id) on delete CASCADE,
+  constraint app_reviews_app_id_fkey foreign KEY (app_id) references bbox_apps (id) on delete CASCADE,
   constraint app_reviews_rating_check check (
     (
       (rating >= 1)

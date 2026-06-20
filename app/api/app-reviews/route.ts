@@ -1,19 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyMessageSignature, verifyMessageSignatureRsv } from '@stacks/encryption';
+import { publicKeyToAddressSingleSig } from '@stacks/transactions';
 import { supabaseAdmin } from '@/lib/supabaseClient';
 
 const TABLE_NAME = 'app_reviews';
 
+type SignedReviewPayload = {
+  action?: string;
+  appId?: unknown;
+  rating?: unknown;
+  reviewText?: unknown;
+  address?: unknown;
+};
+
+const normalizeHex = (value: string) => value.trim().replace(/^0x/i, '');
+
+const addressesMatchPublicKey = (address: string, publicKey: string) => {
+  const normalizedAddress = address.trim().toUpperCase();
+  const mainnetAddress = publicKeyToAddressSingleSig(publicKey, 'mainnet').toUpperCase();
+  const testnetAddress = publicKeyToAddressSingleSig(publicKey, 'testnet').toUpperCase();
+
+  return normalizedAddress === mainnetAddress || normalizedAddress === testnetAddress;
+};
+
+const verifyReviewSignature = ({
+  appId,
+  reviewerAddress,
+  rating,
+  reviewText,
+  signature,
+  signedPayload,
+  publicKey,
+}: {
+  appId: string;
+  reviewerAddress: string;
+  rating: number;
+  reviewText: string;
+  signature: string;
+  signedPayload: string;
+  publicKey: string | null;
+}) => {
+  if (!publicKey) {
+    return { valid: false, error: 'Missing wallet public key' };
+  }
+
+  let parsedPayload: SignedReviewPayload;
+  try {
+    parsedPayload = JSON.parse(signedPayload);
+  } catch {
+    return { valid: false, error: 'Invalid signed review payload' };
+  }
+
+  const payloadAppId = String(parsedPayload.appId ?? '').trim();
+  const payloadRating = Number(parsedPayload.rating);
+  const payloadReviewText = typeof parsedPayload.reviewText === 'string' ? parsedPayload.reviewText.trim() : '';
+  const payloadAddress = typeof parsedPayload.address === 'string' ? parsedPayload.address.trim() : '';
+
+  if (
+    parsedPayload.action !== 'bbox_app_review' ||
+    payloadAppId !== appId ||
+    payloadRating !== rating ||
+    payloadReviewText !== reviewText ||
+    payloadAddress !== reviewerAddress
+  ) {
+    return { valid: false, error: 'Signed payload does not match review details' };
+  }
+
+  const normalizedSignature = normalizeHex(signature);
+  const normalizedPublicKey = normalizeHex(publicKey);
+
+  try {
+    if (!addressesMatchPublicKey(reviewerAddress, normalizedPublicKey)) {
+      return { valid: false, error: 'Public key does not match reviewer address' };
+    }
+
+    const validSignature =
+      verifyMessageSignature({
+        signature: normalizedSignature,
+        message: signedPayload,
+        publicKey: normalizedPublicKey,
+      }) ||
+      verifyMessageSignatureRsv({
+        signature: normalizedSignature,
+        message: signedPayload,
+        publicKey: normalizedPublicKey,
+      });
+
+    return validSignature
+      ? { valid: true }
+      : { valid: false, error: 'Invalid review signature' };
+  } catch {
+    return { valid: false, error: 'Invalid review signature' };
+  }
+};
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const appIdParam = searchParams.get('appId');
+    const appId = (searchParams.get('appId') || '').trim();
 
-    if (!appIdParam) {
+    if (!appId) {
       return NextResponse.json({ error: 'Missing appId parameter' }, { status: 400 });
     }
-
-    const appId = Number(appIdParam);
-    if (Number.isNaN(appId)) {
+    if (appId.length > 100) {
       return NextResponse.json({ error: 'Invalid appId parameter' }, { status: 400 });
     }
 
@@ -38,7 +127,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const appId = Number(body.appId);
+    const appId = String(body.appId ?? '').trim();
     const reviewerAddress = (body.reviewerAddress || '').trim();
     const rating = Number(body.rating);
     const reviewText = (body.reviewText || '').trim();
@@ -47,7 +136,7 @@ export async function POST(request: NextRequest) {
     const signedPayload = (body.signedPayload || '').trim();
     const publicKey = body.publicKey ? String(body.publicKey).trim() : null;
 
-    if (Number.isNaN(appId) || appId <= 0) {
+    if (!appId || appId.length > 100) {
       return NextResponse.json({ error: 'Invalid appId' }, { status: 400 });
     }
     if (!reviewerAddress) {
@@ -64,6 +153,20 @@ export async function POST(request: NextRequest) {
     }
     if (!signature || !signedPayload) {
       return NextResponse.json({ error: 'Missing signature details' }, { status: 400 });
+    }
+
+    const signatureCheck = verifyReviewSignature({
+      appId,
+      reviewerAddress,
+      rating,
+      reviewText,
+      signature,
+      signedPayload,
+      publicKey,
+    });
+
+    if (!signatureCheck.valid) {
+      return NextResponse.json({ error: signatureCheck.error }, { status: 401 });
     }
 
     const { data, error } = await supabaseAdmin

@@ -34,13 +34,13 @@ export interface CommentSignatureResult {
 export type StacksSignatureResult = CommentSignatureResult;
 
 interface SignCommentArgs {
-  appId: number;
+  appId: number | string;
   message: string;
   address: string;
   walletType: SupportedWalletType;
 }
 
-const buildPayload = (appId: number, address: string, message: string) => {
+const buildPayload = (appId: number | string, address: string, message: string) => {
   return JSON.stringify({
     action: 'bbox_comment',
     appId,
@@ -201,7 +201,7 @@ export const signStacksMessage = async (
 };
 
 interface SignReviewArgs {
-  appId: number;
+  appId: number | string;
   rating: number;
   reviewText: string;
   address: string;
@@ -220,7 +220,7 @@ export const signSubmissionComment = async ({
   return signStacksMessage(payload, walletType);
 };
 
-const buildReviewPayload = (appId: number, rating: number, reviewText: string, address: string) => {
+const buildReviewPayload = (appId: number | string, rating: number, reviewText: string, address: string) => {
   return JSON.stringify({
     action: 'bbox_app_review',
     appId,

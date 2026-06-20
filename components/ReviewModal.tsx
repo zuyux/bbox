@@ -11,7 +11,7 @@ import { signAppReview } from '@/lib/commentSigning';
 
 interface ReviewComment {
   id: number | string;
-  app_id: number;
+  app_id: string;
   rating: number;
   reviewer_address: string;
   review_text: string;
@@ -55,19 +55,16 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
   const [submitError, setSubmitError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const numericAppId = useMemo(() => {
-    const parsed = Number(appId);
-    return Number.isNaN(parsed) ? null : parsed;
-  }, [appId]);
+  const reviewAppId = useMemo(() => appId.trim(), [appId]);
 
   const loadComments = useCallback(async (signal?: { cancelled: boolean }) => {
-    if (numericAppId === null) return;
+    if (!reviewAppId) return;
 
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/app-reviews?appId=${numericAppId}`);
+      const response = await fetch(`/api/app-reviews?appId=${encodeURIComponent(reviewAppId)}`);
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
         throw new Error(payload?.error || 'Unable to load reviews');
@@ -85,11 +82,11 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
     } finally {
       if (!signal?.cancelled) setLoading(false);
     }
-  }, [numericAppId]);
+  }, [reviewAppId]);
 
   useEffect(() => {
     if (!open) return;
-    if (numericAppId === null) {
+    if (!reviewAppId) {
       setComments([]);
       setError('Review details are unavailable for this demo app.');
       setLoading(false);
@@ -101,7 +98,7 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
     return () => {
       cancelToken.cancelled = true;
     };
-  }, [open, numericAppId, loadComments]);
+  }, [open, reviewAppId, loadComments]);
 
   useEffect(() => {
     if (!open) return;
@@ -128,7 +125,10 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
   }, [open, onClose]);
 
   const handleSubmit = async () => {
-    if (!numericAppId) return;
+    if (!reviewAppId) {
+      setSubmitError('Review details are unavailable for this app.');
+      return;
+    }
     if (!address || !walletType) {
       setSubmitError('Connect a Stacks browser wallet to leave a signed review.');
       return;
@@ -147,7 +147,7 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
 
     try {
       const signature = await signAppReview({
-        appId: numericAppId,
+        appId: reviewAppId,
         rating,
         reviewText: reviewText.trim(),
         address,
@@ -158,7 +158,7 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          appId: numericAppId,
+          appId: reviewAppId,
           reviewerAddress: address,
           rating,
           reviewText: reviewText.trim(),
