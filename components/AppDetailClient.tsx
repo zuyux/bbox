@@ -18,7 +18,9 @@ import { ADMIN_ADDRESS } from '@/lib/admin';
 import {
   Star,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Loader2,
+  X
 } from 'lucide-react';
 import type { BitcoinApp } from '@/lib/appsUtils';
 
@@ -33,9 +35,18 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
   const isAdmin = currentAddress === ADMIN_ADDRESS;
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showOwnershipModal, setShowOwnershipModal] = useState(false);
+  const [claimStatus, setClaimStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [claimMessage, setClaimMessage] = useState('');
   const [editStatus, setEditStatus] = useState<'idle' | 'signing' | 'submitting' | 'success' | 'error'>('idle');
   const [editMessage, setEditMessage] = useState('');
   const [appState, setAppState] = useState(app);
+  const [claimData, setClaimData] = useState({
+    name: '',
+    email: '',
+    walletAddress: currentAddress || '',
+    proof: '',
+  });
   const [editData, setEditData] = useState({
     name: app.name,
     description: app.description,
@@ -51,6 +62,18 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
     setEditStatus('idle');
     setEditMessage('');
     setEditData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updateClaimField = (field: keyof typeof claimData, value: string) => {
+    setClaimStatus('idle');
+    setClaimMessage('');
+    setClaimData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const closeOwnershipModal = () => {
+    setShowOwnershipModal(false);
+    setClaimStatus('idle');
+    setClaimMessage('');
   };
 
   const buildEditSignaturePayload = () =>
@@ -132,6 +155,57 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
       const message = error instanceof Error ? error.message : 'Unable to save app changes.';
       setEditStatus('error');
       setEditMessage(message);
+    }
+  };
+
+  const handleOwnershipClaim = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!claimData.name.trim() || !claimData.email.trim() || !claimData.walletAddress.trim() || !claimData.proof.trim()) {
+      setClaimStatus('error');
+      setClaimMessage('Please fill in every field before sending your claim.');
+      return;
+    }
+
+    setClaimStatus('submitting');
+    setClaimMessage('');
+
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'ownership-claim',
+          data: {
+            appId: displayApp.id,
+            appName: displayApp.name,
+            appUrl: typeof window !== 'undefined' ? window.location.href : '',
+            websiteUrl: displayApp.link,
+            claimantName: claimData.name.trim(),
+            claimantEmail: claimData.email.trim(),
+            walletAddress: claimData.walletAddress.trim(),
+            proof: claimData.proof.trim(),
+          },
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(result?.error || 'Unable to send ownership claim.');
+      }
+
+      setClaimStatus('success');
+      setClaimMessage('Ownership claim sent. We will review the details and follow up by email.');
+      setClaimData({
+        name: '',
+        email: '',
+        walletAddress: currentAddress || '',
+        proof: '',
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to send ownership claim.';
+      setClaimStatus('error');
+      setClaimMessage(message);
     }
   };
 
@@ -312,6 +386,31 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
             </div>
           </div>
         )}
+        <div className="flex items-end text-right gap-x-4 gap-y-2 mt-8 text-xs">
+              <Button
+                type="button"
+                variant="link"
+                className="h-auto p-0 text-white/30 hover:text-white/70"
+                onClick={() => {
+                  setClaimData((prev) => ({
+                    ...prev,
+                    walletAddress: prev.walletAddress || currentAddress || '',
+                  }));
+                  setShowOwnershipModal(true);
+                }}
+              >
+                Claim ownership
+              </Button>
+              <Button
+                variant="link"
+                asChild
+                className="h-auto p-0 text-white/30 hover:text-white/70"
+              >
+                <a href="https://github.com/zuyux/bbox/issues" target="_blank" rel="noopener noreferrer">
+                  Report Issue
+                </a>
+              </Button>
+            </div>
 
         {isAdmin && (
           <div className="mt-10 rounded-2xl border border-border/50 bg-surface p-6">
@@ -421,6 +520,86 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
           appName={displayApp.name}
           onClose={() => setShowReviewModal(false)}
         />
+      )}
+
+      {showOwnershipModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-background shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 p-5">
+              <div>
+                <h3 className="text-lg font-semibold">Claim ownership</h3>
+                <p className="text-sm text-muted-foreground">Send verification details for {displayApp.name}.</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeOwnershipModal}
+                className="rounded-full p-2 text-muted-foreground transition hover:bg-muted/70 hover:text-foreground"
+                aria-label="Close ownership claim"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleOwnershipClaim} className="space-y-4 p-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="claim-name" className='hidden'>Name</Label>
+                  <Input
+                    id="claim-name"
+                    value={claimData.name}
+                    onChange={(event) => updateClaimField('name', event.target.value)}
+                    autoComplete="name"
+                    placeholder='Name'
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="claim-email" className='hidden'>Email</Label>
+                  <Input
+                    id="claim-email"
+                    type="email"
+                    value={claimData.email}
+                    onChange={(event) => updateClaimField('email', event.target.value)}
+                    autoComplete="email"
+                    placeholder='Email'
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="claim-wallet" className='pl-1 mb-2'>Wallet or publisher address</Label>
+                <Input
+                  id="claim-wallet"
+                  value={claimData.walletAddress}
+                  onChange={(event) => updateClaimField('walletAddress', event.target.value)}
+                  placeholder="Stacks, Bitcoin, or relevant publisher address"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="claim-proof">Ownership proof</Label>
+                <Textarea
+                  id="claim-proof"
+                  value={claimData.proof}
+                  onChange={(event) => updateClaimField('proof', event.target.value)}
+                  placeholder="Share repo links, domain email, signed message, listing references, or any details that prove ownership."
+                  rows={5}
+                />
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <Button type="submit" disabled={claimStatus === 'submitting'}>
+                  {claimStatus === 'submitting' && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {claimStatus === 'submitting' ? 'Sending...' : 'Send claim'}
+                </Button>
+                {claimMessage && (
+                  <p className={`text-sm ${claimStatus === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                    {claimMessage}
+                  </p>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

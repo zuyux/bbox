@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/email';
 
+const escapeHtml = (value: unknown) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -231,6 +239,85 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Emails sent successfully'
+      });
+    }
+
+    if (type === 'ownership-claim') {
+      if (!data.appName || !data.claimantName || !data.claimantEmail || !data.walletAddress || !data.proof) {
+        return NextResponse.json(
+          { error: 'Missing required ownership claim data' },
+          { status: 400 }
+        );
+      }
+
+      const appName = escapeHtml(data.appName);
+      const appId = escapeHtml(data.appId || 'N/A');
+      const appUrl = escapeHtml(data.appUrl || 'N/A');
+      const websiteUrl = escapeHtml(data.websiteUrl || 'N/A');
+      const claimantName = escapeHtml(data.claimantName);
+      const claimantEmail = escapeHtml(data.claimantEmail);
+      const walletAddress = escapeHtml(data.walletAddress);
+      const proof = escapeHtml(data.proof).replace(/\n/g, '<br />');
+
+      await sendEmail({
+        to: '40230@pm.me',
+        subject: `BBOX ownership claim: ${data.appName}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #222; max-width: 680px; margin: 0 auto; padding: 20px; background-color: #f6f7f9;">
+            <div style="background: #0f172a; color: #f8fafc; padding: 24px; border-radius: 10px 10px 0 0;">
+              <h1 style="margin: 0; font-size: 22px;">Ownership Claim</h1>
+              <p style="margin: 8px 0 0; color: #cbd5e1;">BBOX app ownership verification request</p>
+            </div>
+
+            <div style="background: #ffffff; padding: 28px; border-radius: 0 0 10px 10px; border: 1px solid #e2e8f0;">
+              <h2 style="margin-top: 0; color: #0f172a;">${appName}</h2>
+
+              <table style="width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px;">
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 700; width: 170px;">App ID</td>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0;">${appId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 700;">BBOX Page</td>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; word-break: break-all;">${appUrl}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 700;">Website</td>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; word-break: break-all;">${websiteUrl}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 700;">Claimant</td>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0;">${claimantName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 700;">Email</td>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0;">${claimantEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 700;">Wallet / Address</td>
+                  <td style="padding: 10px; border: 1px solid #e2e8f0; word-break: break-all;">${walletAddress}</td>
+                </tr>
+              </table>
+
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+                <h3 style="margin: 0 0 8px; font-size: 16px;">Proof details</h3>
+                <p style="margin: 0; font-size: 14px;">${proof}</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Ownership claim sent successfully'
       });
     }
 
