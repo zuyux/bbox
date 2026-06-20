@@ -109,7 +109,7 @@ export default function PasswordPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto my-24 p-8 bg-black rounded-2xl border-[1px] border-[#333] shadow text-white">
+    <div className="max-w-xl mx-auto my-24 p-8 bg-transparent shadow text-white">
       <h1 className="text-3xl font-bold mb-2">Change Password</h1>
       <p className="text-gray-400 mb-8">Update your encrypted wallet password</p>
       

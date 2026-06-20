@@ -12,7 +12,6 @@ export default function Footer() {
             </span>
           </Link>
           <div className="flex items-center gap-3 sm:gap-5">
-            <Link href="/settings#developer-mode" className="hover:text-[#fff] text-[#777]">Developer Mode</Link>
             <Link href="/documentation" className="hover:text-[#fff] text-[#777]">Learn</Link>
             <Link href="/build" className="hover:text-[#fff] text-[#777]">Build</Link>
             <Link href="/privacy-policy" className="hidden md:inline hover:text-[#fff] text-[#555]">Privacy</Link>

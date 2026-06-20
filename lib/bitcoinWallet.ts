@@ -2,7 +2,6 @@ import { bech32 } from 'bech32';
 import { keccak256 } from 'js-sha3';
 import CryptoJS from 'crypto-js';
 import { privateKeyToPublic } from '@stacks/transactions';
-import { privateKeyToBytes } from '@stacks/common';
 
 const hexToBytes = (hex: string): Uint8Array => {
   const normalized = hex.replace(/^0x/, '');

@@ -84,7 +84,7 @@ export async function getNostrEventHash(event: Omit<NostrEvent, 'id' | 'sig'>): 
 
 export async function signNostrEvent(event: Omit<NostrEvent, 'id' | 'sig'>, privateKeyHex: string): Promise<string> {
   const eventHash = await getNostrEventHash(event);
-  const signatureBytes = await schnorr.sign(hexToBytes(eventHash), hexToBytes(privateKeyHex));
+  const signatureBytes = await schnorr.signAsync(hexToBytes(eventHash), hexToBytes(privateKeyHex));
   return bytesToHex(signatureBytes);
 }
 
@@ -156,7 +156,7 @@ export async function publishNostrEvent(event: NostrEvent, relays: string[] = DE
   return results.some(Boolean);
 }
 
-export async function fetchNostrProfileByAddress(address: string, relays: string[] = DEFAULT_NOSTR_RELAYS): Promise<Record<string, any> | null> {
+export async function fetchNostrProfileByAddress(address: string, relays: string[] = DEFAULT_NOSTR_RELAYS): Promise<Record<string, unknown> | null> {
   const filterAddress = address.trim();
   const isNostrKey = isNostrPublicKey(filterAddress);
   const author = isNostrKey ? decodeNostrPublicKeyToHex(filterAddress) : undefined;
@@ -173,7 +173,7 @@ export async function fetchNostrProfileByAddress(address: string, relays: string
         Object.assign(filter, tags);
       }
 
-      const result = await new Promise<Record<string, any> | null>((resolve) => {
+      const result = await new Promise<Record<string, unknown> | null>((resolve) => {
         const timeout = window.setTimeout(() => {
           ws.close();
           resolve(null);
@@ -186,7 +186,7 @@ export async function fetchNostrProfileByAddress(address: string, relays: string
             if (data[0] === 'EVENT' && data[1] && data[1].kind === 0) {
               window.clearTimeout(timeout);
               ws.close();
-              const content = JSON.parse(data[1].content || '{}');
+              const content = JSON.parse(data[1].content || '{}') as Record<string, unknown>;
               resolve({
                 ...content,
                 address: content.address || filterAddress,

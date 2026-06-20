@@ -27,7 +27,8 @@ import {
   voteOnApp,
   satsToBTC,
 } from '@/lib/bbox-contract';
-import { isDeveloperModeEnabled } from '@/lib/developerMode';
+import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
+import { getProfileDeveloperMode } from '@/lib/profileApi';
 
 interface FundingApp {
   id: number;
@@ -131,16 +132,37 @@ export default function FundingDashboardPage() {
   }, [fetchApps]);
 
   useEffect(() => {
-    const syncDeveloperMode = () => setDeveloperMode(isDeveloperModeEnabled());
+    let cancelled = false;
+
+    const syncDeveloperMode = async () => {
+      if (!currentAddress) {
+        setDeveloperMode(isDeveloperModeEnabled());
+        return;
+      }
+
+      try {
+        const savedDeveloperMode = await getProfileDeveloperMode(currentAddress);
+        if (cancelled) return;
+        setDeveloperMode(savedDeveloperMode);
+        setDeveloperModeEnabled(savedDeveloperMode);
+      } catch (error) {
+        console.warn('Unable to load Developer Mode from profile:', error);
+        if (!cancelled) {
+          setDeveloperMode(isDeveloperModeEnabled());
+        }
+      }
+    };
+
     syncDeveloperMode();
     window.addEventListener('storage', syncDeveloperMode);
     window.addEventListener('bbox-developer-mode-change', syncDeveloperMode);
 
     return () => {
+      cancelled = true;
       window.removeEventListener('storage', syncDeveloperMode);
       window.removeEventListener('bbox-developer-mode-change', syncDeveloperMode);
     };
-  }, []);
+  }, [currentAddress]);
 
   useEffect(() => {
     getAdminAddress().then(setAdminAddress).catch((err) => {

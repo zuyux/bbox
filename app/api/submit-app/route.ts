@@ -34,10 +34,6 @@ export async function POST(request: NextRequest) {
     const signaturePayload = typeof body.signature_payload === 'string' ? body.signature_payload.trim() : '';
     const signatureWalletType = typeof body.signature_wallet_type === 'string' ? body.signature_wallet_type.trim() : '';
     const signaturePublicKey = typeof body.signature_public_key === 'string' ? body.signature_public_key.trim() : '';
-    const metadataCid = typeof body.metadata_cid === 'string' ? body.metadata_cid.trim() : '';
-    const contractTxId = typeof body.contract_txid === 'string' ? body.contract_txid.trim() : '';
-    const contractNetwork = typeof body.contract_network === 'string' ? body.contract_network.trim() : '';
-    const contractAppId = typeof body.contract_app_id === 'number' ? body.contract_app_id : null;
 
     // Prepare the app data with only the known bbox_apps columns.
     const appData: Record<string, unknown> = {

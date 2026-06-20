@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 import { getProfile, Profile } from '@/lib/profileApi';
-import { User, MapPin, Calendar, Briefcase, Globe, Pen, Code, Download, Star, LoaderCircle } from 'lucide-react';
+import { User, MapPin, Calendar, Briefcase, Globe, Pen, Code, Download, Star, LoaderCircle, Github } from 'lucide-react';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from '@/components/SafariOptimizedImage';
 import Image from 'next/image';
@@ -28,6 +28,26 @@ interface SubmittedApp {
   github_url?: string;
   status: string;
   created_at?: string;
+}
+
+function getGithubProfileUrl(value: string) {
+  const trimmed = value.trim().replace(/^@/, '');
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (/^github\.com\//i.test(trimmed)) return `https://${trimmed}`;
+  return `https://github.com/${trimmed}`;
+}
+
+function getGithubProfileLabel(value: string) {
+  const normalizedUrl = getGithubProfileUrl(value);
+  if (!normalizedUrl) return '';
+
+  try {
+    const url = new URL(normalizedUrl);
+    return url.pathname.replace(/^\/+/, '').replace(/\/+$/, '') || url.hostname;
+  } catch {
+    return value.replace(/^https?:\/\/(www\.)?github\.com\//i, '').replace(/^@/, '');
+  }
 }
 
 function ProfileDisplay({ profile, isOwnProfile, nostrPublicKey }: {
@@ -105,6 +125,19 @@ function ProfileDisplay({ profile, isOwnProfile, nostrPublicKey }: {
                 className="text-primary hover:underline truncate"
               >
                 {profile.website.replace(/^https?:\/\//, '')}
+              </a>
+            </div>
+          )}
+          {profile?.github_url && (
+            <div className="flex items-center justify-center gap-2">
+              <Github size={16} />
+              <a
+                href={getGithubProfileUrl(profile.github_url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline truncate"
+              >
+                {getGithubProfileLabel(profile.github_url)}
               </a>
             </div>
           )}

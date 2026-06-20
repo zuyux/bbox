@@ -189,7 +189,7 @@ export default function UserModal({ onClose }: UserModalProps) {
         <div className="flex items-center w-full mb-6">
           <Link
             href={`/${currentAddress}`}
-            className="title mr-4 text-left text-gray-900 dark:text-white text-xl font-bold tracking-wider flex-1 cursor-pointer select-none"
+            className="title ml-2 text-left text-gray-900 dark:text-white text-xl font-bold tracking-wider flex-1 cursor-pointer select-none"
             onClick={onClose}
           >
             {usernameLoader ? (

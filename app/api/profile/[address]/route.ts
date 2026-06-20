@@ -15,21 +15,19 @@ export async function GET(req: NextRequest, context: { params: Promise<{ address
     // Case-insensitive search for the address
     const { data, error } = await supabaseAdmin
       .from('profiles')
-      .select(
-        'username, address, display_name, avatar_url, tagline, creator_verified, verified_artist, biography, website, twitter, instagram, linked_nostr_public_key'
-      )
+      .select('*')
       .ilike('address', address)
-      .single();
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        // No profile found - return null profile instead of error
-        console.log(`No profile found for address: ${address}`);
-        return NextResponse.json({ profile: null }, { status: 200 });
-      }
-      
       // Log other errors but don't crash
       console.warn(`Profile API error for ${address}:`, error);
+      return NextResponse.json({ profile: null }, { status: 200 });
+    }
+
+    if (!data) {
+      console.log(`No profile found for address: ${address}`);
       return NextResponse.json({ profile: null }, { status: 200 });
     }
 

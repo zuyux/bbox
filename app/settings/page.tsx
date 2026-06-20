@@ -1,12 +1,19 @@
 'use client';
 
 import { useState, useEffect, type FormEvent } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useWallet } from '@/components/WalletProvider';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
-import PasswordSigningModal from '@/components/PasswordSigningModal';
-import { getProfile, upsertProfile, createWalletLinkProof, getSkillCategories, Profile } from '@/lib/profileApi';
+import {
+  getProfile,
+  upsertProfile,
+  createWalletLinkProof,
+  getSkillCategories,
+  getProfileDeveloperMode,
+  updateProfileDeveloperMode,
+  Profile
+} from '@/lib/profileApi';
 import { buildWalletProofMessage, createWalletProof } from '@/lib/commentSigning';
 import { hasEncryptedWallet } from '@/lib/encryptedStorage';
 import { isNostrPublicKey } from '@/lib/nostr';
@@ -17,28 +24,59 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ProfilePictureUpload } from "@/components/ProfilePictureUpload";
-import { BannerImageUpload } from "@/components/BannerImageUpload";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Copy } from 'lucide-react';
+import { Copy, Github } from 'lucide-react';
 
 interface SkillCategory {
   category: string;
   skills: string[];
 }
 
-type PendingProfileData = Partial<Profile> & {
+function SettingsCheckboxRow({
+  id,
+  title,
+  description,
+  checked,
+  disabled,
+  onCheckedChange,
+}: {
+  id: string;
+  title: string;
+  description: string;
+  checked: boolean;
+  disabled?: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <Checkbox
+        id={id}
+        checked={checked}
+        disabled={disabled}
+        onCheckedChange={value => onCheckedChange(value === true)}
+        className="mt-0.5 cursor-pointer"
+      />
+      <div className="grid gap-1.5 leading-none">
+        <Label htmlFor={id} className="cursor-pointer text-sm font-medium">
+          {title}
+        </Label>
+        <p className="text-xs text-gray-400">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+type ProfileFormData = Record<string, unknown> & {
   address: string;
-  bitcoin_experience_level?: string;
-  bitcoin_tech_stack?: string;
-  bitcoin_project_url?: string;
 };
 
 export default function SettingsPage() {
   const address = useCurrentAddress();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { walletType } = useWallet();
-  const { currentWallet, isWalletEncrypted, isSessionLocked, unlockWallet } = useEncryptedWallet();
+  const { currentWallet } = useEncryptedWallet();
 
   // Determine wallet type - if we have an address but no encrypted wallet, it's an extension wallet
   const isExtensionWallet = Boolean(address && !hasEncryptedWallet());
@@ -57,6 +95,7 @@ export default function SettingsPage() {
   const [website, setWebsite] = useState('');
   const [twitter, setTwitter] = useState('');
   const [discord, setDiscord] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
   const [instagram, setInstagram] = useState('');
   const [linkedin, setLinkedin] = useState('');
   
@@ -82,10 +121,6 @@ export default function SettingsPage() {
   const [walletProofResult, setWalletProofResult] = useState<{ walletSignature: string; walletPublicKey?: string; proofTimestamp: string } | null>(null);
   const [walletLinking, setWalletLinking] = useState(false);
   const [copiedNostrKey, setCopiedNostrKey] = useState(false);
-  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
-  const [pendingProfileData, setPendingProfileData] = useState<PendingProfileData | null>(null);
-  const [unlocking, setUnlocking] = useState(false);
-  
   // Profile Media
   const [avatarUrl, setAvatarUrl] = useState('');
   const [avatarCid, setAvatarCid] = useState('');
@@ -96,30 +131,55 @@ export default function SettingsPage() {
   const [profilePublic, setProfilePublic] = useState(true);
   const [showEmail, setShowEmail] = useState(false);
   const [showLocation, setShowLocation] = useState(true);
-  const [allowDirectMessages, setAllowDirectMessages] = useState(true);
   
   // Notifications Settings
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
   const [developerMode, setDeveloperMode] = useState(false);
+  const [savingDeveloperMode, setSavingDeveloperMode] = useState(false);
   
   // State
   const [skillCategories, setSkillCategories] = useState<SkillCategory[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const githubAuthStatus = searchParams.get('github');
 
   useEffect(() => {
-    setDeveloperMode(isDeveloperModeEnabled());
-  }, []);
+    if (!githubAuthStatus) return;
+
+    const statusMessages: Record<string, { type: 'success' | 'error'; message: string }> = {
+      connected: { type: 'success', message: 'GitHub connected successfully' },
+      missing_config: { type: 'error', message: 'GitHub authentication is not configured' },
+      missing_address: { type: 'error', message: 'Connect your wallet before connecting GitHub' },
+      invalid_state: { type: 'error', message: 'GitHub authorization expired. Please try again' },
+      token_error: { type: 'error', message: 'GitHub authorization failed' },
+      user_error: { type: 'error', message: 'Unable to load your GitHub account' },
+      save_error: { type: 'error', message: 'Unable to save your GitHub connection' },
+      error: { type: 'error', message: 'GitHub connection failed' },
+    };
+
+    const status = statusMessages[githubAuthStatus];
+    if (!status) return;
+
+    if (status.type === 'success') {
+      toast.success(status.message);
+      setSuccess(status.message);
+    } else {
+      toast.error(status.message);
+      setError(status.message);
+    }
+
+    router.replace('/settings', { scroll: false });
+  }, [githubAuthStatus, router]);
 
   useEffect(() => {
     if (!address) return;
     
     const loadData = async () => {
       try {
-        // Load profile from Nostr relays
+        // Load profile from Supabase
         const profile = await getProfile(address);
         if (profile) {
           setUsername(profile.username || '');
@@ -131,6 +191,7 @@ export default function SettingsPage() {
           setWebsite(profile.website || '');
           setTwitter(profile.twitter || '');
           setDiscord(profile.discord || '');
+          setGithubUrl(profile.github_url || '');
           setInstagram(profile.instagram || '');
           setLinkedin(profile.linkedin || '');
           setArtstation(profile.artstation || '');
@@ -158,10 +219,18 @@ export default function SettingsPage() {
           setProfilePublic(profile.profile_public ?? true);
           setShowEmail(profile.show_email ?? false);
           setShowLocation(profile.show_location ?? true);
-          setAllowDirectMessages(profile.allow_direct_messages ?? true);
           setEmailNotifications(profile.email_notifications ?? true);
           setPushNotifications(profile.push_notifications ?? true);
           setMarketingEmails(profile.marketing_emails ?? false);
+        }
+
+        try {
+          const savedDeveloperMode = await getProfileDeveloperMode(address);
+          setDeveloperMode(savedDeveloperMode);
+          setDeveloperModeEnabled(savedDeveloperMode);
+        } catch (developerModeError) {
+          console.warn('Unable to load Developer Mode from profile:', developerModeError);
+          setDeveloperMode(isDeveloperModeEnabled());
         }
 
         // Load skill categories
@@ -212,41 +281,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleUnlockAndSave = async (passphrase: string) => {
-    setSaving(true);
-    setUnlocking(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const walletData = await unlockWallet(passphrase);
-      const privateKey = walletData.privateKey || currentWallet?.privateKey;
-      if (!privateKey) {
-        throw new Error('Unable to retrieve your private key after unlocking');
-      }
-      if (!pendingProfileData) {
-        throw new Error('No pending profile data available to save');
-      }
-
-      await upsertProfile(pendingProfileData, privateKey);
-      setSuccess('Profile saved successfully to Nostr relays!');
-      toast.success('Profile updated!');
-      setPendingProfileData(null);
-      setIsUnlockModalOpen(false);
-      setTimeout(() => {
-        router.push(`/${address}`);
-      }, 1500);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to unlock wallet and save profile';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      throw err;
-    } finally {
-      setUnlocking(false);
-      setSaving(false);
-    }
-  };
-
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -256,59 +290,52 @@ export default function SettingsPage() {
     try {
       if (!address) throw new Error('Wallet not connected');
 
-      const profileData: PendingProfileData = {
+      const optionalText = (value: string) => {
+        const trimmed = value.trim();
+        return trimmed.length > 0 ? trimmed : null;
+      };
+
+      const profileData: ProfileFormData = {
         address,
-        username: username.trim() || undefined,
-        email: email.trim() || undefined,
-        display_name: displayName.trim() || undefined,
-        tagline: tagline.trim() || undefined,
-        biography: biography.trim() || undefined,
-        location: location.trim() || undefined,
-        website: website.trim() || undefined,
-        twitter: twitter.trim() || undefined,
-        discord: discord.trim() || undefined,
-        instagram: instagram.trim() || undefined,
-        linkedin: linkedin.trim() || undefined,
-        artstation: artstation.trim() || undefined,
-        sketchfab: sketchfab.trim() || undefined,
-        fab: fab.trim() || undefined,
-        turbosquid: turbosquid.trim() || undefined,
-        cgtrader: cgtrader.trim() || undefined,
-        behance: behance.trim() || undefined,
-        skills: selectedSkills.length > 0 ? selectedSkills : undefined,
-        occupation: occupation.trim() || undefined,
-        company: company.trim() || undefined,
-        years_experience: yearsExperience > 0 ? yearsExperience : undefined,
-        bitcoin_experience_level: bitcoinExperienceLevel.trim() || undefined,
-        bitcoin_tech_stack: bitcoinTechStack.trim() || undefined,
-        bitcoin_project_url: bitcoinProjectUrl.trim() || undefined,
-        avatar_url: avatarUrl.trim() || undefined,
-        avatar_cid: avatarCid.trim() || undefined,
-        banner_url: bannerUrl.trim() || undefined,
-        banner_cid: bannerCid.trim() || undefined,
+        username: optionalText(username),
+        email: optionalText(email),
+        display_name: optionalText(displayName),
+        tagline: optionalText(tagline),
+        biography: optionalText(biography),
+        location: optionalText(location),
+        website: optionalText(website),
+        twitter: optionalText(twitter),
+        discord: optionalText(discord),
+        github_url: optionalText(githubUrl),
+        instagram: optionalText(instagram),
+        linkedin: optionalText(linkedin),
+        artstation: optionalText(artstation),
+        sketchfab: optionalText(sketchfab),
+        fab: optionalText(fab),
+        turbosquid: optionalText(turbosquid),
+        cgtrader: optionalText(cgtrader),
+        behance: optionalText(behance),
+        skills: selectedSkills.length > 0 ? selectedSkills : null,
+        occupation: optionalText(occupation),
+        company: optionalText(company),
+        years_experience: yearsExperience > 0 ? yearsExperience : null,
+        bitcoin_experience_level: optionalText(bitcoinExperienceLevel),
+        bitcoin_tech_stack: optionalText(bitcoinTechStack),
+        bitcoin_project_url: optionalText(bitcoinProjectUrl),
+        avatar_url: optionalText(avatarUrl),
+        avatar_cid: optionalText(avatarCid),
+        banner_url: optionalText(bannerUrl),
+        banner_cid: optionalText(bannerCid),
         profile_public: profilePublic,
         show_email: showEmail,
         show_location: showLocation,
-        allow_direct_messages: allowDirectMessages,
         email_notifications: emailNotifications,
         push_notifications: pushNotifications,
         marketing_emails: marketingEmails,
       };
 
-      const privateKey = currentWallet?.privateKey;
-      if (!privateKey) {
-        if (isWalletEncrypted) {
-          setPendingProfileData(profileData);
-          setIsUnlockModalOpen(true);
-          setSaving(false);
-          return;
-        }
-
-        throw new Error('Encrypted wallet is required to save profile data to Nostr relays');
-      }
-
-      await upsertProfile(profileData, privateKey);
-      setSuccess('Profile saved successfully to Nostr relays!');
+      await upsertProfile(profileData);
+      setSuccess('Profile saved successfully!');
       toast.success('Profile updated!');
 
       // Navigate to user's profile page after successful save
@@ -406,10 +433,27 @@ export default function SettingsPage() {
     );
   };
 
-  const handleDeveloperModeChange = (enabled: boolean) => {
+  const handleDeveloperModeChange = async (enabled: boolean) => {
+    if (!address) return;
+
+    const previousDeveloperMode = developerMode;
     setDeveloperMode(enabled);
     setDeveloperModeEnabled(enabled);
-    toast.success(enabled ? 'Developer Mode enabled' : 'Developer Mode disabled');
+    setSavingDeveloperMode(true);
+
+    try {
+      const savedDeveloperMode = await updateProfileDeveloperMode(address, enabled);
+      setDeveloperMode(savedDeveloperMode);
+      setDeveloperModeEnabled(savedDeveloperMode);
+      toast.success(savedDeveloperMode ? 'Developer Mode enabled' : 'Developer Mode disabled');
+    } catch (err) {
+      setDeveloperMode(previousDeveloperMode);
+      setDeveloperModeEnabled(previousDeveloperMode);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save Developer Mode';
+      toast.error(errorMessage);
+    } finally {
+      setSavingDeveloperMode(false);
+    }
   };
 
   if (!address) {
@@ -422,12 +466,12 @@ export default function SettingsPage() {
   }
 
   return (
-  <div className="max-w-4xl mx-auto my-24 p-8 rounded-2xl border bg-accent-background border-gray-200 dark:border-gray-800 text-foreground">
+  <div className="max-w-4xl mx-auto my-24 p-8 rounded-2xl border bg-accent-background border-none text-foreground">
       <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
       
       <Tabs defaultValue="profile" className="w-full">
         <TabsList
-          className="grid w-full grid-cols-2 sm:grid-cols-4 bg-accent-background border border-gray-200 dark:border-white/20 rounded-xl overflow-hidden"
+          className={`grid w-full grid-cols-2 ${developerMode ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} bg-accent-background border border-gray-200 dark:border-white/20 rounded-xl overflow-hidden`}
         >
           <TabsTrigger
             value="profile"
@@ -441,12 +485,14 @@ export default function SettingsPage() {
           >
             Social
           </TabsTrigger>
-          <TabsTrigger
-            value="professional"
-            className="cursor-pointer bg-accent-background text-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
-          >
-            Professional
-          </TabsTrigger>
+          {developerMode && (
+            <TabsTrigger
+              value="professional"
+              className="cursor-pointer bg-accent-background text-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
+            >
+              Professional
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="privacy"
             className="cursor-pointer bg-accent-background text-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
@@ -457,60 +503,13 @@ export default function SettingsPage() {
 
         <form onSubmit={handleSave}>
           <TabsContent value="profile" className="space-y-6 mt-6">
-            <Card className="bg-accent-background border-gray-200 dark:border-gray-700">
+            <Card className="bg-accent-background border-none">
               <CardHeader>
                 <CardTitle>Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {error && <div className="text-red-600 dark:text-red-400 text-sm bg-red-100 dark:bg-red-900/20 p-3 rounded">{error}</div>}
                 {success && <div className="text-green-600 dark:text-green-400 text-sm bg-green-100 dark:bg-green-900/20 p-3 rounded">{success}</div>}
-                
-                {/* Profile Picture Section */}
-                <div>
-                  <label className="block mb-3 text-sm font-medium">Profile Photo</label>
-                  {address && (
-                    <ProfilePictureUpload
-                      currentAvatarUrl={avatarUrl}
-                      currentAvatarCid={avatarCid}
-                      address={address}
-                      onUploadSuccess={(newAvatarUrl, newAvatarCid) => {
-                        setAvatarUrl(newAvatarUrl);
-                        setAvatarCid(newAvatarCid);
-                        setSuccess('Profile photo updated successfully!');
-                        setTimeout(() => setSuccess(''), 3000);
-                      }}
-                      onRemoveSuccess={() => {
-                        setAvatarUrl('');
-                        setAvatarCid('');
-                        setSuccess('Profile photo removed successfully!');
-                        setTimeout(() => setSuccess(''), 3000);
-                      }}
-                    />
-                  )}
-                </div>
-
-                {/* Banner Image Section */}
-                <div>
-                  {address && (
-                    <BannerImageUpload
-                      currentBannerUrl={bannerUrl}
-                      currentBannerCid={bannerCid}
-                      address={address}
-                      onUploadSuccess={(newBannerUrl, newBannerCid) => {
-                        setBannerUrl(newBannerUrl);
-                        setBannerCid(newBannerCid);
-                        setSuccess('Banner image updated successfully!');
-                        setTimeout(() => setSuccess(''), 3000);
-                      }}
-                      onRemoveSuccess={() => {
-                        setBannerUrl('');
-                        setBannerCid('');
-                        setSuccess('Banner image removed successfully!');
-                        setTimeout(() => setSuccess(''), 3000);
-                      }}
-                    />
-                  )}
-                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -583,42 +582,11 @@ export default function SettingsPage() {
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      Your Nostr public key is derived from your wallet private key and is shown here when your encrypted wallet is available. Your profile updates will be published to public Nostr relays.
+                      Your Nostr public key is derived from your wallet private key and can be linked as public ownership proof.
                     </p>
-                    {(isWalletEncrypted && isSessionLocked) || (isWalletEncrypted && !currentWallet?.privateKey) ? (
-                      <div className="rounded-xl border border-yellow-400 bg-yellow-50 text-yellow-900 dark:bg-yellow-950/50 dark:text-yellow-200 p-3 mt-4">
-                        <p className="text-sm font-medium">Your encrypted wallet must be unlocked to sign Nostr profile updates.</p>
-                        <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2">Click Save Changes to open the wallet unlock prompt, then your profile update will be signed locally.</p>
-                      </div>
-                    ) : null}
                   </div>
                 </div>
                 
-                <div>
-                  <label className="block mb-2 text-sm font-medium">Tagline</label>
-                  <input
-                    className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    type="text"
-                    value={tagline}
-                    onChange={e => setTagline(e.target.value)}
-                    placeholder="A short description about you"
-                    maxLength={160}
-                  />
-                  <div className="text-xs text-gray-400 mt-1">{tagline.length}/160 characters</div>
-                </div>
-                
-                <div>
-                  <label className="block mb-2 text-sm font-medium">Biography</label>
-                  <textarea
-                    className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={biography}
-                    onChange={e => setBiography(e.target.value)}
-                    placeholder="Tell us more about you..."
-                    maxLength={500}
-                    rows={4}
-                  />
-                  <div className="text-xs text-gray-400 mt-1">{biography.length}/500 characters</div>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -662,6 +630,35 @@ export default function SettingsPage() {
                       placeholder="username"
                     />
                   </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm font-medium">GitHub</label>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <input
+                        className="min-w-0 flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        type="text"
+                        value={githubUrl}
+                        onChange={e => setGithubUrl(e.target.value)}
+                        placeholder="github.com/username"
+                      />
+                      <Button
+                        asChild
+                        type="button"
+                        variant="outline"
+                        className="shrink-0 border-[#222] text-foreground hover:bg-muted"
+                      >
+                        <Link href={`/api/github/authorize?address=${encodeURIComponent(address)}`}>
+                          <Github className="h-4 w-4" />
+                          {githubUrl ? 'Reconnect' : 'Connect'}
+                        </Link>
+                      </Button>
+                    </div>
+                    {githubUrl && (
+                      <p className="mt-2 text-xs text-emerald-500">
+                        GitHub profile connected
+                      </p>
+                    )}
+                  </div>
                   
                   <div>
                     <label className="block mb-2 text-sm font-medium">Instagram</label>
@@ -689,132 +686,134 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="professional" className="space-y-6 mt-6">
-            <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
-              <CardHeader>
-                <CardTitle>Professional Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-2 text-sm font-medium">Occupation</label>
-                    <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      type="text"
-                      value={occupation}
-                      onChange={e => setOccupation(e.target.value)}
-                      placeholder="Product lead, protocol engineer, designer, etc."
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block mb-2 text-sm font-medium">Company</label>
-                    <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      type="text"
-                      value={company}
-                      onChange={e => setCompany(e.target.value)}
-                      placeholder="Company Name"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block mb-2 text-sm font-medium">Years of Experience</label>
-                    <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={yearsExperience}
-                      onChange={e => setYearsExperience(parseInt(e.target.value) || 0)}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-2 text-sm font-medium">Bitcoin Experience Level</label>
-                    <select
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      value={bitcoinExperienceLevel}
-                      onChange={e => setBitcoinExperienceLevel(e.target.value)}
-                    >
-                      <option value="">Select level</option>
-                      <option value="beginner">Beginner</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="advanced">Advanced</option>
-                      <option value="expert">Expert</option>
-                    </select>
+          {developerMode && (
+            <TabsContent value="professional" className="space-y-6 mt-6">
+              <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
+                <CardHeader>
+                  <CardTitle>Professional Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block mb-2 text-sm font-medium">Occupation</label>
+                      <input
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        type="text"
+                        value={occupation}
+                        onChange={e => setOccupation(e.target.value)}
+                        placeholder="Product lead, protocol engineer, designer, etc."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block mb-2 text-sm font-medium">Company</label>
+                      <input
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        type="text"
+                        value={company}
+                        onChange={e => setCompany(e.target.value)}
+                        placeholder="Company Name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block mb-2 text-sm font-medium">Years of Experience</label>
+                      <input
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        type="number"
+                        min="0"
+                        max="50"
+                        value={yearsExperience}
+                        onChange={e => setYearsExperience(parseInt(e.target.value) || 0)}
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block mb-2 text-sm font-medium">Bitcoin Experience Level</label>
+                      <select
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={bitcoinExperienceLevel}
+                        onChange={e => setBitcoinExperienceLevel(e.target.value)}
+                      >
+                        <option value="">Select level</option>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="expert">Expert</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block mb-2 text-sm font-medium">Bitcoin Tech Stack</label>
+                      <input
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        type="text"
+                        value={bitcoinTechStack}
+                        onChange={e => setBitcoinTechStack(e.target.value)}
+                        placeholder="e.g. Bitcoin Core, LND, BDK, Ordinals"
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block mb-2 text-sm font-medium">Bitcoin Tech Stack</label>
+                    <label className="block mb-2 text-sm font-medium">Bitcoin Project URL</label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      type="text"
-                      value={bitcoinTechStack}
-                      onChange={e => setBitcoinTechStack(e.target.value)}
-                      placeholder="e.g. Bitcoin Core, LND, BDK, Ordinals"
+                      type="url"
+                      value={bitcoinProjectUrl}
+                      onChange={e => setBitcoinProjectUrl(e.target.value)}
+                      placeholder="https://github.com/your-bitcoin-project"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block mb-2 text-sm font-medium">Bitcoin Project URL</label>
-                  <input
-                    className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    type="url"
-                    value={bitcoinProjectUrl}
-                    onChange={e => setBitcoinProjectUrl(e.target.value)}
-                    placeholder="https://github.com/your-bitcoin-project"
-                  />
-                </div>
-
-                <div>
-                  <label className="block mb-4 text-sm font-medium">Development Skills & Tools</label>
-                  <div className="space-y-4">
-                    {skillCategories.map((category) => (
-                      <div key={category.category}>
-                        <h4 className="text-sm font-medium text-foreground mb-2">{category.category}</h4>
+                  <div>
+                    <label className="block mb-4 text-sm font-medium">Development Skills & Tools</label>
+                    <div className="space-y-4">
+                      {skillCategories.map((category) => (
+                        <div key={category.category}>
+                          <h4 className="text-sm font-medium text-foreground mb-2">{category.category}</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {category.skills.map((skill) => (
+                              <Badge
+                                key={skill}
+                                variant={selectedSkills.includes(skill) ? "default" : "outline"}
+                                className={`cursor-pointer transition-colors ${
+                                  selectedSkills.includes(skill)
+                                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                    : "bg-accent-background hover:bg-[#333] text-foreground border-[#222]"
+                                }`}
+                                onClick={() => toggleSkill(skill)}
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedSkills.length > 0 && (
+                      <div className="mt-4">
+                        <h5 className="text-sm font-medium text-foreground mb-2">Selected Skills ({selectedSkills.length})</h5>
                         <div className="flex flex-wrap gap-2">
-                          {category.skills.map((skill) => (
+                          {selectedSkills.map((skill) => (
                             <Badge
                               key={skill}
-                              variant={selectedSkills.includes(skill) ? "default" : "outline"}
-                              className={`cursor-pointer transition-colors ${
-                                selectedSkills.includes(skill)
-                                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                  : "bg-accent-background hover:bg-[#333] text-foreground border-[#222]"
-                              }`}
-                              onClick={() => toggleSkill(skill)}
+                              className="bg-blue-600 text-white"
                             >
                               {skill}
                             </Badge>
                           ))}
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
-                  {selectedSkills.length > 0 && (
-                    <div className="mt-4">
-                      <h5 className="text-sm font-medium text-foreground mb-2">Selected Skills ({selectedSkills.length})</h5>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedSkills.map((skill) => (
-                          <Badge
-                            key={skill}
-                            className="bg-blue-600 text-white"
-                          >
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
 
           <TabsContent value="privacy" className="space-y-6 mt-6">
             <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
@@ -823,65 +822,29 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium">Public Profile</h4>
-                      <p className="text-xs text-gray-400">Make your profile visible to everyone</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <Checkbox
-                        checked={profilePublic}
-                        onCheckedChange={v => setProfilePublic(!!v)}
-                        aria-label="Public Profile"
-                        className="h-6 w-6 cursor-pointer"
-                      />
-                    </label>
-                  </div>
+                  <SettingsCheckboxRow
+                    id="profile-public"
+                    title="Public Profile"
+                    description="Make your profile visible to everyone"
+                    checked={profilePublic}
+                    onCheckedChange={setProfilePublic}
+                  />
                   
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium">Show Email</h4>
-                      <p className="text-xs text-gray-400">Display your email on your public profile</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <Checkbox
-                        checked={showEmail}
-                        onCheckedChange={v => setShowEmail(!!v)}
-                        aria-label="Show Email"
-                        className="h-6 w-6 cursor-pointer"
-                      />
-                    </label>
-                  </div>
+                  <SettingsCheckboxRow
+                    id="show-email"
+                    title="Show Email"
+                    description="Display your email on your public profile"
+                    checked={showEmail}
+                    onCheckedChange={setShowEmail}
+                  />
                   
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium">Show Location</h4>
-                      <p className="text-xs text-gray-400">Display your location on your profile</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <Checkbox
-                        checked={showLocation}
-                        onCheckedChange={v => setShowLocation(!!v)}
-                        aria-label="Show Location"
-                        className="h-6 w-6 cursor-pointer"
-                      />
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium">Allow Direct Messages</h4>
-                      <p className="text-xs text-gray-400">Allow other users to send you direct messages</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <Checkbox
-                        checked={allowDirectMessages}
-                        onCheckedChange={v => setAllowDirectMessages(!!v)}
-                        aria-label="Allow Direct Messages"
-                        className="h-6 w-6 cursor-pointer"
-                      />
-                    </label>
-                  </div>
+                  <SettingsCheckboxRow
+                    id="show-location"
+                    title="Show Location"
+                    description="Display your location on your profile"
+                    checked={showLocation}
+                    onCheckedChange={setShowLocation}
+                  />
                 </div>
                 
                 <hr className="border-gray-700" />
@@ -889,50 +852,29 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="text-lg font-medium mb-4">Notification Preferences</h3>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium">Email Notifications</h4>
-                        <p className="text-xs text-gray-400">Receive email notifications</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <Checkbox
-                          checked={emailNotifications}
-                          onCheckedChange={v => setEmailNotifications(!!v)}
-                          aria-label="Email Notifications"
-                          className="h-6 w-6 cursor-pointer"
-                        />
-                      </label>
-                    </div>
+                    <SettingsCheckboxRow
+                      id="email-notifications"
+                      title="Email Notifications"
+                      description="Receive email notifications"
+                      checked={emailNotifications}
+                      onCheckedChange={setEmailNotifications}
+                    />
                     
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium">Push Notifications</h4>
-                        <p className="text-xs text-gray-400">Receive browser push notifications</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <Checkbox
-                          checked={pushNotifications}
-                          onCheckedChange={v => setPushNotifications(!!v)}
-                          aria-label="Push Notifications"
-                          className="h-6 w-6 cursor-pointer"
-                        />
-                      </label>
-                    </div>
+                    <SettingsCheckboxRow
+                      id="push-notifications"
+                      title="Push Notifications"
+                      description="Receive browser push notifications"
+                      checked={pushNotifications}
+                      onCheckedChange={setPushNotifications}
+                    />
                     
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium">Marketing Emails</h4>
-                        <p className="text-xs text-gray-400">Receive updates about new features and promotions</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <Checkbox
-                          checked={marketingEmails}
-                          onCheckedChange={v => setMarketingEmails(!!v)}
-                          aria-label="Marketing Emails"
-                          className="h-6 w-6 cursor-pointer"
-                        />
-                      </label>
-                    </div>
+                    <SettingsCheckboxRow
+                      id="marketing-emails"
+                      title="Marketing Emails"
+                      description="Receive updates about new features and promotions"
+                      checked={marketingEmails}
+                      onCheckedChange={setMarketingEmails}
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -1021,20 +963,14 @@ export default function SettingsPage() {
           <CardTitle>Developer Mode</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
-          <div className="flex items-center justify-between gap-6">
-            <div>
-              <h4 className="text-sm font-medium">Show publishing tools</h4>
-              <p className="text-xs text-gray-400">
-                Turn this on only when you want to submit or manage app listings.
-              </p>
-            </div>
-            <Checkbox
-              checked={developerMode}
-              onCheckedChange={v => handleDeveloperModeChange(!!v)}
-              aria-label="Developer Mode"
-              className="h-6 w-6 cursor-pointer"
-            />
-          </div>
+          <SettingsCheckboxRow
+            id="developer-mode-toggle"
+            title="Show publishing tools"
+            description="Turn this on only when you want to submit or manage app listings."
+            checked={developerMode}
+            disabled={savingDeveloperMode}
+            onCheckedChange={handleDeveloperModeChange}
+          />
 
           {developerMode && (
             <Button asChild className="w-full bg-orange-500 text-white hover:bg-orange-600">
@@ -1065,15 +1001,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <PasswordSigningModal
-        isOpen={isUnlockModalOpen}
-        onClose={() => setIsUnlockModalOpen(false)}
-        onSign={handleUnlockAndSave}
-        title="Unlock encrypted wallet"
-        description="Enter your wallet password to unlock the private key and sign the Nostr profile update locally. Your password is never sent to the server."
-        actionText="Unlock and Save"
-        isLoading={unlocking}
-      />
     </div>
   );
 }

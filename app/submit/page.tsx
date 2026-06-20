@@ -37,7 +37,8 @@ import { uploadFileToPinata, getIPFSUrl } from '@/lib/pinataUpload';
 import { useWallet } from '@/components/WalletProvider';
 import { signStacksMessage, type StacksSignatureResult } from '@/lib/commentSigning';
 import { uploadAppMetadataToIPFS, validateAppMetadata, createMetadataFromFormData } from '@/lib/ipfs-metadata';
-import { isDeveloperModeEnabled } from '@/lib/developerMode';
+import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
+import { getProfileDeveloperMode } from '@/lib/profileApi';
 
 // Extend Window interface for Stacks wallet
 declare global {
@@ -154,16 +155,37 @@ export default function PublishPage() {
   const listingFeeDisplay = formatListingFee(effectiveListingFee.amount, effectiveListingFee.token);
 
   useEffect(() => {
-    const syncDeveloperMode = () => setDeveloperMode(isDeveloperModeEnabled());
+    let cancelled = false;
+
+    const syncDeveloperMode = async () => {
+      if (!currentAddress) {
+        setDeveloperMode(isDeveloperModeEnabled());
+        return;
+      }
+
+      try {
+        const savedDeveloperMode = await getProfileDeveloperMode(currentAddress);
+        if (cancelled) return;
+        setDeveloperMode(savedDeveloperMode);
+        setDeveloperModeEnabled(savedDeveloperMode);
+      } catch (error) {
+        console.warn('Unable to load Developer Mode from profile:', error);
+        if (!cancelled) {
+          setDeveloperMode(isDeveloperModeEnabled());
+        }
+      }
+    };
+
     syncDeveloperMode();
     window.addEventListener('storage', syncDeveloperMode);
     window.addEventListener('bbox-developer-mode-change', syncDeveloperMode);
 
     return () => {
+      cancelled = true;
       window.removeEventListener('storage', syncDeveloperMode);
       window.removeEventListener('bbox-developer-mode-change', syncDeveloperMode);
     };
-  }, []);
+  }, [currentAddress]);
 
   useEffect(() => {
     setSignatureResult(null);

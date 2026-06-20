@@ -1,10 +1,9 @@
 import { supabase } from '@/lib/supabaseClient';
-import { createNostrMetadataEvent, fetchNostrProfileByAddress, publishNostrEvent } from '@/lib/nostr';
 
 // Test Supabase connectivity
 export async function testSupabaseConnection() {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('profiles')
       .select('count', { count: 'exact', head: true });
     
@@ -37,6 +36,7 @@ export interface Profile {
   website?: string;
   twitter?: string;
   discord?: string;
+  github_url?: string;
   instagram?: string;
   linkedin?: string;
   
@@ -75,7 +75,6 @@ export interface Profile {
   profile_public?: boolean;
   show_email?: boolean;
   show_location?: boolean;
-  allow_direct_messages?: boolean;
   linked_nostr_public_key?: string;
   wallet_type?: string;
   wallet_public_key?: string;
@@ -86,6 +85,7 @@ export interface Profile {
   email_notifications?: boolean;
   push_notifications?: boolean;
   marketing_emails?: boolean;
+  developer_mode?: boolean;
   
   // Account Status
   account_status?: 'active' | 'suspended' | 'deleted';
@@ -98,9 +98,54 @@ export interface Profile {
   last_active?: string;
 }
 
+export async function getProfileDeveloperMode(address: string): Promise<boolean> {
+  const response = await fetch(`/api/profile/developer-mode?address=${encodeURIComponent(address)}`, {
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error || 'Failed to load Developer Mode');
+  }
+
+  const body = await response.json();
+  return Boolean(body?.developer_mode);
+}
+
+export async function updateProfileDeveloperMode(address: string, developerMode: boolean): Promise<boolean> {
+  const response = await fetch('/api/profile/developer-mode', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      address,
+      developer_mode: developerMode,
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error || 'Failed to save Developer Mode');
+  }
+
+  const body = await response.json();
+  return Boolean(body?.developer_mode);
+}
+
 export async function getProfile(address: string): Promise<Profile | null> {
   try {
-    const profile = await fetchNostrProfileByAddress(address);
+    const response = await fetch(`/api/profile/${encodeURIComponent(address)}`, {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw new Error(body?.error || 'Failed to load profile');
+    }
+
+    const body = await response.json();
+    const profile = body?.profile;
 
     if (!profile) {
       return null;
@@ -121,34 +166,22 @@ export async function getProfile(address: string): Promise<Profile | null> {
   }
 }
 
-export async function upsertProfile(profile: Partial<Profile> & { address: string }, privateKeyHex?: string): Promise<Profile> {
-  if (!privateKeyHex) {
-    throw new Error('Private key is required to publish your Nostr profile. Unlock your encrypted wallet first.');
-  }
-
-  const cleanedProfile: Record<string, unknown> & { address: string } = {
-    address: profile.address,
-  };
-
-  Object.entries(profile).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      if (key === 'email' && profile.show_email === false) return;
-      cleanedProfile[key] = value;
-    }
+export async function upsertProfile(profile: Record<string, unknown> & { address: string }): Promise<Profile> {
+  const response = await fetch('/api/profile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(profile),
   });
 
-  const event = await createNostrMetadataEvent(cleanedProfile, privateKeyHex);
-  const published = await publishNostrEvent(event);
-
-  if (!published) {
-    throw new Error('Failed to publish profile to Nostr relays. Please try again.');
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error || 'Failed to save profile');
   }
 
-  return {
-    ...profile,
-    updated_at: new Date().toISOString(),
-    created_at: new Date().toISOString(),
-  } as Profile;
+  const body = await response.json();
+  return body.profile as Profile;
 }
 
 export interface WalletLinkProof {
