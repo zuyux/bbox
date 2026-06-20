@@ -442,27 +442,27 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
             </>
           )}
           {connectMode === 'email' && (
-            <div className="space-y-4 text-black">
-              <div className="space-y-2">
+            <div className="space-y-2 text-black">
+              <div className="space-y-0">
                 <Label htmlFor="email" className='hidden'>Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="bg-white px-4 py-3 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                  placeholder="your@email.com"
+                  className="bg-foreground text-background px-4 py-3 border-black/50 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-0">
                 <Label htmlFor="password" className="hidden">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="bg-white px-4 py-3 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                  placeholder="Password"
+                  className="bg-foreground text-background px-4 py-3 border-black/50 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
                 />
               </div>
               <Button 

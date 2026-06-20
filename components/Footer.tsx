@@ -3,7 +3,7 @@ import { ModeToggle } from './modeToggle';
 
 export default function Footer() {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-[#000000] text-white h-8 text-xs z-50 py-1">
+    <footer className="fixed bottom-0 left-0 right-0 h-8 bg-black/50 text-white text-xs z-50 py-1 backdrop-blur-md border-t border-white/10">
       <div className="mx-auto h-full px-3 sm:px-4">
         <div className="flex justify-between items-center h-full">
           <Link href="/about" className='flex items-center gap-1'>
@@ -14,8 +14,8 @@ export default function Footer() {
           <div className="flex items-center gap-3 sm:gap-5">
             <Link href="/documentation" className="hover:text-[#fff] text-[#777]">Learn</Link>
             <Link href="/build" className="hover:text-[#fff] text-[#777]">Build</Link>
-            <Link href="/privacy-policy" className="hidden md:inline hover:text-[#fff] text-[#555]">Privacy</Link>
-            <Link href="/terms-of-service" className="hidden md:inline hover:text-[#fff] text-[#555]">Terms</Link>
+            <Link href="/privacy-policy" className="hidden md:inline hover:text-[#fff] text-[#777]">Privacy</Link>
+            <Link href="/terms-of-service" className="hidden md:inline hover:text-[#fff] text-[#777]">Terms</Link>
           </div>
           <div className="flex items-center gap-0 h-full">
             <ModeToggle />
