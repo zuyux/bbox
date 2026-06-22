@@ -1,30 +1,142 @@
-# BBOX: Universal Registry for Verified Software
+# BBOX
 
-**BBOX** is a universal coordination layer and sovereign registry for high-integrity open-source software.
-It accepts apps that interact with Bitcoin, other chains, or no chain at all: privacy tools, developer utilities, safe AI applications, infrastructure projects, wallets, social protocols, and public-good software.
+**Bitcoin-Anchored Registry and Funding Layer for Open-Source Software**
 
-BBOX uses the **Bitcoin App Registry (BAR)** protocol as an immutable coordination anchor. Publishers retain control over their metadata while every canonical registration and update can be audited through a public Bitcoin Layer 1 history.
+BBOX is an open-source coordination layer for discovering, verifying, funding, and maintaining high-integrity software.
 
-## Vision
+Its first focus is the Bitcoin ecosystem: Bitcoin apps, Lightning tools, Nostr clients, wallets, privacy software, developer utilities, Bitcoin L2s, infrastructure projects, safe AI tools, and public-good research. The registry is designed to be universal, supporting desktop, Android, iOS, web, CLI, protocol, and infrastructure software.
 
-BBOX is a parallel distribution and funding infrastructure for software that should remain verifiable, fundable, and permanent.
+BBOX uses the **Bitcoin App Registry / BAR** protocol as a sovereign metadata layer. Publishers keep control over their project records while canonical registrations and updates can be anchored to Bitcoin Layer 1, creating an auditable history of software identity, maintainers, releases, funding milestones, and project evolution.
 
-- Register open-source apps across Bitcoin, multi-chain, and off-chain ecosystems.
-- Preserve canonical app metadata through publisher-controlled BAR records.
-- Help users, contributors, investors, and grant committees screen real developer proof-of-work.
-- Coordinate milestone-based funding for public goods, research, and production software.
-- Support specialized work such as Bitcoin L2s, privacy tools, safe AI, and post-quantum Bitcoin research.
+---
+
+## Why BBOX?
+
+Open-source software is difficult to evaluate, fund, and preserve.
+
+Users need to know which apps are real, maintained, and safe.
+Developers need visibility, contributors, and sustainable funding.
+Grant committees and funders need better ways to inspect proof-of-work.
+Communities need a shared surface to coordinate public-good development.
+
+BBOX exists to make open-source software more discoverable, verifiable, fundable, and permanent.
+
+---
+
+## Core Thesis
+
+BBOX is not just an app store.
+
+BBOX is a **Bitcoin-anchored coordination registry** for the people, projects, releases, and funding flows behind open-source software.
+
+Where traditional app stores focus on installation, BBOX focuses on:
+
+* software provenance;
+* developer proof-of-work;
+* public project metadata;
+* milestone-based funding;
+* contributor coordination;
+* Bitcoin-native public-good infrastructure;
+* long-term discoverability and preservation.
 
 ## Core Features
 
-| Feature | Description |
-| --- | --- |
-| **Universal App Index** | Registry for verified open-source software across chains and independent off-chain tools. |
-| **BAR Anchoring** | Bitcoin App Registry records provide immutable, publisher-controlled app history on Bitcoin L1. |
-| **Milestone Funding** | Smart-contract flows release funds only after visible development stages are completed. |
-| **Developer Proof-of-Work** | Public profiles, source links, reviews, and history help evaluate builder seniority. |
-| **Sovereign Distribution** | A no-gatekeeper directory for software that should remain discoverable and censorship resistant. |
-| **Community Coordination** | A shared surface for users, builders, DAOs, grant programs, and investors to inspect progress. |
+| Feature                          | Description                                                                                                             |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Universal App Index**          | Registry for open-source software across desktop, Android, iOS, web, CLI, protocol, and infrastructure projects.        |
+| **Bitcoin-First Scope**          | Initial focus on Bitcoin, Lightning, Nostr, privacy, wallets, Bitcoin L2s, and public-good developer tools.             |
+| **BAR Anchoring**                | Bitcoin App Registry records provide canonical, publisher-controlled metadata anchored to Bitcoin L1.                   |
+| **Developer Proof-of-Work**      | Public profiles display repositories, contributions, releases, funding history, milestones, and community attestations. |
+| **Milestone Funding**            | Funding flows can be linked to visible development stages, deliverables, reviews, and payout conditions.                |
+| **Sovereign Distribution Layer** | Projects remain discoverable through an open registry rather than relying only on centralized app stores or platforms.  |
+| **Community Coordination**       | Users, builders, DAOs, investors, and grant committees can inspect software progress in one shared surface.             |
+| **Public-Good Discovery**        | Helps surface valuable open-source tools that are often buried across GitHub, Nostr, forums, grants, and communities.   |
+
+---
+
+## Bitcoin App Registry / BAR
+
+BAR is the registry protocol used by BBOX to preserve canonical software metadata.
+
+A BAR record can represent:
+
+* an application;
+* a library;
+* a protocol;
+* a wallet;
+* a developer tool;
+* a research project;
+* a public-good software initiative;
+* an infrastructure component.
+
+Each BAR record is publisher-controlled and can include metadata such as:
+
+* project name;
+* description;
+* repositories;
+* releases;
+* maintainers;
+* supported platforms;
+* license;
+* cryptographic signatures;
+* funding links;
+* milestone status;
+* Nostr identity;
+* website;
+* documentation;
+* audit references;
+* community reviews.
+
+Canonical registrations and updates can be anchored to Bitcoin L1, giving every project a public history that can be independently audited.
+
+---
+
+## Example BAR Metadata
+
+```json
+{
+  "bar_version": "0.1",
+  "name": "Mostro",
+  "slug": "mostro",
+  "description": "Nostr and Lightning-based peer-to-peer exchange protocol.",
+  "category": "P2P Exchange",
+  "software_type": "protocol",
+  "platforms": ["web", "android", "cli"],
+  "ecosystems": ["bitcoin", "lightning", "nostr"],
+  "repository": "https://github.com/MostroP2P/mostro",
+  "website": "https://mostro.network",
+  "license": "MIT",
+  "maintainers": [
+    {
+      "name": "Maintainer Name",
+      "github": "github-user",
+      "nostr": "npub..."
+    }
+  ],
+  "funding": {
+    "lightning_address": "builder@getalby.com",
+    "bitcoin_address": "",
+    "grants": [],
+    "milestones": [
+      {
+        "title": "Improve mobile client integration",
+        "status": "seeking_funding",
+        "amount_sats": 5000000
+      }
+    ]
+  },
+  "proof_of_work": {
+    "repositories": [],
+    "merged_prs": [],
+    "releases": [],
+    "community_attestations": []
+  },
+  "bar_anchor": {
+    "bitcoin_txid": "",
+    "timestamp": ""
+  }
+}
+```
 
 ## Architecture
 
@@ -66,7 +178,11 @@ npm run dev
 BBOX is developed by **ZUYUX**, a research and development collective.
 
 Lead: [@fabohax](https://github.com/fabohax)
-Contributors: [@anthozg](https://github.com/anthozg), [@stackslabs](https://stackslabs.com)
+Contributors: [@anthozg](https://github.com/anthozg), [@ronoel](https://github.com/ronoel)
+
+Previous Grants: [@degrants](https://degrants.xyz)
+
+Interested in helping? See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, workflow, pull request, documentation, and security guidelines.
 
 ## License
 
