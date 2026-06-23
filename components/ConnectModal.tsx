@@ -264,17 +264,17 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[101] select-none">
-      <div className="bg-foreground text-black rounded-2xl w-[400px] max-w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+    <div className="fixed inset-0 bg-foreground/30 flex items-center justify-center z-[101] select-none">
+      <div className="bg-background text-foreground rounded-2xl w-[400px] max-w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-black text-xl font-semibold flex items-center">
+          <h2 className="text-foreground text-xl font-semibold flex items-center">
             <Wallet className="w-5 h-5 mr-2" />
             Sign in with email
           </h2>
           <button 
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-900 transition-colors cursor-pointer"
+            className="text-foreground/50 hover:text-gray-900 transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-6 h-6" />
@@ -451,7 +451,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="bg-foreground text-background px-4 py-3 border-black/50 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                  className="bg-background text-foreground px-4 py-3 border-black/50 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
                 />
               </div>
               <div className="space-y-0">
@@ -462,7 +462,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
-                  className="bg-foreground text-background px-4 py-3 border-black/50 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                  className="bg-background text-foreground px-4 py-3 border-black/50 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
                 />
               </div>
               <Button 

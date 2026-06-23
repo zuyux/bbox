@@ -248,6 +248,7 @@ export async function retrieveEncryptedWallet(passphrase: string): Promise<Walle
       bitcoinAddress: encryptedData.bitcoinAddress,
       rootstockAddress: encryptedData.rootstockAddress,
       liquidAddress: encryptedData.liquidAddress,
+      nostrPublicKey: encryptedData.nostrPublicKey,
       address: encryptedData.address,
       label: encryptedData.label,
     };

@@ -15,8 +15,8 @@ import {
   Profile
 } from '@/lib/profileApi';
 import { buildWalletProofMessage, createWalletProof } from '@/lib/commentSigning';
-import { hasEncryptedWallet } from '@/lib/encryptedStorage';
-import { isNostrPublicKey } from '@/lib/nostr';
+import { hasEncryptedWallet, retrieveEncryptedWallet } from '@/lib/encryptedStorage';
+import { getNostrSecretKeyFromPrivateKey, isNostrPublicKey } from '@/lib/nostr';
 import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Copy, Github } from 'lucide-react';
+import { Copy, Eye, EyeOff, Github, KeyRound } from 'lucide-react';
 
 interface SkillCategory {
   category: string;
@@ -70,6 +70,42 @@ function SettingsCheckboxRow({
 type ProfileFormData = Record<string, unknown> & {
   address: string;
 };
+
+async function copyToClipboard(value: string): Promise<boolean> {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+  } catch (err) {
+    console.warn('Navigator clipboard copy failed, trying fallback:', err);
+  }
+
+  try {
+    if (typeof document === 'undefined') return false;
+
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '0';
+    textarea.style.width = '1px';
+    textarea.style.height = '1px';
+    textarea.style.opacity = '0';
+    textarea.style.pointerEvents = 'none';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, value.length);
+    const copied = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return copied;
+  } catch (err) {
+    console.warn('Fallback clipboard copy failed:', err);
+    return false;
+  }
+}
 
 export default function SettingsPage() {
   const address = useCurrentAddress();
@@ -138,6 +174,10 @@ export default function SettingsPage() {
   const [marketingEmails, setMarketingEmails] = useState(false);
   const [developerMode, setDeveloperMode] = useState(false);
   const [savingDeveloperMode, setSavingDeveloperMode] = useState(false);
+  const [recoveryPassword, setRecoveryPassword] = useState('');
+  const [revealingKeys, setRevealingKeys] = useState(false);
+  const [recoveryKeys, setRecoveryKeys] = useState<{ mnemonic: string; privateKey: string; nsec: string } | null>(null);
+  const [showRecoveryKeys, setShowRecoveryKeys] = useState(false);
   
   // State
   const [skillCategories, setSkillCategories] = useState<SkillCategory[]>([]);
@@ -271,7 +311,10 @@ export default function SettingsPage() {
   const copyNostrKey = async () => {
     if (!currentWallet?.nostrPublicKey) return;
     try {
-      await navigator.clipboard.writeText(currentWallet.nostrPublicKey);
+      const copied = await copyToClipboard(currentWallet.nostrPublicKey);
+      if (!copied) {
+        throw new Error('Clipboard unavailable');
+      }
       setCopiedNostrKey(true);
       toast.success('Nostr public key copied');
       setTimeout(() => setCopiedNostrKey(false), 2500);
@@ -279,6 +322,55 @@ export default function SettingsPage() {
       console.error('Failed to copy Nostr public key:', err);
       toast.error('Failed to copy Nostr public key');
     }
+  };
+
+  const copySecret = async (label: string, value: string) => {
+    try {
+      const copied = await copyToClipboard(value);
+      if (!copied) {
+        throw new Error('Clipboard unavailable');
+      }
+      toast.success(`${label} copied`);
+    } catch (err) {
+      console.error(`Failed to copy ${label}:`, err);
+      toast.error(`Failed to copy ${label}`);
+    }
+  };
+
+  const handleRevealRecoveryKeys = async () => {
+    setRevealingKeys(true);
+    setRecoveryKeys(null);
+
+    try {
+      if (!recoveryPassword.trim()) {
+        throw new Error('Enter your wallet password');
+      }
+
+      const wallet = await retrieveEncryptedWallet(recoveryPassword);
+      if (!wallet?.mnemonic || !wallet.privateKey) {
+        throw new Error('Unable to unlock wallet keys');
+      }
+
+      setRecoveryKeys({
+        mnemonic: wallet.mnemonic,
+        privateKey: wallet.privateKey,
+        nsec: getNostrSecretKeyFromPrivateKey(wallet.privateKey),
+      });
+      setShowRecoveryKeys(true);
+      setRecoveryPassword('');
+      toast.success('Keys revealed locally');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to reveal keys';
+      toast.error(errorMessage);
+    } finally {
+      setRevealingKeys(false);
+    }
+  };
+
+  const clearRecoveryKeys = () => {
+    setRecoveryKeys(null);
+    setRecoveryPassword('');
+    setShowRecoveryKeys(false);
   };
 
   const handleSave = async (e: FormEvent) => {
@@ -979,6 +1071,100 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {!isExtensionWallet && (
+        <Card className="mt-8 bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
+          <CardHeader>
+            <CardTitle>Reveal Recovery Keys</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <p className="text-sm text-gray-400">
+              Enter your wallet password to decrypt and show your mnemonic, private key, and Nostr nsec key locally in this browser.
+            </p>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                className="min-w-0 flex-1 px-4 py-3 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                type="password"
+                value={recoveryPassword}
+                onChange={event => setRecoveryPassword(event.target.value)}
+                onKeyDown={event => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    void handleRevealRecoveryKeys();
+                  }
+                }}
+                placeholder="Wallet password"
+                autoComplete="current-password"
+              />
+              <Button
+                type="button"
+                onClick={handleRevealRecoveryKeys}
+                disabled={revealingKeys || !recoveryPassword.trim()}
+                className="shrink-0 bg-red-600 text-white hover:bg-red-700"
+              >
+                <KeyRound className="h-4 w-4" />
+                {revealingKeys ? 'Unlocking...' : 'Reveal Keys'}
+              </Button>
+            </div>
+
+            {recoveryKeys && (
+              <div className="space-y-4 rounded-lg border border-red-500/40 bg-red-500/5 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm font-medium text-red-600 dark:text-red-300">
+                    Keep these keys private. Anyone with them can control your wallet.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowRecoveryKeys(value => !value)}
+                      className="border-border text-muted-foreground hover:bg-muted"
+                    >
+                      {showRecoveryKeys ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showRecoveryKeys ? 'Hide' : 'Show'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={clearRecoveryKeys}
+                      className="border-border text-muted-foreground hover:bg-muted"
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+
+                {[
+                  { label: 'Mnemonic', value: recoveryKeys.mnemonic },
+                  { label: 'Private Key', value: recoveryKeys.privateKey },
+                  { label: 'Nostr nsec Key', value: recoveryKeys.nsec },
+                ].map(secret => (
+                  <div key={secret.label} className="space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <label className="text-xs font-medium uppercase text-gray-500">{secret.label}</label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copySecret(secret.label, secret.value)}
+                        className="h-8 border-border text-muted-foreground hover:bg-muted"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="min-h-12 break-all rounded-lg border border-[#222] bg-background p-3 font-mono text-sm text-foreground">
+                      {showRecoveryKeys ? secret.value : '********************************'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Account Management Links */}
       <div className="mt-12 pt-8 border-t border-gray-700">

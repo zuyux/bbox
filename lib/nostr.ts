@@ -36,6 +36,12 @@ export function getNostrPublicKeyFromPrivateKey(privateKeyHex: string): string {
   return bech32.encode('npub', words);
 }
 
+export function getNostrSecretKeyFromPrivateKey(privateKeyHex: string): string {
+  const privateKey = hexToBytes(privateKeyHex);
+  const words = bech32.toWords(privateKey);
+  return bech32.encode('nsec', words);
+}
+
 export function decodeNostrPublicKeyToHex(npubOrHex: string): string {
   const trimmed = npubOrHex.trim();
   if (trimmed.startsWith('npub')) {
