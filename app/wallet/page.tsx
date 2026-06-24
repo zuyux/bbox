@@ -130,6 +130,14 @@ const formatAssetCardBalance = (balance: NativeBalance) => {
     : balance.value.toLocaleString(undefined, { maximumFractionDigits: 8, minimumFractionDigits: 1 });
 };
 
+const formatStacksAssetCardBalance = (value: string | undefined) => {
+  const parsed = Number(String(value ?? '0').replace(/,/g, ''));
+  if (!Number.isFinite(parsed) || parsed === 0) return '0.00';
+  return parsed >= 1
+    ? parsed.toLocaleString(undefined, { maximumFractionDigits: 6, minimumFractionDigits: 2 })
+    : parsed.toLocaleString(undefined, { maximumFractionDigits: 6, minimumFractionDigits: 2 });
+};
+
 const isValidBitcoinAddress = (value: string, network: 'mainnet' | 'testnet' | 'devnet') => {
   const normalized = value.trim();
   if (!normalized) return false;
@@ -425,7 +433,7 @@ export default function WalletPage() {
   const remainingBalanceDisplay = remainingBalanceValue !== null ? formatCompactBalance(Math.max(remainingBalanceValue, 0)) : null;
 
   const stxAsset = assets.find((asset) => asset.id === 'stx' || asset.symbol === 'STX');
-  const stxBalanceDisplay = stxAsset?.formattedBalance || '--';
+  const stxBalanceDisplay = formatStacksAssetCardBalance(stxAsset?.formattedBalance);
   const btcBalanceDisplay = formatAssetCardBalance(btcBalance);
   const rskBalanceDisplay = formatAssetCardBalance(rskBalance);
   const liquidBalanceDisplay = formatAssetCardBalance(liquidBalance);
