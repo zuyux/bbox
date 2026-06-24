@@ -7,10 +7,12 @@ import { PasswordSigningModal } from "@/components/PasswordSigningModal";
 import { request as satsRequest } from 'sats-connect';
 import { useWallet } from "@/components/WalletProvider";
 import { sendBitcoinWithKey } from "@/lib/bitcoinTransfer";
+import { parseRbtcAmount, sendRootstockWithKey } from "@/lib/rootstockTransfer";
 
 const STACKS_ADDRESS_REGEX = /^(SP|SM|SN|ST|SU|TP|TM|TN|TS)[A-Za-z0-9]{30,40}$/i;
 const BITCOIN_MAINNET_ADDRESS_REGEX = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/i;
 const BITCOIN_TESTNET_ADDRESS_REGEX = /^(tb1|[mn2])[a-zA-HJ-NP-Z0-9]{25,90}$/i;
+const EVM_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 const MAX_MEMO_BYTES = 34;
 const SATS_PER_BTC = 100_000_000;
 
@@ -67,7 +69,7 @@ const SEND_ASSETS: Array<{
     unit: 'RBTC',
     placeholder: '0x...',
     recipientHint: 'Use a Rootstock EVM address.',
-    supported: false,
+    supported: true,
   },
   {
     id: 'liquid',
@@ -270,6 +272,9 @@ export default function WalletPage() {
         ? 'Enter a valid Bitcoin mainnet address.'
         : 'Enter a valid Bitcoin testnet address.';
     }
+    if (sendAsset === 'rootstock' && !EVM_ADDRESS_REGEX.test(trimmedRecipient)) {
+      return 'Enter a valid Rootstock EVM address.';
+    }
     return undefined;
   })();
   const amountError = sendAmount
@@ -279,17 +284,21 @@ export default function WalletPage() {
         ? 'Enter at least 1 satoshi'
         : sendAsset === 'bitcoin' && btcToSats(sendAmount) === null
           ? 'Enter a BTC amount with up to 8 decimal places'
+        : sendAsset === 'rootstock' && parseRbtcAmount(sendAmount) === null
+          ? 'Enter an RBTC amount with up to 18 decimal places'
         : undefined)
     : undefined;
   const unsupportedSendAssetMessage = selectedSendAsset.supported
     ? undefined
     : `${selectedSendAsset.label} sends need chain-specific signing and broadcasting support before they can be enabled.`;
   const isLocalWallet = walletType === 'imported';
-  const selectedAssetNeedsPassword = (sendAsset === 'sbtc' && !extensionAvailable) || (sendAsset === 'bitcoin' && isLocalWallet);
+  const selectedAssetNeedsPassword = (sendAsset === 'sbtc' && !extensionAvailable) || (sendAsset === 'bitcoin' && isLocalWallet) || sendAsset === 'rootstock';
   const selectedAssetCanUseCurrentSigner = sendAsset === 'bitcoin'
     ? !isLocalWallet || !!sendPassword
     : sendAsset === 'sbtc'
       ? extensionAvailable || !!sendPassword
+      : sendAsset === 'rootstock'
+        ? isLocalWallet && !!sendPassword
       : false;
   const supportsMemo = sendAsset === 'sbtc';
   const memoByteLength = useMemo(() => new TextEncoder().encode(sendMemo || '').length, [sendMemo]);
@@ -353,7 +362,8 @@ export default function WalletPage() {
   const sendActionLabel = selectedSendAsset.supported
     ? (sendAsset === 'bitcoin'
       ? isLocalWallet ? 'Send BTC Securely' : 'Send'
-      : extensionAvailable ? 'Send via Extension' : 'Send Securely')
+      : sendAsset === 'rootstock' ? 'Send'
+      : extensionAvailable ? 'Send via Extension' : 'Send')
     : 'Select Supported Asset';
   const summaryRecipientDisplay = trimmedRecipient ? abbreviateAddress(trimmedRecipient, 6) : 'Add recipient';
   const remainingBalanceDisplay = remainingBalanceValue !== null ? formatCompactBalance(Math.max(remainingBalanceValue, 0)) : null;
@@ -479,13 +489,17 @@ export default function WalletPage() {
   }, [sendLoading]);
 
   const sendMethodTitle = selectedSendAsset.supported
-    ? `Sending ${selectedSendAsset.label} ${sendAsset === 'bitcoin' && !isLocalWallet || extensionAvailable && sendAsset !== 'bitcoin' ? 'with Extension' : 'with Local Wallet'}`
+    ? `Sending ${selectedSendAsset.label} ${sendAsset === 'bitcoin' && !isLocalWallet || extensionAvailable && sendAsset === 'sbtc' ? 'with Extension' : 'with Local Wallet'}`
     : `${selectedSendAsset.label} selected`;
   const sendMethodDescription = selectedSendAsset.supported
     ? (sendAsset === 'bitcoin' && isLocalWallet
       ? 'Your encrypted wallet password unlocks the local private key to sign and broadcast this BTC transfer.'
       : sendAsset === 'bitcoin'
       ? 'Your Bitcoin browser wallet will build, sign, fee, and broadcast this BTC transfer.'
+      : sendAsset === 'rootstock'
+      ? isLocalWallet
+        ? 'Your encrypted wallet password unlocks the local private key to sign and broadcast this native RBTC transfer on Rootstock.'
+        : 'Rootstock sends are available from local encrypted wallets. Create or unlock a local wallet to continue.'
       : extensionAvailable
       ? 'Your connected browser wallet will handle signing, fees, and confirmation prompts for this transfer.'
       : 'Your encrypted wallet password unlocks the private key locally to sign this transfer.')
@@ -651,7 +665,7 @@ export default function WalletPage() {
       return;
     }
 
-    if (sendAsset !== 'sbtc' && sendAsset !== 'bitcoin') {
+    if (sendAsset !== 'sbtc' && sendAsset !== 'bitcoin' && sendAsset !== 'rootstock') {
       toast.error(unsupportedSendAssetMessage || 'This asset is not supported for sending yet.');
       return;
     }
@@ -703,6 +717,26 @@ export default function WalletPage() {
         if (!isWalletRequestCancelled(response.error)) {
           toast.error(getWalletErrorMessage(response.error, 'Bitcoin transfer failed'));
         }
+        return;
+      }
+
+      if (sendAsset === 'rootstock') {
+        if (!isLocalWallet) {
+          throw new Error('Rootstock sends require a local encrypted wallet.');
+        }
+
+        const wallet = await retrieveEncryptedWallet(sendPassword);
+        if (!wallet?.privateKey) throw new Error('Invalid password or wallet not found');
+
+        const txId = await sendRootstockWithKey({
+          privateKey: wallet.privateKey,
+          toAddress: recipient,
+          amountRbtc: sendAmount,
+          network: currentNetwork,
+        });
+
+        toast.success(`RBTC transfer sent! TXID: ${txId}`);
+        closeSendModal();
         return;
       }
 
@@ -1135,12 +1169,12 @@ export default function WalletPage() {
                     id="send-amount"
                     className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-background text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
                     type="number"
-                    min={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' ? 0.00000001 : 0}
-                    step={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' ? 0.00000001 : 'any'}
+                    min={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 0}
+                    step={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 'any'}
                     value={sendAmount}
                     onChange={e => setSendAmount(e.target.value)}
                     required
-                    placeholder={sendAsset === 'sbtc' ? '1000' : sendAsset === 'bitcoin' ? '0.00000000' : '0.0'}
+                    placeholder={sendAsset === 'sbtc' ? '1000' : sendAsset === 'bitcoin' ? '0.00000000' : sendAsset === 'rootstock' ? '0.000000000000000000' : '0.0'}
                     disabled={sendLoading}
                     style={{ MozAppearance: "textfield" } as React.CSSProperties}
                   />
@@ -1154,7 +1188,7 @@ export default function WalletPage() {
                   </button>
                 </div>
                 <div className="flex items-center justify-between text-xs mt-2 text-muted-foreground">
-                  <span>{sendAsset === 'sbtc' ? 'Minimum 1 sat' : sendAsset === 'bitcoin' ? 'Amount in BTC' : `Amount in ${selectedSendAsset.unit}`}</span>
+                  <span>{sendAsset === 'sbtc' ? 'Minimum 1 sat' : sendAsset === 'bitcoin' ? 'Amount in BTC' : sendAsset === 'rootstock' ? 'Amount in RBTC' : `Amount in ${selectedSendAsset.unit}`}</span>
                   <span>Available {selectedAssetBalanceDisplay}</span>
                 </div>
                 {quickFillOptions.length > 0 && (
@@ -1230,7 +1264,7 @@ export default function WalletPage() {
                   )}
                   <div className="flex items-center justify-between text-xs text-muted-foreground mt-3">
                     <span>Method</span>
-                    <span>{sendAsset === 'bitcoin' && !isLocalWallet || extensionAvailable && sendAsset !== 'bitcoin' ? 'Browser extension' : 'Encrypted wallet'}</span>
+                    <span>{sendAsset === 'bitcoin' && !isLocalWallet || extensionAvailable && sendAsset === 'sbtc' ? 'Browser extension' : 'Encrypted wallet'}</span>
                   </div>
                 </div>
               )}
@@ -1262,7 +1296,7 @@ export default function WalletPage() {
                   className="w-full py-3 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={sendLoading || !sendFormValid}
                 >
-                  {sendLoading ? (extensionAvailable ? 'Sending via extension...' : 'Sending...') : sendActionLabel}
+                  {sendLoading ? (sendAsset === 'bitcoin' && !isLocalWallet || extensionAvailable && sendAsset === 'sbtc' ? 'Sending via extension...' : 'Sending...') : sendActionLabel}
                 </button>
                 <button
                   type="button"
