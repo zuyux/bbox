@@ -138,7 +138,7 @@ BBOX uses two upload paths:
 - **Pinata/IPFS:** `/api/upload-metadata`, Pinata helpers, and IPFS URL utilities are used for durable metadata and CID-based media references.
 - **Vercel Blob:** `/api/upload-to-blob` creates presigned upload tokens for larger user media, validating file type and size before generating a client upload token.
 
-`middleware.ts` adds broad CORS headers and long-lived cache headers for image-like paths and IPFS-related requests.
+`proxy.ts` adds broad CORS headers and long-lived cache headers for image-like paths and IPFS-related requests.
 
 ## Wallet And Session Model
 
