@@ -24,6 +24,11 @@ type BrowserStacksWindow = typeof window & {
 
 export type SupportedWalletType = 'leather' | 'xverse' | 'hiro' | 'imported' | null;
 
+type ResolvedStacksProvider = {
+  provider: RpcCapableStacksProvider;
+  walletType: Exclude<SupportedWalletType, 'imported' | null>;
+};
+
 export interface CommentSignatureResult {
   signature: string;
   signedPayload: string;
@@ -103,7 +108,7 @@ const providerSupportsRpc = (provider?: StacksProvider): provider is RpcCapableS
   return !!provider && typeof (provider as RpcCapableStacksProvider).request === 'function';
 };
 
-const getStacksProvider = (walletType: SupportedWalletType): RpcCapableStacksProvider | undefined => {
+const getStacksProvider = (walletType: SupportedWalletType): ResolvedStacksProvider | undefined => {
   if (typeof window === 'undefined') return undefined;
 
   const browserWindow = window as BrowserStacksWindow;
@@ -112,11 +117,25 @@ const getStacksProvider = (walletType: SupportedWalletType): RpcCapableStacksPro
   const xverseStacks = browserWindow.XverseProviders?.StacksProvider;
 
   if (walletType === 'imported') return undefined;
-  if (walletType === 'leather') return leather ?? hiro ?? xverseStacks;
-  if (walletType === 'hiro') return hiro ?? leather ?? xverseStacks;
-  if (walletType === 'xverse') return xverseStacks ?? hiro ?? leather;
+  if (walletType === 'leather') {
+    if (leather) return { provider: leather, walletType: 'leather' };
+    if (hiro) return { provider: hiro, walletType: 'hiro' };
+    if (xverseStacks) return { provider: xverseStacks, walletType: 'xverse' };
+  }
+  if (walletType === 'hiro') {
+    if (hiro) return { provider: hiro, walletType: 'hiro' };
+    if (leather) return { provider: leather, walletType: 'leather' };
+    if (xverseStacks) return { provider: xverseStacks, walletType: 'xverse' };
+  }
+  if (walletType === 'xverse') {
+    if (xverseStacks) return { provider: xverseStacks, walletType: 'xverse' };
+    if (hiro) return { provider: hiro, walletType: 'hiro' };
+    if (leather) return { provider: leather, walletType: 'leather' };
+  }
 
-  return leather ?? hiro ?? xverseStacks;
+  if (leather) return { provider: leather, walletType: 'leather' };
+  if (hiro) return { provider: hiro, walletType: 'hiro' };
+  if (xverseStacks) return { provider: xverseStacks, walletType: 'xverse' };
 };
 
 const providerNotFoundMessage = (walletType: SupportedWalletType) => {
@@ -183,19 +202,19 @@ export const signStacksMessage = async (
   payload: string,
   walletType: SupportedWalletType
 ): Promise<StacksSignatureResult> => {
-  const provider = getStacksProvider(walletType);
-  if (!provider) {
+  const resolvedProvider = getStacksProvider(walletType);
+  if (!resolvedProvider) {
     throw new Error(providerNotFoundMessage(walletType));
   }
 
-  const result = providerSupportsRpc(provider)
-    ? await requestSignatureViaRpc(provider, payload)
-    : await requestSignatureViaPopup(payload, provider);
+  const result = providerSupportsRpc(resolvedProvider.provider)
+    ? await requestSignatureViaRpc(resolvedProvider.provider, payload)
+    : await requestSignatureViaPopup(payload, resolvedProvider.provider);
 
   return {
     signature: result.signature,
     signedPayload: payload,
-    walletType: walletType ?? 'leather',
+    walletType: resolvedProvider.walletType,
     publicKey: result.publicKey,
   };
 };

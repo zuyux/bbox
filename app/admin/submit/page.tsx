@@ -105,9 +105,6 @@ export default function AdminSubmitPage() {
   };
 
   const requestSignature = async () => {
-    if (!walletType) {
-      throw new Error('No connected Stacks wallet found. Please connect Xverse or Leather.');
-    }
     setSignatureStatus('signing');
     const payload = buildSignaturePayload();
     const signature = await signStacksMessage(payload, walletType);
@@ -439,7 +436,7 @@ export default function AdminSubmitPage() {
             </div>
             <div className="rounded-2xl border border-border px-4 py-3">
               <p className="text-xs uppercase text-muted-foreground">Wallet source</p>
-              <p className="mt-1 font-semibold">{walletType ?? 'not connected'}</p>
+              <p className="mt-1 font-semibold">{walletType ?? 'auto-detect on sign'}</p>
             </div>
           </div>
         </div>
