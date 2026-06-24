@@ -1149,6 +1149,20 @@ export default function WalletPage() {
 
             <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
+                <Image src="/liquid.svg" alt="Liquid" width={28} height={28} />
+                <div>
+                  <div className="text-sm font-semibold">Liquid</div>
+                  <div className="text-xs text-muted-foreground">Liquid</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-semibold">{liquidBalanceDisplay}</div>
+                <div className="text-xs text-muted-foreground">Balance</div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
                 <Image src="/rsk.svg" alt="Rootstock" width={28} height={28} />
                 <div>
                   <div className="text-sm font-semibold">Rootstock</div>
@@ -1171,20 +1185,6 @@ export default function WalletPage() {
               </div>
               <div className="text-right">
                 <div className="text-lg font-semibold">{stxBalanceDisplay}</div>
-                <div className="text-xs text-muted-foreground">Balance</div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <Image src="/liquid.svg" alt="Liquid" width={28} height={28} />
-                <div>
-                  <div className="text-sm font-semibold">Liquid</div>
-                  <div className="text-xs text-muted-foreground">Liquid</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-lg font-semibold">{liquidBalanceDisplay}</div>
                 <div className="text-xs text-muted-foreground">Balance</div>
               </div>
             </div>
