@@ -8,6 +8,7 @@ import { request as satsRequest } from 'sats-connect';
 import { useWallet } from "@/components/WalletProvider";
 import { sendBitcoinWithKey } from "@/lib/bitcoinTransfer";
 import { parseLiquidAmount, sendLiquidWithKey } from "@/lib/liquidTransfer";
+import { fetchBitcoinBalance, fetchLiquidBalance, fetchRootstockBalance, type NativeBalance } from "@/lib/nativeBalances";
 import { parseRbtcAmount, sendRootstockWithKey } from "@/lib/rootstockTransfer";
 
 const STACKS_ADDRESS_REGEX = /^(SP|SM|SN|ST|SU|TP|TM|TN|TS)[A-Za-z0-9]{30,40}$/i;
@@ -108,6 +109,16 @@ const formatCompactBalance = (value: number) => {
   return value >= 1
     ? value.toLocaleString(undefined, { maximumFractionDigits: 6 })
     : value.toPrecision(4);
+};
+
+const EMPTY_NATIVE_BALANCE: NativeBalance = {
+  value: null,
+  display: '--',
+};
+
+const LOADING_NATIVE_BALANCE: NativeBalance = {
+  value: null,
+  display: 'Loading...',
 };
 
 const isValidBitcoinAddress = (value: string, network: 'mainnet' | 'testnet' | 'devnet') => {
@@ -236,6 +247,9 @@ export default function WalletPage() {
   const [btcAddressError, setBtcAddressError] = useState<string | null>(null);
   const [rskAddress, setRskAddress] = useState<string | null>(null);
   const [liquidAddress, setLiquidAddress] = useState<string | null>(null);
+  const [btcBalance, setBtcBalance] = useState<NativeBalance>(EMPTY_NATIVE_BALANCE);
+  const [rskBalance, setRskBalance] = useState<NativeBalance>(EMPTY_NATIVE_BALANCE);
+  const [liquidBalance, setLiquidBalance] = useState<NativeBalance>(EMPTY_NATIVE_BALANCE);
   const [showGenerateAddressesModal, setShowGenerateAddressesModal] = useState(false);
   const [generatingAddresses, setGeneratingAddresses] = useState(false);
   const [generateAddressLayer, setGenerateAddressLayer] = useState<ReceiveLayer | null>(null);
@@ -338,15 +352,18 @@ export default function WalletPage() {
   );
 
   const availableBalanceValue = useMemo(() => {
-    if (sendAsset !== 'sbtc') {
-      return 0;
+    if (sendAsset === 'bitcoin') {
+      return btcBalance.value ?? 0;
     }
-    if (!sbtcBalance) {
-      return 0;
+    if (sendAsset === 'rootstock') {
+      return rskBalance.value ?? 0;
+    }
+    if (sendAsset === 'liquid') {
+      return liquidBalance.value ?? 0;
     }
     const sanitized = Number(String(sbtcBalance).replace(/,/g, ''));
     return Number.isFinite(sanitized) ? sanitized : 0;
-  }, [sbtcBalance, sendAsset]);
+  }, [btcBalance.value, liquidBalance.value, rskBalance.value, sbtcBalance, sendAsset]);
 
   const remainingBalanceValue = useMemo(() => {
     if (!availableBalanceValue || !parsedAmount) {
@@ -372,12 +389,22 @@ export default function WalletPage() {
   const maxFillValue = useMemo(() => formatQuickFillAmount(availableBalanceValue), [availableBalanceValue]);
 
   const getSendAssetBalanceDisplay = useCallback((asset: SendAsset) => {
+    if (asset === 'bitcoin') {
+      return btcBalance.display;
+    }
+    if (asset === 'rootstock') {
+      return rskBalance.display;
+    }
+    if (asset === 'liquid') {
+      return liquidBalance.display;
+    }
     if (asset === 'sbtc') {
-      return `${formatCompactBalance(availableBalanceValue)} BTC`;
+      const sanitized = Number(String(sbtcBalance ?? '0').replace(/,/g, ''));
+      return `${formatCompactBalance(Number.isFinite(sanitized) ? sanitized : 0)} BTC`;
     }
     const unit = SEND_ASSETS.find((sendAssetOption) => sendAssetOption.id === asset)?.unit ?? '';
     return `0.00${unit ? ` ${unit}` : ''}`;
-  }, [availableBalanceValue]);
+  }, [btcBalance.display, liquidBalance.display, rskBalance.display, sbtcBalance]);
   const selectedAssetBalanceDisplay = getSendAssetBalanceDisplay(sendAsset);
   const sendActionLabel = selectedSendAsset.supported
     ? (sendAsset === 'bitcoin'
@@ -390,9 +417,9 @@ export default function WalletPage() {
 
   const stxAsset = assets.find((asset) => asset.id === 'stx' || asset.symbol === 'STX');
   const stxBalanceDisplay = stxAsset?.formattedBalance || '--';
-  const btcBalanceDisplay = '--';
-  const rskBalanceDisplay = '--';
-  const liquidBalanceDisplay = '--';
+  const btcBalanceDisplay = btcBalance.display;
+  const rskBalanceDisplay = rskBalance.display;
+  const liquidBalanceDisplay = liquidBalance.display;
   const visibleAssets = assets.filter((asset) => asset.symbol !== 'STX');
   const visibleAssetCount = visibleAssets.length;
 
@@ -871,6 +898,9 @@ export default function WalletPage() {
       setBtcAddress(null);
       setBtcAddressError(null);
       setBtcAddressLoading(false);
+      setBtcBalance(EMPTY_NATIVE_BALANCE);
+      setRskBalance(EMPTY_NATIVE_BALANCE);
+      setLiquidBalance(EMPTY_NATIVE_BALANCE);
       return;
     }
 
@@ -940,6 +970,74 @@ export default function WalletPage() {
       .finally(() => setBtcAddressLoading(false));
   }, [address, currentNetwork]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!btcAddress) {
+      setBtcBalance(EMPTY_NATIVE_BALANCE);
+      return;
+    }
+
+    setBtcBalance(LOADING_NATIVE_BALANCE);
+    fetchBitcoinBalance(btcAddress, currentNetwork)
+      .then((balance) => {
+        if (!cancelled) setBtcBalance(balance);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch Bitcoin balance:', error);
+        if (!cancelled) setBtcBalance(EMPTY_NATIVE_BALANCE);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [btcAddress, currentNetwork, showSend]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!rskAddress) {
+      setRskBalance(EMPTY_NATIVE_BALANCE);
+      return;
+    }
+
+    setRskBalance(LOADING_NATIVE_BALANCE);
+    fetchRootstockBalance(rskAddress, currentNetwork)
+      .then((balance) => {
+        if (!cancelled) setRskBalance(balance);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch Rootstock balance:', error);
+        if (!cancelled) setRskBalance(EMPTY_NATIVE_BALANCE);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentNetwork, rskAddress, showSend]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!liquidAddress) {
+      setLiquidBalance(EMPTY_NATIVE_BALANCE);
+      return;
+    }
+
+    setLiquidBalance(LOADING_NATIVE_BALANCE);
+    fetchLiquidBalance(liquidAddress, currentNetwork)
+      .then((balance) => {
+        if (!cancelled) setLiquidBalance(balance);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch Liquid balance:', error);
+        if (!cancelled) setLiquidBalance(EMPTY_NATIVE_BALANCE);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentNetwork, liquidAddress, showSend]);
 
   // If no wallet address, ask to connect wallet
   if (!address) {
