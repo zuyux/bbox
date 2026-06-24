@@ -153,6 +153,20 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
         case 'bbox-session-accessed':
           // Session activity detected, could update UI indicators
           break;
+        case 'bbox-encrypted-wallet-updated':
+          setWalletInfo(getWalletInfo());
+          setCurrentWallet((wallet) => {
+            const info = getWalletInfo();
+            if (!wallet || !info) return wallet;
+            return {
+              ...wallet,
+              bitcoinAddress: info.bitcoinAddress,
+              rootstockAddress: info.rootstockAddress,
+              liquidAddress: info.liquidAddress,
+              nostrPublicKey: info.nostrPublicKey,
+            };
+          });
+          break;
       }
     };
 
@@ -183,6 +197,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
     window.addEventListener('bbox-session-unlocked', handleStorageEvents);
     window.addEventListener('bbox-session-deleted', handleStorageEvents);
     window.addEventListener('bbox-session-accessed', handleStorageEvents);
+    window.addEventListener('bbox-encrypted-wallet-updated', handleStorageEvents);
     window.addEventListener('storage', handleNativeStorage);
 
     return () => {
@@ -191,6 +206,7 @@ export const EncryptedWalletProvider: FC<ProviderProps> = ({ children }) => {
       window.removeEventListener('bbox-session-unlocked', handleStorageEvents);
       window.removeEventListener('bbox-session-deleted', handleStorageEvents);
       window.removeEventListener('bbox-session-accessed', handleStorageEvents);
+      window.removeEventListener('bbox-encrypted-wallet-updated', handleStorageEvents);
       window.removeEventListener('storage', handleNativeStorage);
     };
   }, []);

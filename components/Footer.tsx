@@ -3,12 +3,12 @@ import { ModeToggle } from './modeToggle';
 
 export default function Footer() {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 h-8 bg-black/50 text-white text-xs z-50 py-1 backdrop-blur-md border-t border-white/10">
+    <footer className="fixed bottom-0 left-0 right-0 h-8 bg-black/70 text-white text-xs z-50 py-1 backdrop-blur-md border-t border-white/10">
       <div className="mx-auto h-full px-3 sm:px-4">
         <div className="flex justify-between items-center h-full">
           <Link href="/about" className='flex items-center gap-1'>
             <span className="title text-left truncate">
-              BBOX <span className="hidden sm:inline hover:text-[#fff] text-[#555] ml-2">Our Open App Store</span>
+              BBOX <span className="hidden sm:inline hover:text-[#fff]/70 text-[#fff] ml-2">Our Open App Store</span>
             </span>
           </Link>
           <div className="flex items-center gap-3 sm:gap-5">

@@ -32,6 +32,8 @@ export interface WalletData {
   label: string;
 }
 
+export type WalletAddressUpdates = Partial<Pick<WalletData, 'bitcoinAddress' | 'rootstockAddress' | 'liquidAddress' | 'nostrPublicKey'>>;
+
 export interface PortableEncryptedWalletData {
   encryptedMnemonic: string;
   encryptedPrivateKey: string;
@@ -466,6 +468,50 @@ export function getStoredEncryptedWallet(): EncryptedWalletData | null {
     return JSON.parse(encryptedDataStr) as EncryptedWalletData;
   } catch {
     return null;
+  }
+}
+
+export function updateEncryptedWalletAddresses(updates: WalletAddressUpdates): WalletAddressUpdates {
+  if (typeof window === 'undefined') {
+    throw new Error('Storage is only available in browser environment');
+  }
+
+  const encryptedDataStr = localStorage.getItem(STORAGE_KEY);
+  if (!encryptedDataStr) {
+    throw new Error('No encrypted wallet found');
+  }
+
+  try {
+    const encryptedData: EncryptedWalletData = JSON.parse(encryptedDataStr);
+    const nextData: EncryptedWalletData = {
+      ...encryptedData,
+      ...updates,
+      lastAccessed: Date.now(),
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextData));
+
+    const sessionData = localStorage.getItem('bbox_session');
+    if (sessionData) {
+      try {
+        const session = JSON.parse(sessionData);
+        localStorage.setItem('bbox_session', JSON.stringify({
+          ...session,
+          bitcoinAddress: nextData.bitcoinAddress,
+          rootstockAddress: nextData.rootstockAddress,
+          liquidAddress: nextData.liquidAddress,
+          nostrPublicKey: nextData.nostrPublicKey,
+        }));
+      } catch {
+        // Session compatibility data is best-effort; the encrypted wallet remains the source of truth.
+      }
+    }
+
+    window.dispatchEvent(new Event('bbox-encrypted-wallet-updated'));
+    return updates;
+  } catch (error) {
+    console.error('Failed to update encrypted wallet addresses:', error);
+    throw new Error('Unable to update wallet addresses');
   }
 }
 
