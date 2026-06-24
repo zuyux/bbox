@@ -7,11 +7,14 @@ import { PasswordSigningModal } from "@/components/PasswordSigningModal";
 import { request as satsRequest } from 'sats-connect';
 import { useWallet } from "@/components/WalletProvider";
 import { sendBitcoinWithKey } from "@/lib/bitcoinTransfer";
+import { parseLiquidAmount, sendLiquidWithKey } from "@/lib/liquidTransfer";
 import { parseRbtcAmount, sendRootstockWithKey } from "@/lib/rootstockTransfer";
 
 const STACKS_ADDRESS_REGEX = /^(SP|SM|SN|ST|SU|TP|TM|TN|TS)[A-Za-z0-9]{30,40}$/i;
 const BITCOIN_MAINNET_ADDRESS_REGEX = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/i;
 const BITCOIN_TESTNET_ADDRESS_REGEX = /^(tb1|[mn2])[a-zA-HJ-NP-Z0-9]{25,90}$/i;
+const LIQUID_MAINNET_ADDRESS_REGEX = /^ex1[a-z0-9]{20,120}$/i;
+const LIQUID_TESTNET_ADDRESS_REGEX = /^ert1[a-z0-9]{20,120}$/i;
 const EVM_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 const MAX_MEMO_BYTES = 34;
 const SATS_PER_BTC = 100_000_000;
@@ -78,7 +81,7 @@ const SEND_ASSETS: Array<{
     unit: 'L-BTC',
     placeholder: 'ex1...',
     recipientHint: 'Use a Liquid address.',
-    supported: false,
+    supported: true,
   },
 ];
 
@@ -113,6 +116,14 @@ const isValidBitcoinAddress = (value: string, network: 'mainnet' | 'testnet' | '
   return network === 'mainnet'
     ? BITCOIN_MAINNET_ADDRESS_REGEX.test(normalized)
     : BITCOIN_TESTNET_ADDRESS_REGEX.test(normalized);
+};
+
+const isValidLiquidAddress = (value: string, network: 'mainnet' | 'testnet' | 'devnet') => {
+  const normalized = value.trim();
+  if (!normalized) return false;
+  return network === 'mainnet'
+    ? LIQUID_MAINNET_ADDRESS_REGEX.test(normalized)
+    : LIQUID_TESTNET_ADDRESS_REGEX.test(normalized);
 };
 
 const btcToSats = (value: string) => {
@@ -275,6 +286,11 @@ export default function WalletPage() {
     if (sendAsset === 'rootstock' && !EVM_ADDRESS_REGEX.test(trimmedRecipient)) {
       return 'Enter a valid Rootstock EVM address.';
     }
+    if (sendAsset === 'liquid' && !isValidLiquidAddress(trimmedRecipient, currentNetwork)) {
+      return currentNetwork === 'mainnet'
+        ? 'Enter a valid unconfidential Liquid mainnet address.'
+        : 'Enter a valid unconfidential Liquid testnet address.';
+    }
     return undefined;
   })();
   const amountError = sendAmount
@@ -286,18 +302,22 @@ export default function WalletPage() {
           ? 'Enter a BTC amount with up to 8 decimal places'
         : sendAsset === 'rootstock' && parseRbtcAmount(sendAmount) === null
           ? 'Enter an RBTC amount with up to 18 decimal places'
+        : sendAsset === 'liquid' && parseLiquidAmount(sendAmount) === null
+          ? 'Enter an L-BTC amount with up to 8 decimal places'
         : undefined)
     : undefined;
   const unsupportedSendAssetMessage = selectedSendAsset.supported
     ? undefined
     : `${selectedSendAsset.label} sends need chain-specific signing and broadcasting support before they can be enabled.`;
   const isLocalWallet = walletType === 'imported';
-  const selectedAssetNeedsPassword = (sendAsset === 'sbtc' && !extensionAvailable) || (sendAsset === 'bitcoin' && isLocalWallet) || sendAsset === 'rootstock';
+  const selectedAssetNeedsPassword = (sendAsset === 'sbtc' && !extensionAvailable) || (sendAsset === 'bitcoin' && isLocalWallet) || sendAsset === 'rootstock' || sendAsset === 'liquid';
   const selectedAssetCanUseCurrentSigner = sendAsset === 'bitcoin'
     ? !isLocalWallet || !!sendPassword
     : sendAsset === 'sbtc'
       ? extensionAvailable || !!sendPassword
       : sendAsset === 'rootstock'
+        ? isLocalWallet && !!sendPassword
+      : sendAsset === 'liquid'
         ? isLocalWallet && !!sendPassword
       : false;
   const supportsMemo = sendAsset === 'sbtc';
@@ -500,6 +520,10 @@ export default function WalletPage() {
       ? isLocalWallet
         ? 'Your encrypted wallet password unlocks the local private key to sign and broadcast this native RBTC transfer on Rootstock.'
         : 'Rootstock sends are available from local encrypted wallets. Create or unlock a local wallet to continue.'
+      : sendAsset === 'liquid'
+      ? isLocalWallet
+        ? 'Your encrypted wallet password unlocks the local private key to sign and broadcast this L-BTC transfer on Liquid.'
+        : 'Liquid sends are available from local encrypted wallets. Create or unlock a local wallet to continue.'
       : extensionAvailable
       ? 'Your connected browser wallet will handle signing, fees, and confirmation prompts for this transfer.'
       : 'Your encrypted wallet password unlocks the private key locally to sign this transfer.')
@@ -665,7 +689,7 @@ export default function WalletPage() {
       return;
     }
 
-    if (sendAsset !== 'sbtc' && sendAsset !== 'bitcoin' && sendAsset !== 'rootstock') {
+    if (sendAsset !== 'sbtc' && sendAsset !== 'bitcoin' && sendAsset !== 'rootstock' && sendAsset !== 'liquid') {
       toast.error(unsupportedSendAssetMessage || 'This asset is not supported for sending yet.');
       return;
     }
@@ -736,6 +760,26 @@ export default function WalletPage() {
         });
 
         toast.success(`RBTC transfer sent! TXID: ${txId}`);
+        closeSendModal();
+        return;
+      }
+
+      if (sendAsset === 'liquid') {
+        if (!isLocalWallet) {
+          throw new Error('Liquid sends require a local encrypted wallet.');
+        }
+
+        const wallet = await retrieveEncryptedWallet(sendPassword);
+        if (!wallet?.privateKey) throw new Error('Invalid password or wallet not found');
+
+        const txId = await sendLiquidWithKey({
+          privateKey: wallet.privateKey,
+          toAddress: recipient,
+          amountLbtc: sendAmount,
+          network: currentNetwork,
+        });
+
+        toast.success(`L-BTC transfer sent! TXID: ${txId}`);
         closeSendModal();
         return;
       }
@@ -1169,12 +1213,12 @@ export default function WalletPage() {
                     id="send-amount"
                     className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-background text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
                     type="number"
-                    min={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 0}
-                    step={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 'any'}
+                    min={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' || sendAsset === 'liquid' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 0}
+                    step={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' || sendAsset === 'liquid' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 'any'}
                     value={sendAmount}
                     onChange={e => setSendAmount(e.target.value)}
                     required
-                    placeholder={sendAsset === 'sbtc' ? '1000' : sendAsset === 'bitcoin' ? '0.00000000' : sendAsset === 'rootstock' ? '0.000000000000000000' : '0.0'}
+                    placeholder={sendAsset === 'sbtc' ? '1000' : sendAsset === 'bitcoin' || sendAsset === 'liquid' ? '0.00000000' : sendAsset === 'rootstock' ? '0.000000000000000000' : '0.0'}
                     disabled={sendLoading}
                     style={{ MozAppearance: "textfield" } as React.CSSProperties}
                   />
@@ -1188,7 +1232,7 @@ export default function WalletPage() {
                   </button>
                 </div>
                 <div className="flex items-center justify-between text-xs mt-2 text-muted-foreground">
-                  <span>{sendAsset === 'sbtc' ? 'Minimum 1 sat' : sendAsset === 'bitcoin' ? 'Amount in BTC' : sendAsset === 'rootstock' ? 'Amount in RBTC' : `Amount in ${selectedSendAsset.unit}`}</span>
+                  <span>{sendAsset === 'sbtc' ? 'Minimum 1 sat' : sendAsset === 'bitcoin' ? 'Amount in BTC' : sendAsset === 'liquid' ? 'Amount in L-BTC' : sendAsset === 'rootstock' ? 'Amount in RBTC' : `Amount in ${selectedSendAsset.unit}`}</span>
                   <span>Available {selectedAssetBalanceDisplay}</span>
                 </div>
                 {quickFillOptions.length > 0 && (
