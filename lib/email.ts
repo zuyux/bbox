@@ -1,9 +1,34 @@
 import { Resend } from 'resend';
 
 const resendApiKey = process.env.RESEND_API_KEY;
-const resendFromAddress = process.env.RESEND_FROM_EMAIL;
+const configuredFromAddress = process.env.RESEND_FROM_EMAIL?.trim();
 const isTestApiKey = Boolean(resendApiKey?.startsWith('re_test_'));
 const resendClient = resendApiKey ? new Resend(resendApiKey) : null;
+
+const normalizeFromAddress = (value?: string) => {
+  if (!value) return undefined;
+
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  const standardDisplayName = trimmed.match(/^(.+?)\s+<([^<>@\s]+@[^<>@\s]+)>$/);
+  if (standardDisplayName) return trimmed;
+
+  const bareEmail = trimmed.match(/^[^<>@\s]+@[^<>@\s]+$/);
+  if (bareEmail) return trimmed;
+
+  const wrappedEmail = trimmed.match(/^<([^<>@\s]+@[^<>@\s]+)>$/);
+  if (wrappedEmail) return wrappedEmail[1];
+
+  const wrappedNameAndEmail = trimmed.match(/^<(.+?)\s+([^<>@\s]+@[^<>@\s]+)>$/);
+  if (wrappedNameAndEmail) {
+    return `${wrappedNameAndEmail[1].trim()} <${wrappedNameAndEmail[2]}>`;
+  }
+
+  return trimmed;
+};
+
+const resendFromAddress = normalizeFromAddress(configuredFromAddress);
 
 const simulateEmailSend = (options: EmailOptions, reason: string) => {
   console.warn(`📧 Email delivery skipped (${reason}).`);
@@ -27,7 +52,7 @@ interface EmailOptions {
 export async function sendEmail(options: EmailOptions) {
   try {
     if (!resendFromAddress) {
-      const message = 'RESEND_FROM_EMAIL is not configured. Set it to a verified domain or an onresend.com address.';
+      const message = 'RESEND_FROM_EMAIL is not configured. Set it to a verified sender, like noreply@example.com or BBOX <noreply@example.com>.';
       if (process.env.NODE_ENV !== 'production') {
         return simulateEmailSend(options, 'missing-from-address');
       }
@@ -51,9 +76,10 @@ export async function sendEmail(options: EmailOptions) {
     }
 
     const to = Array.isArray(options.to) ? options.to : [options.to];
+    const from = normalizeFromAddress(options.from) || resendFromAddress;
 
     const { data, error } = await resendClient.emails.send({
-      from: options.from || resendFromAddress,
+      from,
       to,
       subject: options.subject,
       html: options.html,
