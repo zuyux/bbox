@@ -1122,10 +1122,6 @@ export default function WalletPage() {
 
       <div className="mt-16 w-full">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Image src="/btc.svg" alt="Bitcoin" width={28} height={28} />
-            <h2 className="text-lg font-semibold">Assets</h2>
-          </div>
           {!assetsLoading && (
             <span className="text-xs text-muted-foreground">{visibleAssetCount} assets</span>
           )}
