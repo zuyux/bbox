@@ -33,6 +33,7 @@ const ROOTSTOCK_RPC_URLS: Record<AppNetwork, string> = {
 
 const formatNativeAmount = (value: number, unit: string) => {
   if (!Number.isFinite(value)) return `-- ${unit}`;
+  if (value === 0) return `0.00 ${unit}`;
   const formatted = value >= 1
     ? value.toLocaleString(undefined, { maximumFractionDigits: 8 })
     : value.toLocaleString(undefined, { maximumFractionDigits: 8, minimumFractionDigits: value > 0 ? 1 : 0 });
@@ -82,6 +83,12 @@ async function rpcCall<T>(rpcUrl: string, method: string, params: unknown[]): Pr
 
 export async function fetchBitcoinBalance(address: string, network: AppNetwork): Promise<NativeBalance> {
   const response = await fetch(`${getBitcoinApiBaseUrl(network)}/address/${address}`);
+  if (response.status === 404) {
+    return {
+      value: 0,
+      display: formatNativeAmount(0, 'BTC'),
+    };
+  }
   if (!response.ok) throw new Error(`Bitcoin balance request failed with ${response.status}`);
 
   const info = await response.json() as AddressInfo;
