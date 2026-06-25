@@ -188,7 +188,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   }, [onClose]);
 
 
-  const handleEncryptedWalletSubmit = async (password: string, email?: string) => {
+  const handleEncryptedWalletSubmit = async (password: string, email?: string, verifiedEmailToken?: string) => {
     try {
       if (encryptedWalletMode === 'create') {
         setCreateWalletError(null);
@@ -196,6 +196,11 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 
         if (!trimmedEmail) {
           setCreateWalletError('Email is required to create a wallet.');
+          return;
+        }
+
+        if (!verifiedEmailToken) {
+          setCreateWalletError('Verify your email before creating a wallet.');
           return;
         }
 
@@ -246,6 +251,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
               },
               body: JSON.stringify({
                 email: trimmedEmail,
+                verifiedEmailToken,
                 passkey: stxPrivateKey, 
                 passphrase: password,
                 address,
@@ -284,7 +290,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
             const mailRes = await fetch('/api/wallet-connect/account-created', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: trimmedEmail, address }),
+              body: JSON.stringify({ email: trimmedEmail, address, preVerified: true }),
             });
             const mailResult = await mailRes.json();
             if (!mailRes.ok) {

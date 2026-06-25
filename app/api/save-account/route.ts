@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
+import { assertVerifiedEmailToken, VerifiedEmailTokenError } from '@/lib/emailCodeAuth';
 import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, passkey, passphrase, address, encryptedWallet } = await request.json();
+    const { email, passkey, passphrase, address, encryptedWallet, verifiedEmailToken } = await request.json();
 
-    if (!email || !passkey || !passphrase || !address || !encryptedWallet) {
+    if (!email || !passkey || !passphrase || !address || !encryptedWallet || !verifiedEmailToken) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -40,6 +41,19 @@ export async function POST(request: NextRequest) {
 
     const trimmedEmail = email.trim();
     const normalizedEmail = trimmedEmail.toLowerCase();
+
+    try {
+      assertVerifiedEmailToken(verifiedEmailToken, normalizedEmail);
+    } catch (tokenError) {
+      if (tokenError instanceof VerifiedEmailTokenError) {
+        return NextResponse.json(
+          { error: tokenError.message },
+          { status: tokenError.statusCode }
+        );
+      }
+
+      throw tokenError;
+    }
 
     // Hash the private key with the passphrase to create the passkey
     const hashedPasskey = crypto
@@ -148,7 +162,7 @@ export async function POST(request: NextRequest) {
           .from('profiles')
           .update({
             email: normalizedEmail,
-            email_verified: false,
+            email_verified: true,
             updated_at: now,
             last_active: now
           })
@@ -160,7 +174,7 @@ export async function POST(request: NextRequest) {
             {
               address,
               email: normalizedEmail,
-              email_verified: false,
+              email_verified: true,
               created_at: now,
               updated_at: now,
               last_active: now,

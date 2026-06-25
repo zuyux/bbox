@@ -12,7 +12,7 @@ import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { validatePassphraseStrength } from '@/lib/encryptedStorage';
 
 interface PasswordInputProps {
-  onSubmit: (password: string, email?: string) => Promise<void>;
+  onSubmit: (password: string, email?: string, verifiedEmailToken?: string) => Promise<void>;
   mode: 'unlock' | 'create' | 'change';
   isLoading?: boolean;
   error?: string | null;
@@ -29,10 +29,17 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   error = null,
   placeholder = 'Enter your password',
   showStrengthIndicator = false,
-  autoFocus = true
+  autoFocus = true,
+  onCancel
 }) => {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [emailCode, setEmailCode] = useState('');
+  const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [emailCodeMessage, setEmailCodeMessage] = useState<string | null>(null);
+  const [emailCodeError, setEmailCodeError] = useState<string | null>(null);
+  const [emailCodeLoading, setEmailCodeLoading] = useState(false);
+  const [verifiedEmailToken, setVerifiedEmailToken] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [strengthInfo, setStrengthInfo] = useState<{
     isValid: boolean;
@@ -40,6 +47,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
     feedback: string[];
   } | null>(null);
   const [touched, setTouched] = useState(false);
+  const isBusy = isLoading || emailCodeLoading;
 
   // Validate password strength in real-time for create/change modes
   useEffect(() => {
@@ -68,6 +76,11 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         return; // Invalid email format
       }
     }
+
+    if (mode === 'create' && !verifiedEmailToken) {
+      setEmailCodeError('Verify your email before creating your wallet.');
+      return;
+    }
     
     // Validate strength for create/change modes
     if ((mode === 'create' || mode === 'change') && strengthInfo && !strengthInfo.isValid) {
@@ -75,14 +88,108 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
     }
     
     try {
-      await onSubmit(password, mode === 'create' ? email : undefined);
+      await onSubmit(
+        password,
+        mode === 'create' ? email : undefined,
+        mode === 'create' ? verifiedEmailToken ?? undefined : undefined
+      );
       // Clear form on success
       setPassword('');
       setEmail('');
+      setEmailCode('');
+      setEmailCodeSent(false);
+      setEmailCodeMessage(null);
+      setEmailCodeError(null);
+      setVerifiedEmailToken(null);
       setTouched(false);
     } catch (error) {
       // Error will be displayed via props
       console.error('Password submission failed:', error);
+    }
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    setEmailCode('');
+    setEmailCodeSent(false);
+    setEmailCodeMessage(null);
+    setEmailCodeError(null);
+    setVerifiedEmailToken(null);
+  };
+
+  const handleRequestEmailCode = async () => {
+    const trimmedEmail = email.trim();
+    setEmailCodeMessage(null);
+    setEmailCodeError(null);
+    setVerifiedEmailToken(null);
+
+    if (!trimmedEmail) {
+      setEmailCodeError('Email is required to create a wallet.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setEmailCodeError('Enter a valid email address.');
+      return;
+    }
+
+    try {
+      setEmailCodeLoading(true);
+      const response = await fetch('/api/auth/email-code/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send verification code');
+      }
+
+      setEmailCodeSent(true);
+      setEmailCodeMessage('Verification code sent. Check your email.');
+      if (result.debugCode) {
+        setEmailCodeMessage(`Verification code sent. Dev code: ${result.debugCode}`);
+      }
+    } catch (requestError) {
+      setEmailCodeError(requestError instanceof Error ? requestError.message : 'Failed to send verification code');
+    } finally {
+      setEmailCodeLoading(false);
+    }
+  };
+
+  const handleVerifyEmailCode = async () => {
+    const trimmedEmail = email.trim();
+    const trimmedCode = emailCode.trim();
+    setEmailCodeMessage(null);
+    setEmailCodeError(null);
+
+    if (!/^\d{6}$/.test(trimmedCode)) {
+      setEmailCodeError('Enter the 6-digit verification code.');
+      return;
+    }
+
+    try {
+      setEmailCodeLoading(true);
+      const response = await fetch('/api/auth/email-code/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, code: trimmedCode }),
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.verifiedEmailToken) {
+        throw new Error(result.error || 'Failed to verify code');
+      }
+
+      setVerifiedEmailToken(result.verifiedEmailToken);
+      setEmailCodeMessage('Email verified. You can create your wallet now.');
+    } catch (verifyError) {
+      setVerifiedEmailToken(null);
+      setEmailCodeError(verifyError instanceof Error ? verifyError.message : 'Failed to verify code');
+    } finally {
+      setEmailCodeLoading(false);
     }
   };
 
@@ -103,6 +210,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   const emailValid = mode !== 'create' || (email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
   const isFormValid = password.trim() &&
     emailValid &&
+    (mode !== 'create' || Boolean(verifiedEmailToken)) &&
     (!strengthInfo || strengthInfo.isValid);
 
   return (
@@ -115,14 +223,73 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => handleEmailChange(e.target.value)}
               placeholder="Enter your email address"
               className="bg-background text-foreground focus:border-ring border-[1px] border-foreground/10 py-6"
-              disabled={isLoading}
+              disabled={isBusy || Boolean(verifiedEmailToken)}
               autoComplete="off"
               autoFocus
               required
             />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={handleRequestEmailCode}
+                disabled={!emailValid || isBusy || Boolean(verifiedEmailToken)}
+                className="flex-1 text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {emailCodeSent ? 'Resend Code' : 'Send Code'}
+              </Button>
+              {emailCodeSent && (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setEmail('');
+                    setEmailCode('');
+                    setEmailCodeSent(false);
+                    setEmailCodeMessage(null);
+                    setEmailCodeError(null);
+                    setVerifiedEmailToken(null);
+                  }}
+                  disabled={isBusy}
+                  className="bg-transparent text-muted-foreground border border-border hover:bg-secondary"
+                >
+                  Change
+                </Button>
+              )}
+            </div>
+            {emailCodeSent && (
+              <div className="flex gap-2">
+                <Input
+                  id="email-code"
+                  type="text"
+                  inputMode="numeric"
+                  value={emailCode}
+                  onChange={(e) => {
+                    setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                    setVerifiedEmailToken(null);
+                    setEmailCodeError(null);
+                  }}
+                  placeholder="6-digit code"
+                  className="bg-background text-foreground focus:border-ring border-[1px] border-foreground/10 py-6"
+                  disabled={isBusy || Boolean(verifiedEmailToken)}
+                  autoComplete="one-time-code"
+                />
+                <Button
+                  type="button"
+                  onClick={handleVerifyEmailCode}
+                  disabled={emailCode.length !== 6 || isBusy || Boolean(verifiedEmailToken)}
+                  className="text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Verify
+                </Button>
+              </div>
+            )}
+            {(emailCodeMessage || emailCodeError) && (
+              <p className={`text-xs ${emailCodeError ? 'text-red-400' : 'text-green-400'}`}>
+                {emailCodeError || emailCodeMessage}
+              </p>
+            )}
           </div>
         )}
 
@@ -140,7 +307,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
               placeholder={placeholder}
               className="bg-background text-foreground pr-12 focus:border-ring border-[1px] border-foreground/10 py-6"
               autoFocus={mode !== 'create' && autoFocus}
-              disabled={isLoading}
+              disabled={isBusy}
               autoComplete="new-password"
             />
             <button
@@ -148,7 +315,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200"
               tabIndex={-1}
-              disabled={isLoading}
+              disabled={isBusy}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -203,13 +370,14 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         <div className="flex gap-3 pt-2">
           <Button
             type="submit"
-            disabled={!isFormValid || isLoading}
+            disabled={!isFormValid || isBusy}
             className="flex-1 text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {isLoading ? (
+            {isBusy ? (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                {mode === 'unlock' ? 'Unlocking...' : 
+                {emailCodeLoading ? 'Checking...' :
+                 mode === 'unlock' ? 'Unlocking...' :
                  mode === 'create' ? 'Creating...' : 'Updating...'}
               </div>
             ) : (
@@ -219,6 +387,16 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
               </>
             )}
           </Button>
+          {onCancel && (
+            <Button
+              type="button"
+              onClick={onCancel}
+              disabled={isBusy}
+              className="bg-transparent text-muted-foreground border border-border hover:bg-secondary"
+            >
+              Cancel
+            </Button>
+          )}
           
         </div>
       </form>

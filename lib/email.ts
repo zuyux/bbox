@@ -159,6 +159,43 @@ export const emailTemplates = {
     `
   }),
 
+  verifiedAccountCreated: ({ address }: {
+    address: string;
+  }) => ({
+    subject: "BBOX Account Created Successfully",
+    html: `
+      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:Arial,sans-serif;max-width:600px;margin:auto;">
+        <h2 style="color:#00c2ff;margin-bottom:20px;">Welcome to BBOX!</h2>
+        <p>Your email was verified and your account has been created successfully.</p>
+        <p><strong>Address:</strong> <code style="background:#333;padding:4px 8px;border-radius:4px;color:#fff;">${address}</code></p>
+        <div style="background:#1a1a1a;padding:16px;border-radius:8px;margin:20px 0;">
+          <p style="margin:0;color:#ff6b6b;"><strong>Important Security Notice:</strong></p>
+          <p style="margin:8px 0 0 0;">Keep your mnemonic/seed phrase safe. Never share it with anyone. This is the only way to recover your wallet.</p>
+        </div>
+        <p style="color:#898989;font-size:13px;">BBOX &mdash; The Universal Registry for Verified Software</p>
+      </div>
+    `
+  }),
+
+  emailVerificationCode: ({ code, expiresInMinutes }: {
+    code: string;
+    expiresInMinutes: number;
+  }) => ({
+    subject: "Your BBOX verification code",
+    html: `
+      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:Arial,sans-serif;max-width:520px;margin:auto;">
+        <h2 style="color:#00c2ff;margin:0 0 18px;">Verify your email</h2>
+        <p style="margin:0 0 18px;color:#e5e5e5;">Enter this code to continue creating your BBOX wallet.</p>
+        <div style="letter-spacing:8px;font-size:32px;font-weight:700;text-align:center;background:#101015;border:1px solid #2f2f33;border-radius:12px;padding:22px;margin:24px 0;color:#fff;">
+          ${code}
+        </div>
+        <p style="margin:0 0 14px;color:#9ca3af;font-size:14px;">This code expires in ${expiresInMinutes} minutes.</p>
+        <p style="margin:0;color:#9ca3af;font-size:14px;">If you did not request this, you can ignore this email.</p>
+        <p style="color:#898989;font-size:12px;margin-top:28px;">BBOX &mdash; The Universal Registry for Verified Software</p>
+      </div>
+    `
+  }),
+
   walletConnectionLink: (connectionUrl: string) => ({
     subject: "🔐 Account Connection Link - BBOX",
     html: `
