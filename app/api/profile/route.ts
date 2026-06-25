@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
+import {
+  PROFILE_EMAIL_CODE_PURPOSE,
+  VerifiedEmailTokenError,
+  assertVerifiedEmailToken,
+} from '@/lib/emailCodeAuth';
 
 const PROFILE_FIELDS = [
   'address',
@@ -65,9 +70,85 @@ export async function POST(request: NextRequest) {
 
     const profileBody = body as Record<string, unknown>;
     const address = typeof profileBody.address === 'string' ? profileBody.address.trim() : '';
+    const email = typeof profileBody.email === 'string' ? profileBody.email.trim().toLowerCase() : null;
+    const verifiedEmailToken =
+      typeof profileBody.verifiedEmailToken === 'string' ? profileBody.verifiedEmailToken : '';
 
     if (!address) {
       return NextResponse.json({ error: 'Address is required' }, { status: 400 });
+    }
+
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+      }
+    }
+
+    const { data: existingProfile, error: existingProfileError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, address, email, email_verified')
+      .ilike('address', address)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingProfileError) {
+      console.error('Error loading profile before save:', existingProfileError);
+      return NextResponse.json({ error: existingProfileError.message }, { status: 500 });
+    }
+
+    if (email) {
+      const [profileEmailResult, accountEmailResult] = await Promise.all([
+        supabaseAdmin
+          .from('profiles')
+          .select('id, address')
+          .ilike('email', email)
+          .limit(1),
+        supabaseAdmin
+          .from('connected_accounts')
+          .select('address')
+          .ilike('email', email)
+          .limit(1),
+      ]);
+
+      if (profileEmailResult.error || accountEmailResult.error) {
+        console.error('Profile email duplicate check failed:', profileEmailResult.error || accountEmailResult.error);
+        return NextResponse.json({ error: 'Failed to check email availability' }, { status: 500 });
+      }
+
+      const profileMatch = profileEmailResult.data?.[0] ?? null;
+      const accountMatch = accountEmailResult.data?.[0] ?? null;
+      const profileBelongsToCurrentAddress =
+        typeof profileMatch?.address === 'string' &&
+        profileMatch.address.toLowerCase() === address.toLowerCase();
+      const accountBelongsToCurrentAddress =
+        typeof accountMatch?.address === 'string' &&
+        accountMatch.address.toLowerCase() === address.toLowerCase();
+
+      if ((profileMatch && !profileBelongsToCurrentAddress) || (accountMatch && !accountBelongsToCurrentAddress)) {
+        return NextResponse.json({ error: 'Email is already registered' }, { status: 409 });
+      }
+    }
+
+    const existingEmail = typeof existingProfile?.email === 'string' ? existingProfile.email.toLowerCase() : null;
+    const emailRequiresVerification = Boolean(
+      email &&
+      (!existingProfile || existingEmail !== email || existingProfile.email_verified !== true)
+    );
+
+    if (emailRequiresVerification) {
+      try {
+        assertVerifiedEmailToken(verifiedEmailToken, email as string, PROFILE_EMAIL_CODE_PURPOSE);
+      } catch (tokenError) {
+        if (tokenError instanceof VerifiedEmailTokenError) {
+          return NextResponse.json(
+            { error: tokenError.message },
+            { status: tokenError.statusCode }
+          );
+        }
+
+        throw tokenError;
+      }
     }
 
     const now = new Date().toISOString();
@@ -77,6 +158,12 @@ export async function POST(request: NextRequest) {
       updated_at: now,
       last_active: now,
     };
+
+    if (emailRequiresVerification) {
+      Object.assign(payload, { email, email_verified: true });
+    } else if (profileBody.email === null || profileBody.email === '') {
+      Object.assign(payload, { email_verified: false });
+    }
 
     const { data, error } = await supabaseAdmin
       .from('profiles')

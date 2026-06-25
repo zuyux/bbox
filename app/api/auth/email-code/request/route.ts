@@ -3,16 +3,18 @@ import { supabaseAdmin } from '@/lib/supabaseClient';
 import { sendEmail, emailTemplates } from '@/lib/email';
 import {
   EMAIL_CODE_PURPOSE,
+  PROFILE_EMAIL_CODE_PURPOSE,
   EMAIL_CODE_TTL_MINUTES,
   createEmailCode,
   hashEmailCode,
+  isEmailCodePurpose,
 } from '@/lib/emailCodeAuth';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
+    const { email, purpose: rawPurpose, address: rawAddress } = await request.json();
 
     if (!email || typeof email !== 'string') {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
@@ -23,10 +25,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
+    const purpose = isEmailCodePurpose(rawPurpose) ? rawPurpose : EMAIL_CODE_PURPOSE;
+    const address = typeof rawAddress === 'string' ? rawAddress.trim() : '';
+
     const [profilesResult, connectedAccountsResult] = await Promise.all([
       supabaseAdmin
         .from('profiles')
-        .select('id')
+        .select('id, address')
         .ilike('email', normalizedEmail)
         .limit(1),
       supabaseAdmin
@@ -41,7 +46,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to check email availability' }, { status: 500 });
     }
 
-    if ((profilesResult.data?.length ?? 0) > 0 || (connectedAccountsResult.data?.length ?? 0) > 0) {
+    const profileMatch = profilesResult.data?.[0] ?? null;
+    const accountMatch = connectedAccountsResult.data?.[0] ?? null;
+    const matchesCurrentProfile =
+      purpose === PROFILE_EMAIL_CODE_PURPOSE &&
+      Boolean(address) &&
+      typeof profileMatch?.address === 'string' &&
+      profileMatch.address.toLowerCase() === address.toLowerCase();
+    const matchesCurrentAccount =
+      purpose === PROFILE_EMAIL_CODE_PURPOSE &&
+      Boolean(address) &&
+      typeof accountMatch?.address === 'string' &&
+      accountMatch.address.toLowerCase() === address.toLowerCase();
+
+    if ((profileMatch && !matchesCurrentProfile) || (accountMatch && !matchesCurrentAccount)) {
       return NextResponse.json(
         { error: 'Email is already registered. Try a different email or recover the existing wallet.' },
         { status: 409 }
@@ -56,8 +74,8 @@ export async function POST(request: NextRequest) {
       .insert([
         {
           email: normalizedEmail,
-          code_hash: hashEmailCode(normalizedEmail, code),
-          purpose: EMAIL_CODE_PURPOSE,
+          code_hash: hashEmailCode(normalizedEmail, code, purpose),
+          purpose,
           expires_at: expiresAt,
         },
       ]);

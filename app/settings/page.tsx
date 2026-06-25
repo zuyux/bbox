@@ -122,6 +122,14 @@ export default function SettingsPage() {
   // Basic Profile Fields
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [originalEmail, setOriginalEmail] = useState('');
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [emailCode, setEmailCode] = useState('');
+  const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [emailCodeToken, setEmailCodeToken] = useState<string | null>(null);
+  const [emailCodeLoading, setEmailCodeLoading] = useState(false);
+  const [emailCodeMessage, setEmailCodeMessage] = useState('');
+  const [emailCodeError, setEmailCodeError] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [tagline, setTagline] = useState('');
   const [biography, setBiography] = useState('');
@@ -224,6 +232,8 @@ export default function SettingsPage() {
         if (profile) {
           setUsername(profile.username || '');
           setEmail(profile.email || '');
+          setOriginalEmail(profile.email || '');
+          setEmailVerified(profile.email_verified === true);
           setDisplayName(profile.display_name || '');
           setTagline(profile.tagline || '');
           setBiography(profile.biography || '');
@@ -373,6 +383,96 @@ export default function SettingsPage() {
     setShowRecoveryKeys(false);
   };
 
+  const normalizeEmail = (value: string) => value.trim().toLowerCase();
+  const emailRequiresVerification = Boolean(
+    normalizeEmail(email) &&
+    (normalizeEmail(email) !== normalizeEmail(originalEmail) || !emailVerified)
+  );
+
+  const resetEmailVerification = (nextEmail: string) => {
+    setEmail(nextEmail);
+    setEmailCode('');
+    setEmailCodeSent(false);
+    setEmailCodeToken(null);
+    setEmailCodeMessage('');
+    setEmailCodeError('');
+  };
+
+  const handleRequestEmailCode = async () => {
+    const trimmedEmail = normalizeEmail(email);
+    setEmailCodeMessage('');
+    setEmailCodeError('');
+    setEmailCodeToken(null);
+
+    if (!trimmedEmail) {
+      setEmailCodeError('Enter an email address first.');
+      return;
+    }
+
+    try {
+      setEmailCodeLoading(true);
+      const response = await fetch('/api/auth/email-code/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          purpose: 'profile_email',
+          address,
+        }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send verification code');
+      }
+
+      setEmailCodeSent(true);
+      setEmailCodeMessage(result.debugCode ? `Verification code sent. Dev code: ${result.debugCode}` : 'Verification code sent. Check your email.');
+    } catch (err) {
+      setEmailCodeError(err instanceof Error ? err.message : 'Failed to send verification code');
+    } finally {
+      setEmailCodeLoading(false);
+    }
+  };
+
+  const handleVerifyEmailCode = async () => {
+    const trimmedEmail = normalizeEmail(email);
+    const trimmedCode = emailCode.trim();
+    setEmailCodeMessage('');
+    setEmailCodeError('');
+
+    if (!/^\d{6}$/.test(trimmedCode)) {
+      setEmailCodeError('Enter the 6-digit verification code.');
+      return;
+    }
+
+    try {
+      setEmailCodeLoading(true);
+      const response = await fetch('/api/auth/email-code/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          code: trimmedCode,
+          purpose: 'profile_email',
+        }),
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.verifiedEmailToken) {
+        throw new Error(result.error || 'Failed to verify code');
+      }
+
+      setEmailCodeToken(result.verifiedEmailToken);
+      setEmailCodeMessage('Email verified. Save your profile to apply it.');
+    } catch (err) {
+      setEmailCodeToken(null);
+      setEmailCodeError(err instanceof Error ? err.message : 'Failed to verify code');
+    } finally {
+      setEmailCodeLoading(false);
+    }
+  };
+
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -381,6 +481,10 @@ export default function SettingsPage() {
 
     try {
       if (!address) throw new Error('Wallet not connected');
+
+      if (emailRequiresVerification && !emailCodeToken) {
+        throw new Error('Verify your email before saving your profile.');
+      }
 
       const optionalText = (value: string) => {
         const trimmed = value.trim();
@@ -426,7 +530,18 @@ export default function SettingsPage() {
         marketing_emails: marketingEmails,
       };
 
+      if (emailRequiresVerification && emailCodeToken) {
+        profileData.verifiedEmailToken = emailCodeToken;
+      }
+
       await upsertProfile(profileData);
+      setOriginalEmail(email);
+      setEmailVerified(Boolean(optionalText(email)));
+      setEmailCode('');
+      setEmailCodeSent(false);
+      setEmailCodeToken(null);
+      setEmailCodeMessage('');
+      setEmailCodeError('');
       setSuccess('Profile saved successfully!');
       toast.success('Profile updated!');
 
@@ -623,9 +738,54 @@ export default function SettingsPage() {
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="email"
                       value={email}
-                      onChange={e => setEmail(e.target.value)}
+                      onChange={e => resetEmailVerification(e.target.value)}
                       placeholder="you@example.com"
                     />
+                    {emailRequiresVerification && (
+                      <div className="mt-2 space-y-2">
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            onClick={handleRequestEmailCode}
+                            disabled={emailCodeLoading || !address}
+                            className="h-9 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            {emailCodeSent ? 'Resend Code' : 'Send Code'}
+                          </Button>
+                          {emailCodeSent && (
+                            <>
+                              <input
+                                className="min-w-0 flex-1 px-3 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                type="text"
+                                inputMode="numeric"
+                                value={emailCode}
+                                onChange={e => {
+                                  setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                                  setEmailCodeToken(null);
+                                  setEmailCodeError('');
+                                }}
+                                placeholder="6-digit code"
+                                disabled={emailCodeLoading || Boolean(emailCodeToken)}
+                                autoComplete="one-time-code"
+                              />
+                              <Button
+                                type="button"
+                                onClick={handleVerifyEmailCode}
+                                disabled={emailCodeLoading || emailCode.length !== 6 || Boolean(emailCodeToken)}
+                                className="h-9 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                              >
+                                Verify
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                        {(emailCodeMessage || emailCodeError) && (
+                          <p className={`text-xs ${emailCodeError ? 'text-red-500 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                            {emailCodeError || emailCodeMessage}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                   
                   <div>

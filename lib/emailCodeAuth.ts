@@ -7,6 +7,8 @@ if (!tokenSecret) {
 }
 
 export const EMAIL_CODE_PURPOSE = 'create_account';
+export const PROFILE_EMAIL_CODE_PURPOSE = 'profile_email';
+export type EmailCodePurpose = typeof EMAIL_CODE_PURPOSE | typeof PROFILE_EMAIL_CODE_PURPOSE;
 export const EMAIL_CODE_TTL_MINUTES = 10;
 export const EMAIL_CODE_MAX_ATTEMPTS = 5;
 export const VERIFIED_EMAIL_TOKEN_TTL_MINUTES = 15;
@@ -23,7 +25,7 @@ export class VerifiedEmailTokenError extends Error {
 
 interface VerifiedEmailTokenPayload {
   email: string;
-  purpose: typeof EMAIL_CODE_PURPOSE;
+  purpose: EmailCodePurpose;
   exp: number;
   iat: number;
   nonce: string;
@@ -38,18 +40,22 @@ export function createEmailCode(): string {
   return crypto.randomInt(100000, 1000000).toString();
 }
 
-export function hashEmailCode(email: string, code: string): string {
+export function isEmailCodePurpose(value: unknown): value is EmailCodePurpose {
+  return value === EMAIL_CODE_PURPOSE || value === PROFILE_EMAIL_CODE_PURPOSE;
+}
+
+export function hashEmailCode(email: string, code: string, purpose: EmailCodePurpose = EMAIL_CODE_PURPOSE): string {
   return crypto
     .createHash('sha256')
-    .update(`${normalizeEmail(email)}:${code}:${tokenSecret}`)
+    .update(`${normalizeEmail(email)}:${purpose}:${code}:${tokenSecret}`)
     .digest('hex');
 }
 
-export function createVerifiedEmailToken(email: string): string {
+export function createVerifiedEmailToken(email: string, purpose: EmailCodePurpose = EMAIL_CODE_PURPOSE): string {
   const now = Date.now();
   const payload: VerifiedEmailTokenPayload = {
     email: normalizeEmail(email),
-    purpose: EMAIL_CODE_PURPOSE,
+    purpose,
     iat: now,
     exp: now + VERIFIED_EMAIL_TOKEN_TTL_MINUTES * 60 * 1000,
     nonce: crypto.randomBytes(16).toString('hex'),
@@ -88,7 +94,7 @@ export function decodeVerifiedEmailToken(token: string): VerifiedEmailTokenPaylo
     throw new VerifiedEmailTokenError('Malformed verified email token');
   }
 
-  if (payload.purpose !== EMAIL_CODE_PURPOSE) {
+  if (!isEmailCodePurpose(payload.purpose)) {
     throw new VerifiedEmailTokenError('Verified email token purpose mismatch');
   }
 
@@ -99,8 +105,16 @@ export function decodeVerifiedEmailToken(token: string): VerifiedEmailTokenPaylo
   return payload;
 }
 
-export function assertVerifiedEmailToken(token: string, email: string) {
+export function assertVerifiedEmailToken(
+  token: string,
+  email: string,
+  expectedPurpose: EmailCodePurpose = EMAIL_CODE_PURPOSE
+) {
   const payload = decodeVerifiedEmailToken(token);
+
+  if (payload.purpose !== expectedPurpose) {
+    throw new VerifiedEmailTokenError('Verified email token purpose mismatch', 401);
+  }
 
   if (payload.email !== normalizeEmail(email)) {
     throw new VerifiedEmailTokenError('Verified email token does not match email', 401);

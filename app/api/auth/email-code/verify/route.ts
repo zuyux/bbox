@@ -5,13 +5,14 @@ import {
   EMAIL_CODE_PURPOSE,
   createVerifiedEmailToken,
   hashEmailCode,
+  isEmailCodePurpose,
 } from '@/lib/emailCodeAuth';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, code } = await request.json();
+    const { email, code, purpose: rawPurpose } = await request.json();
 
     if (!email || typeof email !== 'string') {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedCode = code.trim();
+    const purpose = isEmailCodePurpose(rawPurpose) ? rawPurpose : EMAIL_CODE_PURPOSE;
 
     if (!emailRegex.test(normalizedEmail)) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
@@ -36,7 +38,7 @@ export async function POST(request: NextRequest) {
       .from('email_verification_codes')
       .select('id, code_hash, attempts, consumed_at, expires_at')
       .ilike('email', normalizedEmail)
-      .eq('purpose', EMAIL_CODE_PURPOSE)
+      .eq('purpose', purpose)
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Too many attempts. Request a new code.' }, { status: 429 });
     }
 
-    const expectedHash = hashEmailCode(normalizedEmail, normalizedCode);
+    const expectedHash = hashEmailCode(normalizedEmail, normalizedCode, purpose);
     if (record.code_hash !== expectedHash) {
       await supabaseAdmin
         .from('email_verification_codes')
@@ -82,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      verifiedEmailToken: createVerifiedEmailToken(normalizedEmail),
+      verifiedEmailToken: createVerifiedEmailToken(normalizedEmail, purpose),
     });
   } catch (error) {
     console.error('Email code verification failed:', error);
