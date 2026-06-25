@@ -656,7 +656,7 @@ export default function HomePage() {
                             <Link
                               href={`/apps/${app.id}`}
                               aria-label={`View ${app.name}`}
-                              className="flex flex-col items-center justify-center rounded-lg border border-border bg-background p-4 text-center transition hover:-translate-y-0.5 hover:shadow-lg"
+                              className="flex flex-col items-center justify-center bg-background p-4 text-center transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
                               <div className="relative w-24 h-24 mb-4 overflow-hidden rounded-lg bg-muted/10 transition-transform duration-200 hover:scale-105">
                                 {!isLoaded && (

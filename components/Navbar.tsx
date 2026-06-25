@@ -23,7 +23,7 @@ export const Navbar = () => {
             <div className="flex justify-start">
               <Link href="/" className="flex items-center gap-2">
                 <Image
-                  src="/bbox.png"
+                  src="/bbox-xs.png"
                   alt="bbox Logo"
                   width={27}
                   height={27}

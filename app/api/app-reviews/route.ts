@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { verifyMessageSignature, verifyMessageSignatureRsv } from '@stacks/encryption';
 import { publicKeyToAddressSingleSig } from '@stacks/transactions';
 import { supabaseAdmin } from '@/lib/supabaseClient';
+import {
+  buildReviewRatingSummaryMap,
+  fetchReviewRatingSummaries,
+  getLegacyReviewAppId,
+} from '@/lib/appReviewRatings';
 
 const TABLE_NAME = 'app_reviews';
 const LEGACY_APPS_TABLE_NAME = 'apps';
@@ -20,11 +24,6 @@ const normalizeHex = (value: string) => value.trim().replace(/^0x/i, '');
 
 const isLegacyBigintAppIdError = (error: { code?: string; message?: string } | null) => {
   return error?.code === '22P02' && /bigint/i.test(error.message || '');
-};
-
-const getLegacyReviewAppId = (appId: string) => {
-  const hash = crypto.createHash('sha256').update(appId).digest();
-  return 1_000_000_000 + (hash.readUInt32BE(0) % 1_000_000_000);
 };
 
 const ensureLegacyReviewApp = async (appId: string) => {
@@ -195,7 +194,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, reviews: data ?? [] });
+    const ratingSummary = buildReviewRatingSummaryMap(appId ? [appId] : [], data ?? []).get(appId) ?? {
+      rating: 0,
+      reviewCount: 0,
+    };
+
+    return NextResponse.json({ success: true, reviews: data ?? [], ratingSummary });
   } catch (error) {
     console.error('GET /api/app-reviews failed:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -294,7 +298,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, review: data });
+    const ratingSummary = (await fetchReviewRatingSummaries(supabaseAdmin, [appId])).get(appId) ?? {
+      rating: 0,
+      reviewCount: 0,
+    };
+
+    return NextResponse.json({ success: true, review: data, ratingSummary });
   } catch (error) {
     console.error('POST /api/app-reviews failed:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

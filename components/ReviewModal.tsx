@@ -19,10 +19,16 @@ interface ReviewComment {
   created_at?: string | null;
 }
 
+type ReviewRatingSummary = {
+  rating: number;
+  reviewCount: number;
+};
+
 interface ReviewModalProps {
   open: boolean;
   appId: string;
   appName: string;
+  onRatingChange?: (ratingSummary: ReviewRatingSummary) => void;
   onClose: () => void;
 }
 
@@ -44,7 +50,7 @@ const formatTimestamp = (value?: string | null) => {
   }
 };
 
-export default function ReviewModal({ open, appId, appName, onClose }: ReviewModalProps) {
+export default function ReviewModal({ open, appId, appName, onRatingChange, onClose }: ReviewModalProps) {
   const { address, walletType } = useWallet();
   const [comments, setComments] = useState<ReviewComment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -73,6 +79,9 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
       const payload = await response.json();
       if (!signal?.cancelled) {
         setComments(payload.reviews || []);
+        if (payload.ratingSummary) {
+          onRatingChange?.(payload.ratingSummary);
+        }
       }
     } catch (err) {
       if (!signal?.cancelled) {
@@ -82,7 +91,7 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
     } finally {
       if (!signal?.cancelled) setLoading(false);
     }
-  }, [reviewAppId]);
+  }, [onRatingChange, reviewAppId]);
 
   useEffect(() => {
     if (!open) return;
@@ -172,6 +181,11 @@ export default function ReviewModal({ open, appId, appName, onClose }: ReviewMod
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
         throw new Error(payload?.error || 'Unable to submit review');
+      }
+
+      const payload = await response.json();
+      if (payload.ratingSummary) {
+        onRatingChange?.(payload.ratingSummary);
       }
 
       setRating(0);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
 import { normalizeAppRow } from '@/lib/appsUtils';
+import { fetchReviewRatingSummaries } from '@/lib/appReviewRatings';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,9 +37,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const ratingSummaries = await fetchReviewRatingSummaries(
+      supabaseAdmin,
+      (data ?? []).map((row) => String(row.id ?? ''))
+    );
+
+    const apps = (data ?? [])
+      .map((row) => {
+        const appId = String(row.id ?? '');
+        const ratingSummary = ratingSummaries.get(appId);
+
+        return normalizeAppRow({
+          ...row,
+          rating: ratingSummary?.rating ?? 0,
+          reviewCount: ratingSummary?.reviewCount ?? 0,
+        });
+      })
+      .sort((a, b) => b.rating - a.rating);
+
     return NextResponse.json({
       success: true,
-      apps: (data ?? []).map(normalizeAppRow),
+      apps,
     });
   } catch (error) {
     console.error('API error loading bbox_apps:', error);

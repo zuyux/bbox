@@ -251,7 +251,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                             </div>
                             <div className="flex items-center gap-1 text-xs text-gray-500">
                               <Star size={10} className="fill-yellow-400 text-yellow-400" />
-                              {app.rating}
+                              {app.rating.toFixed(1)}
                             </div>
                             <div className="text-xs text-gray-500 px-2 py-0.5 bg-background rounded">
                               {app.category}

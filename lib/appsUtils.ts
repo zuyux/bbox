@@ -6,6 +6,7 @@ export interface BitcoinApp {
   tags: string[];
   downloads: string;
   rating: number;
+  reviewCount: number;
   verified: boolean;
   link: string;
   imgCID: string;
@@ -21,6 +22,7 @@ export const normalizeAppRow = (row: SupabaseAppRow): BitcoinApp => ({
   tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
   downloads: String(row.downloads ?? '0'),
   rating: typeof row.rating === 'number' ? row.rating : Number(row.rating) || 0,
+  reviewCount: typeof row.reviewCount === 'number' ? row.reviewCount : Number(row.review_count) || 0,
   verified: Boolean(row.verified),
   link: String(row.link ?? ''),
   imgCID: typeof row.imgcid === 'string' ? row.imgcid : String(row.imgCID ?? ''),

@@ -21,7 +21,8 @@ import {
   Coins, 
   Code, 
   Globe,
-  ArrowRight
+  ArrowRight,
+  Gamepad2
 } from 'lucide-react';
 
 const categoryIcons: Record<string, typeof Shield | string> = {
@@ -38,7 +39,7 @@ const categoryIcons: Record<string, typeof Shield | string> = {
   Developer: Code,
   Creator: Code,
   Nostr: Globe,
-  Gaming: '/game.svg'
+  Gaming: Gamepad2,
 };
 
 const CHUNK_SIZE = 10;
@@ -325,7 +326,7 @@ export default function AppsPage() {
                   <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-foreground">{app.rating}</span>
+                      <span className="font-medium text-foreground">{app.rating.toFixed(1)}</span>
                     </div>
                     <span>•</span>
                     <span>{app.category}</span>

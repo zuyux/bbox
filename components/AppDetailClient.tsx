@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
@@ -57,6 +57,16 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
   });
 
   const displayApp = appState;
+  const displayRating = displayApp.rating.toFixed(1);
+  const reviewCountLabel = `${displayApp.reviewCount} review${displayApp.reviewCount === 1 ? '' : 's'}`;
+
+  const handleRatingChange = useCallback((ratingSummary: { rating: number; reviewCount: number }) => {
+    setAppState((prev) => ({
+      ...prev,
+      rating: ratingSummary.rating,
+      reviewCount: ratingSummary.reviewCount,
+    }));
+  }, []);
 
   const updateField = (field: keyof typeof editData, value: string) => {
     setEditStatus('idle');
@@ -260,7 +270,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
               <div className="flex items-center gap-4 text-sm mb-3">
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold">{displayApp.rating}</span>
+                  <span className="font-semibold">{displayRating}</span>
                 </div>
                 <Badge variant="secondary" className="text-xs">
                   {displayApp.category}
@@ -289,7 +299,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
         <div className="mb-6 pb-6 border-b">
           <h3 className="text-base font-semibold mb-3">Ratings & Reviews</h3>
           <div className="flex items-center gap-6 mb-3">
-            <div className="text-5xl font-bold">{displayApp.rating}</div>
+            <div className="text-5xl font-bold">{displayRating}</div>
             <div>
               <div className="flex items-center gap-0.5 mb-1">
                 {[1, 2, 3, 4, 5].map(i => (
@@ -299,7 +309,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                   />
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground">Based on user ratings</p>
+              <p className="text-xs text-muted-foreground">Average from {reviewCountLabel}</p>
             </div>
           </div>
           <Button
@@ -322,7 +332,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
               </div>
               <div>
                 <span className="text-muted-foreground text-xs">Rating</span>
-                <div className="font-medium">{displayApp.rating} / 5.0</div>
+                <div className="font-medium">{displayRating} / 5.0 ({reviewCountLabel})</div>
               </div>
               <div>
                 <span className="text-muted-foreground text-xs">Verified</span>
@@ -378,7 +388,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                     <p className="text-xs text-muted-foreground line-clamp-1">{relatedApp.category}</p>
                     <div className="flex items-center gap-1 mt-2 text-xs">
                       <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                      <span className="font-medium">{relatedApp.rating}</span>
+                      <span className="font-medium">{relatedApp.rating.toFixed(1)}</span>
                     </div>
                   </div>
                 </Link>
@@ -518,6 +528,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
           open={showReviewModal}
           appId={displayApp.id}
           appName={displayApp.name}
+          onRatingChange={handleRatingChange}
           onClose={() => setShowReviewModal(false)}
         />
       )}
