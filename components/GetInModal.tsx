@@ -15,6 +15,7 @@ import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 import { formatStxAddress } from '@/lib/address-utils';
 import { getStoredEncryptedWallet } from '@/lib/encryptedStorage';
+import { connectAlbyWallet } from '@/lib/albyWallet';
 
 export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const { address, setAddress, setWalletType } = useWallet();
@@ -44,7 +45,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     { id: 'nostria', label: 'Nostria Signer', icon: '/nostria.svg', mode: 'wallets' as const },
   ];
 
-  const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' = 'imported') => {
+  const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' | 'alby' = 'imported') => {
     persistCachedWalletState(newAddress, type);
     setAddress(newAddress);
     setWalletType(type);
@@ -53,6 +54,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 
   const [xverseInstalled, setXverseInstalled] = useState(false);
   const [leatherInstalled, setLeatherInstalled] = useState(false);
+  const [albyInstalled, setAlbyInstalled] = useState(false);
   const [walletInstallUrl, setWalletInstallUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,6 +62,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     const wallets = detectWalletExtensions();
     setXverseInstalled(wallets.some((wallet) => wallet.id === 'xverse' && wallet.installed));
     setLeatherInstalled(wallets.some((wallet) => wallet.id === 'leather' && wallet.installed));
+    setAlbyInstalled(wallets.some((wallet) => wallet.id === 'alby' && wallet.installed));
   }, []);
 
   const handleXverseConnect = async () => {
@@ -160,6 +163,35 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       }
       setWalletInstallUrl('https://leather.io');
       console.error('Leather connect error:', err);
+    }
+  };
+
+  const handleAlbyConnect = async () => {
+    setWalletError(null);
+    setWalletInstallUrl(null);
+
+    if (!albyInstalled) {
+      setWalletError(
+        'Alby was not detected. Install Alby or enable it for this page, then refresh and try again.'
+      );
+      setWalletInstallUrl('https://getalby.com');
+      return;
+    }
+
+    try {
+      const albyConnection = await connectAlbyWallet();
+      persistWalletContext(albyConnection.address, 'alby');
+      if (onClose) onClose();
+      router.push(`/${albyConnection.address}`);
+    } catch (err: unknown) {
+      const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Alby.');
+      if (isWalletRequestCancelled(err)) {
+        setWalletError('Wallet connection was cancelled. Please try again.');
+      } else {
+        setWalletError(errorMsg);
+      }
+      setWalletInstallUrl('https://getalby.com');
+      console.error('Alby connect error:', err);
     }
   };
 
@@ -458,6 +490,10 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                       }
                       if (option.id === 'leather') {
                         handleLeatherConnect();
+                        return;
+                      }
+                      if (option.id === 'alby') {
+                        handleAlbyConnect();
                         return;
                       }
                       setImportModalMode(option.mode);

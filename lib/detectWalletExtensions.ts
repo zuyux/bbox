@@ -11,6 +11,14 @@ declare global {
   }
 }
 
+type BrowserWalletWindow = typeof window & {
+  alby?: unknown;
+  nostr?: {
+    getPublicKey?: () => Promise<string>;
+  };
+  webln?: unknown;
+};
+
 export function detectWalletExtensions() {
   if (typeof window === 'undefined') return [];
   const wallets = [];
@@ -48,6 +56,19 @@ export function detectWalletExtensions() {
       installed: false,
     });
   }
+
+  const browserWindow = window as BrowserWalletWindow;
+  const hasAlby =
+    'alby' in browserWindow ||
+    Boolean(browserWindow.nostr?.getPublicKey) ||
+    'webln' in browserWindow;
+
+  wallets.push({
+    id: 'alby',
+    name: 'Alby',
+    url: 'https://getalby.com',
+    installed: hasAlby,
+  });
   
   // MetaMask detection (prevent auto-connection errors)
   if (window.ethereum && (window.ethereum as { isMetaMask?: boolean })?.isMetaMask) {

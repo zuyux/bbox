@@ -22,11 +22,29 @@ type BrowserStacksWindow = typeof window & {
   };
 };
 
-export type SupportedWalletType = 'leather' | 'xverse' | 'hiro' | 'imported' | null;
+export type SupportedWalletType = 'leather' | 'xverse' | 'hiro' | 'alby' | 'imported' | null;
 
 type ResolvedStacksProvider = {
   provider: RpcCapableStacksProvider;
   walletType: Exclude<SupportedWalletType, 'imported' | null>;
+};
+
+type NostrUnsignedEvent = {
+  pubkey: string;
+  created_at: number;
+  kind: number;
+  tags: string[][];
+  content: string;
+};
+
+type NostrSignedEvent = NostrUnsignedEvent & {
+  id?: string;
+  sig: string;
+};
+
+type NostrSigningProvider = {
+  getPublicKey?: () => Promise<string>;
+  signEvent?: (event: NostrUnsignedEvent) => Promise<NostrSignedEvent>;
 };
 
 export interface CommentSignatureResult {
@@ -117,6 +135,7 @@ const getStacksProvider = (walletType: SupportedWalletType): ResolvedStacksProvi
   const xverseStacks = browserWindow.XverseProviders?.StacksProvider;
 
   if (walletType === 'imported') return undefined;
+  if (walletType === 'alby') return undefined;
   if (walletType === 'leather') {
     if (leather) return { provider: leather, walletType: 'leather' };
     if (hiro) return { provider: hiro, walletType: 'hiro' };
@@ -146,11 +165,53 @@ const providerNotFoundMessage = (walletType: SupportedWalletType) => {
       return 'Leather wallet not detected. Reconnect and try again.';
     case 'hiro':
       return 'Stacks wallet not detected. Reconnect your browser wallet and try again.';
+    case 'alby':
+      return 'Alby wallet not detected. Reconnect and try again.';
     case 'imported':
       return 'Imported wallets cannot sign comments. Connect a browser wallet to continue.';
     default:
       return 'No Stacks-compatible wallet found. Reconnect Leather/Hiro/Xverse and try again.';
   }
+};
+
+const getNostrProvider = (): NostrSigningProvider | undefined => {
+  if (typeof window === 'undefined') return undefined;
+
+  const browserWindow = window as typeof window & {
+    alby?: {
+      nostr?: NostrSigningProvider;
+    };
+    nostr?: NostrSigningProvider;
+  };
+
+  return browserWindow.alby?.nostr ?? browserWindow.nostr;
+};
+
+const signNostrMessage = async (payload: string): Promise<StacksSignatureResult> => {
+  const provider = getNostrProvider();
+  if (!provider?.getPublicKey || !provider.signEvent) {
+    throw new Error('Alby Nostr signing is not available. Enable Nostr permissions in Alby and try again.');
+  }
+
+  const publicKey = (await provider.getPublicKey()).trim().toLowerCase();
+  const event = await provider.signEvent({
+    pubkey: publicKey,
+    created_at: Math.floor(Date.now() / 1000),
+    kind: 27235,
+    tags: [['client', 'BBOX']],
+    content: payload,
+  });
+
+  if (!event.sig) {
+    throw new Error('Alby returned an invalid signature payload');
+  }
+
+  return {
+    signature: event.sig,
+    signedPayload: JSON.stringify(event),
+    walletType: 'alby',
+    publicKey: event.pubkey || publicKey,
+  };
 };
 
 const unwrapSignatureResult = (response: unknown): SignatureData => {
@@ -202,6 +263,10 @@ export const signStacksMessage = async (
   payload: string,
   walletType: SupportedWalletType
 ): Promise<StacksSignatureResult> => {
+  if (walletType === 'alby') {
+    return signNostrMessage(payload);
+  }
+
   const resolvedProvider = getStacksProvider(walletType);
   if (!resolvedProvider) {
     throw new Error(providerNotFoundMessage(walletType));
