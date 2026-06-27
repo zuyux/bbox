@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { H1, Lead } from '@/components/ui/typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowRight, Blocks, Code2, Coins, Compass, Github, Layers3, ShieldCheck, Sparkles, Store, Users } from 'lucide-react';
+import { ArrowRight, Blocks, Code2, Coins, Compass, Layers3, ShieldCheck, Sparkles, Store, Users } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import type { BitcoinApp } from '@/lib/appsUtils';
 import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
@@ -467,17 +467,9 @@ export default function HomePage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button> 
-              {developerMode && (
-                <Button size="lg" variant="secondary" asChild>
-                  <Link href="/submit">
-                    Submit Your App
-                  </Link>
-                </Button>
-              )}
-              <Button size="lg" variant="ghost" asChild>
-                <Link href="https://github.com/zuyux/bbox" target="_blank" rel="noreferrer">
-                  <Github className="mr-2 h-4 w-4" />
-                  Source
+              <Button size="lg" variant="secondary" asChild>
+                <Link href="/submit">
+                  Apply for funding
                 </Link>
               </Button>
             </div>

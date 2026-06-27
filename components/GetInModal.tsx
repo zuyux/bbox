@@ -406,7 +406,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                                   <div>
                     Connect or create your account using your wallet or seed phrase.<br />
                     <span className="text-foreground underline">
-                      <a href="/support" target="_blank" rel="noopener noreferrer">Need help? Visit Support</a>
+                      <a href="mailto:fabohax@gmail.com">Need help? Contact us</a>
                     </span>
                   </div>
               </TooltipContent>

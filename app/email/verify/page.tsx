@@ -68,7 +68,7 @@ export default function VerifyEmailPage() {
           </Button>
           {status === 'error' && (
             <Button variant="outline" asChild className="cursor-pointer">
-              <Link href="/support">Contact Support</Link>
+              <a href="mailto:fabohax@gmail.com">Contact Support</a>
             </Button>
           )}
         </div>

@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Bell, Settings, HelpCircle, LogOut, User } from 'lucide-react';
+import { Settings, LogOut, User } from 'lucide-react';
 import { useWallet } from './WalletProvider';
 import { useRouter } from 'next/navigation';
 import Image from "next/image";
@@ -128,6 +128,17 @@ export default function UserModal({ onClose }: UserModalProps) {
     return `${str.slice(0, 4)}~${str.slice(-4)}`;
   };
 
+  const getVerifiedEmailUsername = (currentProfile: Profile | null) => {
+    if (currentProfile?.email_verified !== true || !currentProfile.email) return '';
+    return currentProfile.email.split('@')[0] || '';
+  };
+
+  const modalTitle =
+    profile?.username ||
+    profile?.display_name ||
+    getVerifiedEmailUsername(profile) ||
+    truncateMiddle(currentAddress);
+
   const formatBalance = (balanceStr: string | null) => {
     if (!balanceStr || balanceStr === '--') return balanceStr;
     
@@ -194,7 +205,7 @@ export default function UserModal({ onClose }: UserModalProps) {
           >
             {usernameLoader ? (
               <LoaderCircle className="animate-spin inline-block align-middle text-black dark:text-white" size={22} />
-            ) : (profile?.username || profile?.display_name ? (profile?.username || profile?.display_name) : truncateMiddle(currentAddress))}
+            ) : modalTitle}
           </Link>
           <div className='flex'>
             <button
@@ -255,25 +266,11 @@ export default function UserModal({ onClose }: UserModalProps) {
         </div>
         <div className="grid grid-cols-2 gap-3 w-full mb-2 font-sans text-base">
           <button
-            onClick={() => { onClose(); router.push('/notifications'); }}
-            className="flex flex-col items-center justify-center bg-white/5 backdrop-blur-sm rounded-xl py-4 text-sm text-gray-900 dark:text-white hover:bg-white/7 border border-white/10 cursor-pointer select-none"
-          >
-            <Bell className="mb-2" size={20} />
-            Notifications
-          </button>
-          <button
             onClick={() => { onClose(); router.push('/settings'); }}
             className="flex flex-col items-center justify-center bg-white/5 backdrop-blur-sm rounded-xl py-4 text-sm text-gray-900 dark:text-white hover:bg-white/7 border border-white/10 cursor-pointer select-none"
           >
             <Settings className="mb-2" size={20} />
             Settings
-          </button>
-          <button
-            onClick={() => { onClose(); router.push('/support'); }}
-            className="flex flex-col items-center justify-center bg-white/5 backdrop-blur-sm rounded-xl py-4 text-sm text-gray-900 dark:text-white hover:bg-white/7 border border-white/10 cursor-pointer select-none"
-          >
-            <HelpCircle className="mb-2" size={20} />
-            Help
           </button>
           <button
             className="flex flex-col items-center justify-center bg-white/5 backdrop-blur-sm rounded-xl py-4 text-gray-900 dark:text-white text-sm hover:bg-white/7 border border-white/10 cursor-pointer select-none"
