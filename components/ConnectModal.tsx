@@ -253,7 +253,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
       setEmailMessage('Wallet unlocked. Redirecting...');
       onSuccess?.();
       onClose();
-      router.push(`/${unlockedWallet.bitcoinAddress || unlockedWallet.address}`);
+      router.push('/apps');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to authenticate account';
       setEmailStatus('error');
@@ -332,7 +332,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                   await persistSessionForWallet(stxAddress, 'leather');
                                   onSuccess?.();
                                   onClose();
-                                  router.push(`/${stxAddress}`);
+                                  router.push('/apps');
                                 } else {
                                   const errorMsg = 'No Stacks address found in Leather. Please check your wallet and try again.';
                                   setWalletError(errorMsg);
@@ -360,7 +360,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                     await persistSessionForWallet(stxAddress, 'xverse');
                                     onSuccess?.();
                                     onClose();
-                                    router.push(`/${stxAddress}`);
+                                    router.push('/apps');
                                   } else {
                                     const errorMsg = 'No Stacks address found in Xverse. Please check your wallet and try again.';
                                     setWalletError(errorMsg);
@@ -394,7 +394,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 await persistSessionForWallet(albyConnection.address, 'alby');
                                 onSuccess?.();
                                 onClose();
-                                router.push(`/${albyConnection.address}`);
+                                router.push('/apps');
                               } catch (err: unknown) {
                                 const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Alby.');
                                 if (isWalletRequestCancelled(err)) {

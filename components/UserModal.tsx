@@ -188,7 +188,7 @@ export default function UserModal({ onClose }: UserModalProps) {
       <div ref={modalRef} className="relative rounded-3xl p-4 w-[340px] flex flex-col items-center shadow-xl pointer-events-auto z-[201] opacity-0 translate-y-[-24px] animate-getinmodal backdrop-blur-md border bg-white dark:bg-black border-gray-200 dark:border-white/20 text-gray-900 dark:text-white">
         <div className="flex items-center w-full mb-6">
           <Link
-            href={`/${currentAddress}`}
+            href="/apps"
             className="title ml-2 text-left text-gray-900 dark:text-white text-xl font-bold tracking-wider flex-1 cursor-pointer select-none"
             onClick={onClose}
           >

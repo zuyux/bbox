@@ -545,9 +545,9 @@ export default function SettingsPage() {
       setSuccess('Profile saved successfully!');
       toast.success('Profile updated!');
 
-      // Navigate to user's profile page after successful save
+      // Return to the app store after saving account details.
       setTimeout(() => {
-        router.push(`/${address}`);
+        router.push('/apps');
       }, 1500); // Small delay to let user see the success message
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to save profile';

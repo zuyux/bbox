@@ -12,6 +12,9 @@ import IPFSImage from '@/components/IPFSImage';
 import { extractIPFSHash } from '@/lib/ipfs-utils';
 import type { BitcoinApp } from '@/lib/appsUtils';
 import { getCategoryStats } from '@/lib/appsUtils';
+import { useWallet } from '@/components/WalletProvider';
+import ExtensionEmailVerificationModal from '@/components/ExtensionEmailVerificationModal';
+import { getProfile, type Profile } from '@/lib/profileApi';
 import { 
   Search, 
   Star, 
@@ -99,13 +102,24 @@ export default function AppsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { address, walletType } = useWallet();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [visibleCount, setVisibleCount] = useState(CHUNK_SIZE);
   const [apps, setApps] = useState<BitcoinApp[]>([]);
   const [appsLoading, setAppsLoading] = useState(true);
   const [appsError, setAppsError] = useState<string | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [emailPromptDismissed, setEmailPromptDismissed] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const isExtensionWallet = walletType === 'leather' || walletType === 'xverse' || walletType === 'alby';
+  const shouldPromptForEmail =
+    Boolean(address) &&
+    isExtensionWallet &&
+    profileLoaded &&
+    !emailPromptDismissed &&
+    profile?.email_verified !== true;
   
   const categoryStats = useMemo(() => getCategoryStats(apps), [apps]);
   const categories = useMemo(() => Object.keys(categoryStats), [categoryStats]);
@@ -134,6 +148,32 @@ export default function AppsPage() {
 
     fetchApps();
   }, []);
+
+  useEffect(() => {
+    setEmailPromptDismissed(false);
+    setProfile(null);
+    setProfileLoaded(false);
+
+    if (!address || !isExtensionWallet) {
+      setProfileLoaded(true);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchConnectedProfile = async () => {
+      const nextProfile = await getProfile(address);
+      if (cancelled) return;
+      setProfile(nextProfile);
+      setProfileLoaded(true);
+    };
+
+    fetchConnectedProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [address, isExtensionWallet]);
 
   const updateCategorySelection = useCallback((nextCategory: string) => {
     setSelectedCategory(nextCategory);
@@ -378,6 +418,17 @@ export default function AppsPage() {
           </div>
         )}
       </div>
+
+      {shouldPromptForEmail && address && (
+        <ExtensionEmailVerificationModal
+          address={address}
+          onClose={() => setEmailPromptDismissed(true)}
+          onVerified={(nextProfile) => {
+            setProfile(nextProfile);
+            setEmailPromptDismissed(true);
+          }}
+        />
+      )}
     </div>
   );
 }

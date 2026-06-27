@@ -94,7 +94,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         if (stxAddress) {
           persistWalletContext(stxAddress, 'xverse');
           if (onClose) onClose();
-          router.push(`/${stxAddress}`);
+          router.push('/apps');
           return;
         }
 
@@ -149,7 +149,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       if (stxAddress) {
         persistWalletContext(stxAddress, 'leather');
         if (onClose) onClose();
-        router.push(`/${stxAddress}`);
+        router.push('/apps');
         return;
       }
 
@@ -182,7 +182,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       const albyConnection = await connectAlbyWallet();
       persistWalletContext(albyConnection.address, 'alby');
       if (onClose) onClose();
-      router.push(`/${albyConnection.address}`);
+      router.push('/apps');
     } catch (err: unknown) {
       const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Alby.');
       if (isWalletRequestCancelled(err)) {
@@ -357,10 +357,8 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
           persistWalletContext(unlockedAddress);
         }
 
-        const destinationAddress = walletInfo?.bitcoinAddress || walletInfo?.address || unlockedAddress;
-        if (destinationAddress) {
-          // For existing wallets, redirect to the primary profile address
-          router.push(`/${destinationAddress}`);
+        if (unlockedAddress) {
+          router.push('/apps');
           if (onClose) onClose();
         }
       }

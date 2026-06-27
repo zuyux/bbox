@@ -89,7 +89,7 @@ export default function WalletRecoveryPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/profile');
+      router.push('/apps');
     }
   }, [isAuthenticated, router]);
 

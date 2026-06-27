@@ -10,8 +10,6 @@ import { User, MapPin, Calendar, Briefcase, Globe, Pen, Code, Download, Star, Lo
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from '@/components/SafariOptimizedImage';
 import Image from 'next/image';
-import { useWallet } from '@/components/WalletProvider';
-import ExtensionEmailVerificationModal from '@/components/ExtensionEmailVerificationModal';
 
 interface SubmittedApp {
   id: number;
@@ -58,9 +56,9 @@ function ProfileDisplay({ profile, isOwnProfile, nostrPublicKey }: {
   nostrPublicKey?: string;
 }) {
   return (
-    <div className="mx-auto max-w-4xl bg-background/95 p-6 mt-16 md:p-10 rounded-2xl border border-border text-center">
-      <div className="flex flex-col items-center gap-6">
-        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center overflow-hidden">
+    <div className="mx-auto max-w-4xl bg-background/95 p-6 mt-16 md:p-8 rounded-2xl border border-border">
+      <div className="flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-8">
+        <div className="relative w-24 h-24 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex shrink-0 items-center justify-center overflow-hidden">
           {profile?.avatar_cid ? (
             <SafariOptimizedImage
               src={getIPFSUrl(profile.avatar_cid)}
@@ -83,77 +81,79 @@ function ProfileDisplay({ profile, isOwnProfile, nostrPublicKey }: {
           )}
         </div>
 
-        <div className="flex flex-col items-center gap-3">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            {profile?.display_name || profile?.username || 'anon'}
-          </h1>
-          {profile?.username && (
-            <p className="text-muted-foreground">@{profile.username}</p>
-          )}
-          {profile?.tagline && (
-            <p className="text-foreground/80 max-w-2xl">{profile.tagline}</p>
-          )}
-          {isOwnProfile && (
-            <Link
-              href="/settings"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-border text-foreground rounded-full transition-colors hover:bg-accent hover:text-background"
-            >
-              <Pen size={14} />
-              Edit Profile
-            </Link>
-          )}
-        </div>
+        <div className="flex min-w-0 flex-1 flex-col items-center gap-4 text-center md:items-start md:text-left">
+          <div className="flex w-full flex-col items-center gap-2 md:items-start">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              {profile?.display_name || profile?.username || 'anon'}
+            </h1>
+            {profile?.username && (
+              <p className="text-muted-foreground">@{profile.username}</p>
+            )}
+            {profile?.tagline && (
+              <p className="text-foreground/80 max-w-2xl">{profile.tagline}</p>
+            )}
+            {isOwnProfile && (
+              <Link
+                href="/settings"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-border text-foreground rounded-full transition-colors hover:bg-accent hover:text-background"
+              >
+                <Pen size={14} />
+                Edit Profile
+              </Link>
+            )}
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-1 gap-3 w-full text-sm text-muted-foreground">
-          {profile?.location && (
-            <div className="flex items-center justify-center gap-2">
-              <MapPin size={16} />
-              <span>{profile.location}</span>
+          <div className="grid w-full grid-cols-1 gap-3 text-sm text-muted-foreground sm:grid-cols-2">
+            {profile?.location && (
+              <div className="flex items-center justify-center gap-2 md:justify-start">
+                <MapPin size={16} />
+                <span>{profile.location}</span>
+              </div>
+            )}
+            {profile?.occupation && (
+              <div className="flex items-center justify-center gap-2 md:justify-start">
+                <Briefcase size={16} />
+                <span>{profile.occupation}</span>
+              </div>
+            )}
+            {profile?.website && (
+              <div className="flex items-center justify-center gap-2 md:justify-start">
+                <Globe size={16} />
+                <a 
+                  href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline truncate"
+                >
+                  {profile.website.replace(/^https?:\/\//, '')}
+                </a>
+              </div>
+            )}
+            {profile?.github_url && (
+              <div className="flex items-center justify-center gap-2 md:justify-start">
+                <Github size={16} />
+                <a
+                  href={getGithubProfileUrl(profile.github_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline truncate"
+                >
+                  {getGithubProfileLabel(profile.github_url)}
+                </a>
+              </div>
+            )}
+            {isOwnProfile && nostrPublicKey && (
+              <div className="flex items-center justify-center gap-2 max-w-full truncate md:justify-start sm:col-span-2">
+                <span className="truncate">{nostrPublicKey}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-center gap-2 sm:col-span-2 md:justify-start">
+              <Calendar size={16} />
+              <span>Joined {new Date(profile?.created_at || '').toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
+              })}</span>
             </div>
-          )}
-          {profile?.occupation && (
-            <div className="flex items-center justify-center gap-2">
-              <Briefcase size={16} />
-              <span>{profile.occupation}</span>
-            </div>
-          )}
-          {profile?.website && (
-            <div className="flex items-center justify-center gap-2">
-              <Globe size={16} />
-              <a 
-                href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline truncate"
-              >
-                {profile.website.replace(/^https?:\/\//, '')}
-              </a>
-            </div>
-          )}
-          {profile?.github_url && (
-            <div className="flex items-center justify-center gap-2">
-              <Github size={16} />
-              <a
-                href={getGithubProfileUrl(profile.github_url)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline truncate"
-              >
-                {getGithubProfileLabel(profile.github_url)}
-              </a>
-            </div>
-          )}
-          {isOwnProfile && nostrPublicKey && (
-            <div className="flex items-center justify-center gap-2 max-w-full truncate">
-              <span className="truncate">{nostrPublicKey}</span>
-            </div>
-          )}
-          <div className="flex items-center justify-center gap-2 col-span-1 sm:col-span-2">
-            <Calendar size={16} />
-            <span>Joined {new Date(profile?.created_at || '').toLocaleDateString('en-US', {
-              month: 'long',
-              year: 'numeric'
-            })}</span>
           </div>
         </div>
       </div>
@@ -196,7 +196,7 @@ function BitcoinAppsSection({ apps, loading }: { apps: SubmittedApp[]; loading: 
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {apps.map((app) => (
-            <div key={app.id} className="p-4 bg-background border border-border rounded-lg hover:bg-accent/50 transition-colors flex flex-col gap-3">
+            <div key={app.id} className="p-4 bg-background hover:bg-accent/50 transition-colors flex flex-col gap-3">
               <div className="flex items-start gap-3">
                 <div className="h-12 w-12 rounded-lg border border-dashed flex-shrink-0 bg-muted/60 flex items-center justify-center p-1">
                   {app.icon_cid ? (
@@ -270,22 +270,10 @@ export default function AddressPage() {
   const [apps, setApps] = useState<SubmittedApp[]>([]);
   const [appsLoading, setAppsLoading] = useState(true);
   const [appsError, setAppsError] = useState<string | null>(null);
-  const [emailPromptDismissed, setEmailPromptDismissed] = useState(false);
 
   const isOwnProfile = currentAddress === address;
   const { currentWallet } = useEncryptedWallet();
-  const { walletType } = useWallet();
-  const isExtensionWallet = walletType === 'leather' || walletType === 'xverse' || walletType === 'alby';
-  const shouldPromptForEmail =
-    isOwnProfile &&
-    isExtensionWallet &&
-    !emailPromptDismissed &&
-    !loading &&
-    profile?.email_verified !== true;
-
-  useEffect(() => {
-    setEmailPromptDismissed(false);
-  }, [address, walletType]);
+  const isDeveloperProfile = profile?.developer_mode === true;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -294,9 +282,11 @@ export default function AddressPage() {
         setError(null);
         const data = await getProfile(address);
         setProfile(data);
+        return data;
       } catch (err) {
         console.error('Error fetching profile:', err);
         setError('Failed to load profile');
+        return null;
       } finally {
         setLoading(false);
       }
@@ -323,9 +313,20 @@ export default function AddressPage() {
       }
     };
 
+    const loadProfileAndApps = async () => {
+      const nextProfile = await fetchProfile();
+      if (nextProfile?.developer_mode === true) {
+        await fetchApps();
+        return;
+      }
+
+      setApps([]);
+      setAppsError(null);
+      setAppsLoading(false);
+    };
+
     if (address) {
-      fetchProfile();
-      fetchApps();
+      loadProfileAndApps();
     }
   }, [address]);
 
@@ -365,23 +366,12 @@ export default function AddressPage() {
         nostrPublicKey={currentWallet?.nostrPublicKey}
       />
       
-      {appsError && (
+      {isDeveloperProfile && appsError && (
         <div className="mx-auto max-w-4xl bg-destructive/10 text-destructive border border-destructive/30 rounded-lg p-4">
           {appsError}
         </div>
       )}
-      <BitcoinAppsSection apps={apps} loading={appsLoading} />
-
-      {shouldPromptForEmail && (
-        <ExtensionEmailVerificationModal
-          address={address}
-          onClose={() => setEmailPromptDismissed(true)}
-          onVerified={(nextProfile) => {
-            setProfile(nextProfile);
-            setEmailPromptDismissed(true);
-          }}
-        />
-      )}
+      {isDeveloperProfile && <BitcoinAppsSection apps={apps} loading={appsLoading} />}
     </div>
   );
 }

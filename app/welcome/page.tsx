@@ -75,13 +75,7 @@ export default function WelcomePage() {
     } else if (step === 'backup') {
       setStep('security');
     } else {
-      // Route to the primary profile address (Bitcoin first, fallback to Stacks)
-      const profileAddress = currentWallet?.bitcoinAddress || currentWallet?.address;
-      if (profileAddress) {
-        router.push(`/${profileAddress}`);
-      } else {
-        router.push('/profile');
-      }
+      router.push('/apps');
     }
   };
 
