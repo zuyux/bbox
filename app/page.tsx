@@ -468,7 +468,7 @@ export default function HomePage() {
                 </Link>
               </Button> 
               <Button size="lg" variant="secondary" asChild>
-                <Link href="/submit">
+                <Link href="/funding">
                   Apply for funding
                 </Link>
               </Button>

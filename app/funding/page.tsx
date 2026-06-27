@@ -4,10 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowUpRight,
+  Beaker,
+  Code2,
   Coins,
   ExternalLink,
+  FileText,
   Loader2,
   Send,
+  ShieldCheck,
+  Search,
   ThumbsUp,
   CheckCircle2,
 } from 'lucide-react';
@@ -22,7 +27,6 @@ import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import {
   approveAppOnChain,
   getAdminAddress,
-  getBboxContractAddress,
   sendSbtcDonation,
   voteOnApp,
   satsToBTC,
@@ -57,6 +61,30 @@ type RawSupabaseApp = Record<string, unknown> & {
   [key: string]: unknown;
 };
 
+const eligibleProjectTypes = [
+  {
+    title: 'Open-source applications',
+    description: 'Apps, tools, extensions, services, libraries, or infrastructure with a public-good angle.',
+    icon: Code2,
+  },
+  {
+    title: 'Focused research',
+    description: 'Security analysis, OSINT methods, privacy research, protocol work, or technical investigations.',
+    icon: Beaker,
+  },
+  {
+    title: 'Trust and safety work',
+    description: 'Cybersecurity, threat intelligence, responsible disclosure tooling, audits, and user-protection systems.',
+    icon: ShieldCheck,
+  },
+];
+
+const submissionSteps = [
+  'Describe the problem, proposed work, public benefit, and why it matters.',
+  'Add links to source code, prior research, demos, documentation, or references when available.',
+  'Submit the project for review so funders can discover it, upvote it, and send support directly.',
+];
+
 export default function FundingDashboardPage() {
   const currentAddress = useCurrentAddress();
   const [apps, setApps] = useState<FundingApp[]>([]);
@@ -70,7 +98,6 @@ export default function FundingDashboardPage() {
   const [donationNotes, setDonationNotes] = useState<Record<number, string>>({});
   const [developerMode, setDeveloperMode] = useState(false);
 
-  const [contractId] = useState(() => getBboxContractAddress());
   const normalizedCurrentAddress = currentAddress?.toLowerCase() ?? null;
   const normalizedAdminAddress = adminAddress?.toLowerCase() ?? null;
   const isAdmin = Boolean(
@@ -466,32 +493,98 @@ export default function FundingDashboardPage() {
   return (
     <div className="bg-background min-h-screen">
       <Navbar />
-      <div className="container mx-auto px-4 pt-20 pb-12 max-w-6xl space-y-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-2">Funding Desk</p>
-            <h1 className="text-3xl font-bold">Support open-source apps</h1>
-            <p className="text-muted-foreground max-w-2xl">
-              Support promising verified software directly with sBTC and upvote useful apps on-chain.
+      <main className="container mx-auto px-4 pt-24 pb-12 max-w-6xl space-y-10">
+        <section className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <div className="max-w-3xl">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-orange-500/25 bg-orange-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-600 dark:text-orange-300">
+              <Coins className="h-4 w-4" />
+              R&amp;D Project Funding
+            </div>
+            <h1 className="title mb-5 text-4xl font-bold leading-tight md:text-6xl">
+              Submit research and open-source projects for community funding.
+            </h1>
+            <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
+              BBOX helps researchers and developers present useful work to funders before they reach the submission form. Projects can be applications or specific research related to open-source software, privacy, cybersecurity, OSINT, Bitcoin, independent infrastructure, or adjacent public-good technology.
             </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Showing Supabase submissions (linked to <span className="font-mono">{contractId}</span> when on-chain)
-            </p>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer">
+                <Link href="/submit" className="flex items-center gap-2">
+                  Submit your project
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="cursor-pointer">
+                <Link href="#funding-board" className="flex items-center gap-2">
+                  View funding board
+                  <Search className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
-          {developerMode && (
-            <Button asChild className="bg-foreground hover:bg-foreground cursor-pointer">
-              <Link href="/submit" className="flex items-center gap-2">
-                <ArrowUpRight className="h-4 w-4" />
-                Submit new app
-              </Link>
-            </Button>
-          )}
-        </div>
+
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="mb-5 flex items-center gap-3">
+              <FileText className="h-5 w-5 text-orange-500" />
+              <div>
+                <p className="font-semibold">What to prepare</p>
+                <p className="mb-0 text-sm text-muted-foreground">A clear, fundable project brief.</p>
+              </div>
+            </div>
+            <ol className="mb-0 space-y-4">
+              {submissionSteps.map((step, index) => (
+                <li key={step} className="flex gap-3 text-sm text-muted-foreground">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-orange-500 text-xs font-semibold text-white">
+                    {index + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-3">
+          {eligibleProjectTypes.map((type) => {
+            const Icon = type.icon;
+            return (
+              <Card key={type.title} className="border-border/70">
+                <CardHeader className="space-y-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-300">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <CardTitle className="text-lg">{type.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="mb-0 text-sm text-muted-foreground">{type.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </section>
+
+        <section id="funding-board" className="space-y-6 scroll-mt-24">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-2">Funding Desk</p>
+              <h2 className="text-3xl font-bold">Support open-source R&amp;D</h2>
+              <p className="text-muted-foreground max-w-2xl">
+                Support promising verified software and research directly with sBTC, and upvote useful projects on-chain.
+              </p>
+            </div>
+            {developerMode && (
+              <Button asChild className="bg-foreground hover:bg-foreground cursor-pointer">
+                <Link href="/submit" className="flex items-center gap-2">
+                  <ArrowUpRight className="h-4 w-4" />
+                  Submit new project
+                </Link>
+              </Button>
+            )}
+          </div>
 
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total apps</CardTitle>
+              <CardTitle className="text-sm text-muted-foreground">Total projects</CardTitle>
               <p className="text-3xl font-bold">{stats.total}</p>
             </CardHeader>
           </Card>
@@ -506,7 +599,7 @@ export default function FundingDashboardPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1">
-                Published apps
+                Published projects
               </CardTitle>
               <p className="text-3xl font-bold text-emerald-600">{stats.published}</p>
             </CardHeader>
@@ -543,7 +636,7 @@ export default function FundingDashboardPage() {
             {featuredApps.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                  Featured Apps
+                  Featured Projects
                 </div>
                 {featuredApps.map((app) => renderAppCard(app))}
               </div>
@@ -552,7 +645,7 @@ export default function FundingDashboardPage() {
             {fundableApps.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                  Published Apps
+                  Published Projects
                 </div>
                 {fundableApps.map((app) => renderAppCard(app))}
               </div>
@@ -565,7 +658,7 @@ export default function FundingDashboardPage() {
                 </div>
                 {!isAdmin && (
                   <p className="text-xs text-muted-foreground">
-                    These apps are still pending review. Admin-only controls appear when connected with the bbox-v2 admin wallet.
+                    These projects are still pending review. Admin-only controls appear when connected with the bbox-v2 admin wallet.
                   </p>
                 )}
                 {pendingApps.map((app) => renderAppCard(app, true))}
@@ -575,13 +668,14 @@ export default function FundingDashboardPage() {
             {featuredApps.length === 0 && fundableApps.length === 0 && pendingApps.length === 0 && (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  <p>No published apps on-chain yet. Check back after the next approval cycle.</p>
+                  <p>No published projects on-chain yet. Check back after the next approval cycle.</p>
                 </CardContent>
               </Card>
             )}
           </div>
         )}
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

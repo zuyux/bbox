@@ -87,8 +87,13 @@ const CATEGORIES = [
   'Infrastructure',
   'Developer',
   'Creator',
+  'Research',
+  'Privacy',
+  'Cybersecurity',
+  'OSINT',
   'Nostr',
-  'Gaming'
+  'Gaming',
+  'Other'
 ];
 
 const PLATFORMS = [
@@ -563,7 +568,7 @@ export default function PublishPage() {
               <CardTitle>Developer Mode is off</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-muted-foreground">
-              <p>Publishing tools are hidden for the everyday app store experience. Turn on Developer Mode in Settings when you want to submit an app.</p>
+              <p>Publishing tools are hidden for the everyday app store experience. Turn on Developer Mode in Settings when you want to submit a project.</p>
               <Button asChild className="w-full bg-orange-500 text-white hover:bg-orange-600">
                 <Link href="/settings#developer-mode">Open Settings</Link>
               </Button>
@@ -592,9 +597,9 @@ export default function PublishPage() {
           {/* Header */}
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="title text-3xl font-bold mb-2">Publish Your Open-Source App</h1>
+              <h1 className="title text-3xl font-bold mb-2">Submit Your R&amp;D Project</h1>
               <p className="text-muted-foreground">
-                Submit your application to the universal BBOX registry. Bitcoin, multi-chain, privacy, developer, safe AI, and off-chain open-source tools are welcome.
+                Submit an application or focused research project to the BBOX registry. Open-source, privacy, cybersecurity, OSINT, Bitcoin, developer, safe AI, and off-chain public-good work are welcome.
               </p>
             </div>
             <Button
@@ -1266,7 +1271,7 @@ export default function PublishPage() {
                 ) : (
                   <>
                     <Coins className="w-4 h-4 mr-2" />
-                    Submit App for Review
+                    Submit Project for Review
                   </>
                 )}
               </Button>
@@ -1290,38 +1295,6 @@ export default function PublishPage() {
               </CardContent>
             </Card>
           )}
-
-          {/* Listing Fee Info Card */}
-          {listingFee && submitStatus === 'idle' && (
-            <Card className="my-2 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
-              <CardContent className="px-2">
-                <div className="flex items-center gap-3">
-                  <Coins className="w-5 h-5 text-orange-600" />
-                  <div>
-                    <div className="font-semibold text-orange-900 dark:text-orange-100">
-                      Listing Fee: {listingFeeDisplay}
-                    </div>
-                    <div className="text-xs text-orange-800 dark:text-orange-200">
-                      Pay this in sBTC plus the STX gas required to interact with bbox.clar
-                      {isFallbackListingFee && ' • Using default estimate until the network fee loads'}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {isFallbackListingFee && (
-            <Card className="mb-4 border-yellow-200 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-950/30">
-              <CardContent className="py-3 px-4">
-                <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                  Couldn&apos;t confirm the latest listing fee from the contract. Using the default {listingFeeDisplay} estimate so you can continue.
-                  Your wallet will still show the exact transfer before you approve.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
           </form>
         </div>
       </div>
