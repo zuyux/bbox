@@ -10,6 +10,8 @@ import { User, MapPin, Calendar, Briefcase, Globe, Pen, Code, Download, Star, Lo
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from '@/components/SafariOptimizedImage';
 import Image from 'next/image';
+import { useWallet } from '@/components/WalletProvider';
+import ExtensionEmailVerificationModal from '@/components/ExtensionEmailVerificationModal';
 
 interface SubmittedApp {
   id: number;
@@ -268,9 +270,22 @@ export default function AddressPage() {
   const [apps, setApps] = useState<SubmittedApp[]>([]);
   const [appsLoading, setAppsLoading] = useState(true);
   const [appsError, setAppsError] = useState<string | null>(null);
+  const [emailPromptDismissed, setEmailPromptDismissed] = useState(false);
 
   const isOwnProfile = currentAddress === address;
   const { currentWallet } = useEncryptedWallet();
+  const { walletType } = useWallet();
+  const isExtensionWallet = walletType === 'leather' || walletType === 'xverse' || walletType === 'alby';
+  const shouldPromptForEmail =
+    isOwnProfile &&
+    isExtensionWallet &&
+    !emailPromptDismissed &&
+    !loading &&
+    profile?.email_verified !== true;
+
+  useEffect(() => {
+    setEmailPromptDismissed(false);
+  }, [address, walletType]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -356,6 +371,17 @@ export default function AddressPage() {
         </div>
       )}
       <BitcoinAppsSection apps={apps} loading={appsLoading} />
+
+      {shouldPromptForEmail && (
+        <ExtensionEmailVerificationModal
+          address={address}
+          onClose={() => setEmailPromptDismissed(true)}
+          onVerified={(nextProfile) => {
+            setProfile(nextProfile);
+            setEmailPromptDismissed(true);
+          }}
+        />
+      )}
     </div>
   );
 }
