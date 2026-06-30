@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 import { getProfile, Profile } from '@/lib/profileApi';
-import { User, MapPin, Calendar, Briefcase, Globe, Pen, Code, Download, Star, LoaderCircle, Github } from 'lucide-react';
+import { User, MapPin, Calendar, Briefcase, Globe, Pen, Code, Download, Star, LoaderCircle, Github, Zap } from 'lucide-react';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from '@/components/SafariOptimizedImage';
 import Image from 'next/image';
@@ -140,6 +140,12 @@ function ProfileDisplay({ profile, isOwnProfile, nostrPublicKey }: {
                 >
                   {getGithubProfileLabel(profile.github_url)}
                 </a>
+              </div>
+            )}
+            {profile?.lightning_address && (
+              <div className="flex items-center justify-center gap-2 md:justify-start">
+                <Zap size={16} />
+                <span className="truncate">{profile.lightning_address}</span>
               </div>
             )}
             {isOwnProfile && nostrPublicKey && (

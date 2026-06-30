@@ -25,6 +25,7 @@ export interface Profile {
   address: string;
   username?: string;
   email?: string;
+  lightning_address?: string;
   
   // Basic Profile Info
   display_name?: string;

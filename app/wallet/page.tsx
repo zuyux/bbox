@@ -23,6 +23,14 @@ const SATS_PER_BTC = 100_000_000;
 type ReceiveLayer = 'bitcoin' | 'rootstock' | 'liquid';
 type ReceiveAsset = ReceiveLayer | 'stacks';
 type SendAsset = 'bitcoin' | 'sbtc' | 'rootstock' | 'liquid';
+type LightningBalanceState = {
+  display: string;
+  status: 'idle' | 'loading' | 'available' | 'unavailable';
+};
+type BalanceCapableWebLN = {
+  enable?: () => Promise<void>;
+  getBalance?: () => Promise<{ balance?: number; currency?: string }>;
+};
 
 const RECEIVE_LAYER_LABELS: Record<ReceiveLayer, string> = {
   bitcoin: 'Bitcoin',
@@ -179,6 +187,19 @@ const abbreviateAddress = (value: string, chars = 5) => {
   return `${value.slice(0, chars)}...${value.slice(-chars)}`;
 };
 
+const formatLightningBalance = (balance: number, currency?: string) => {
+  const normalizedCurrency = (currency || 'sats').toLowerCase();
+  const sats = normalizedCurrency === 'msat' || normalizedCurrency === 'msats'
+    ? balance / 1000
+    : balance;
+
+  if (!Number.isFinite(sats)) {
+    return '--';
+  }
+
+  return `${sats.toLocaleString(undefined, { maximumFractionDigits: 0 })} sats`;
+};
+
 async function copyToClipboard(value: string): Promise<boolean> {
   try {
     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
@@ -239,12 +260,19 @@ import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { fetchRecentTransactions } from "@/lib/fetchRecentTransactions";
 import Image from "next/image";
+import { getProfile } from "@/lib/profileApi";
 
 export default function WalletPage() {
   const address = useCurrentAddress() || "";
   const { walletType } = useWallet();
+  const isNostrLightningAccount = walletType === 'alby' || walletType === 'nostria' || address.startsWith('npub');
   const [sbtcBalance, setSbtcBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lightningBalance, setLightningBalance] = useState<LightningBalanceState>({
+    display: '--',
+    status: 'idle',
+  });
+  const [profileLightningAddress, setProfileLightningAddress] = useState<string | null>(null);
   const [currentNetwork, setCurrentNetwork] = useState<Network>(() => getPersistedNetwork());
   const sbtcContractId = useMemo(() => getSBTCContract(currentNetwork), [currentNetwork]);
 
@@ -439,6 +467,15 @@ export default function WalletPage() {
   const liquidBalanceDisplay = formatAssetCardBalance(liquidBalance);
   const visibleAssets = assets.filter((asset) => asset.symbol !== 'STX');
   const visibleAssetCount = visibleAssets.length;
+  const identityProviderLabel = walletType === 'nostria' ? 'Nostria Signer' : walletType === 'alby' ? 'Alby' : 'Nostr';
+  const primaryBalanceDisplay = isNostrLightningAccount
+    ? lightningBalance.display
+    : sbtcBalance;
+  const primaryBalanceLabel = isNostrLightningAccount
+    ? lightningBalance.status === 'available'
+      ? 'Lightning balance'
+      : 'Nostr account'
+    : 'Satoshis';
 
   const resetSendForm = () => {
     setSendTo("");
@@ -596,6 +633,89 @@ export default function WalletPage() {
     }
   }, [showSend]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!isNostrLightningAccount) {
+      setLightningBalance({ display: '--', status: 'idle' });
+      return;
+    }
+
+    const loadLightningBalance = async () => {
+      const browserWindow = typeof window !== 'undefined'
+        ? window as typeof window & {
+          alby?: { enable?: () => Promise<void>; webln?: BalanceCapableWebLN };
+          webln?: BalanceCapableWebLN;
+        }
+        : undefined;
+      const provider = walletType === 'alby'
+        ? browserWindow?.alby?.webln ?? browserWindow?.webln
+        : undefined;
+
+      if (!provider?.getBalance) {
+        setLightningBalance({ display: '--', status: 'unavailable' });
+        return;
+      }
+
+      setLightningBalance({ display: 'Loading...', status: 'loading' });
+
+      try {
+        if (browserWindow?.alby?.enable) {
+          await browserWindow.alby.enable();
+        } else if (provider.enable) {
+          await provider.enable();
+        }
+
+        const balance = await provider.getBalance();
+        const balanceValue = typeof balance?.balance === 'number' ? balance.balance : null;
+
+        if (!cancelled) {
+          setLightningBalance({
+            display: balanceValue === null ? '--' : formatLightningBalance(balanceValue, balance.currency),
+            status: balanceValue === null ? 'unavailable' : 'available',
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to fetch Lightning balance:', error);
+        if (!cancelled) {
+          setLightningBalance({ display: '--', status: 'unavailable' });
+        }
+      }
+    };
+
+    void loadLightningBalance();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isNostrLightningAccount, showSend, walletType]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!address || !isNostrLightningAccount) {
+      setProfileLightningAddress(null);
+      return;
+    }
+
+    getProfile(address)
+      .then((profile) => {
+        if (!cancelled) {
+          setProfileLightningAddress(profile?.lightning_address || null);
+        }
+      })
+      .catch((error) => {
+        console.warn('Failed to load profile Lightning address:', error);
+        if (!cancelled) {
+          setProfileLightningAddress(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [address, isNostrLightningAccount]);
+
   // Stay aligned with the wallet's network (address prefixes reveal it)
   useEffect(() => {
     const inferredNetwork = inferNetworkFromAddress(address);
@@ -615,6 +735,14 @@ export default function WalletPage() {
 
   // Fetch SBTC token balance and asset inventory
   useEffect(() => {
+    if (isNostrLightningAccount) {
+      setSbtcBalance(null);
+      setAssets([]);
+      setLoading(false);
+      setAssetsLoading(false);
+      return;
+    }
+
     if (!address) {
       setSbtcBalance(null);
       setAssets([]);
@@ -722,7 +850,7 @@ export default function WalletPage() {
         setLoading(false);
         setAssetsLoading(false);
       });
-  }, [address, currentNetwork, sbtcContractId, formatTokenBalance]);
+  }, [address, currentNetwork, sbtcContractId, formatTokenBalance, isNostrLightningAccount]);
 
   // Send handler
   const handleSend = async (e: React.FormEvent) => {
@@ -899,8 +1027,9 @@ export default function WalletPage() {
 
   // Fetch recent transactions
   useEffect(() => {
-    if (!address) {
+    if (!address || isNostrLightningAccount) {
       setTransactions([]);
+      setTxLoading(false);
       return;
     }
     setTxLoading(true);
@@ -908,10 +1037,10 @@ export default function WalletPage() {
       .then(setTransactions)
       .catch(() => setTransactions([]))
       .finally(() => setTxLoading(false));
-  }, [address, currentNetwork, showSend]);
+  }, [address, currentNetwork, showSend, isNostrLightningAccount]);
 
   useEffect(() => {
-    if (!address) {
+    if (!address || isNostrLightningAccount) {
       setBtcAddress(null);
       setBtcAddressError(null);
       setBtcAddressLoading(false);
@@ -985,7 +1114,7 @@ export default function WalletPage() {
         }
       })
       .finally(() => setBtcAddressLoading(false));
-  }, [address, currentNetwork]);
+  }, [address, currentNetwork, isNostrLightningAccount]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1084,19 +1213,23 @@ export default function WalletPage() {
         </div>
         <div className="mt-4 flex justify-center">
         <div className="flex items-center gap-3">
-          {loading ? (
+          {loading && !isNostrLightningAccount ? (
             <LoaderCircle className="animate-spin text-foreground" size={32} />
           ) : (
             <div className="my-8 text-center">
-              <div className="title text-2xl font-bold select-all">{sbtcBalance}</div>
-              <div className="text-lg">Satoshis</div>
+              <div className="title text-2xl font-bold select-all">
+                {isNostrLightningAccount && lightningBalance.status !== 'available'
+                  ? abbreviateAddress(address, 8)
+                  : primaryBalanceDisplay}
+              </div>
+              <div className="text-lg">{primaryBalanceLabel}</div>
             </div>
           )}
         </div>
       </div>
 
       {/* Network and Address Info - Only show if not mainnet */}
-      {currentNetwork !== 'mainnet' && (
+      {!isNostrLightningAccount && currentNetwork !== 'mainnet' && (
         <div className="mb-16 p-4 bg-muted rounded-lg">
           <div className="flex items-center justify-center text-sm">
             <span className="text-primary text-center uppercase">{currentNetwork}</span>
@@ -1105,29 +1238,85 @@ export default function WalletPage() {
       )}
     
       
-      <div className="grid grid-cols-2 gap-4 mb-8">
+      {isNostrLightningAccount ? (
         <button
-          className="bg-background border border-border text-foreground w-full px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
-          onClick={() => setShowSend(true)}
+          className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
+          onClick={() => copyReceiveAddress(address, 'Nostr account')}
+          type="button"
         >
-          Send
+          Copy Account
         </button>
-        <button
-          className="bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
-          onClick={() => setShowReceive(true)}
-        >
-          Receive
-        </button>
-      </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <button
+            className="bg-background border border-border text-foreground w-full px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
+            onClick={() => setShowSend(true)}
+          >
+            Send
+          </button>
+          <button
+            className="bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
+            onClick={() => setShowReceive(true)}
+          >
+            Receive
+          </button>
+        </div>
+      )}
 
       <div className="mt-16 w-full">
         <div className="flex items-center justify-between">
-          {!assetsLoading && (
+          {!isNostrLightningAccount && !assetsLoading && (
             <span className="text-xs text-muted-foreground">{visibleAssetCount} assets</span>
           )}
         </div>
 
         <div className="mt-4 rounded-xl border border-border bg-card/40">
+          {isNostrLightningAccount ? (
+            <div className="space-y-4 p-4">
+              <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Image src={walletType === 'nostria' ? '/nostria.svg' : '/alby.svg'} alt={identityProviderLabel} width={28} height={28} />
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">{identityProviderLabel}</div>
+                    <div className="text-xs text-muted-foreground">Nostr account</div>
+                  </div>
+                </div>
+                <div className="text-right min-w-0">
+                  <div className="text-sm font-mono truncate max-w-40">{address}</div>
+                  <div className="text-xs text-muted-foreground">Connected</div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <Image src="/icons/lightning.svg" alt="Lightning" width={28} height={28} />
+                  <div>
+                    <div className="text-sm font-semibold">Lightning</div>
+                    <div className="text-xs text-muted-foreground">
+                      {profileLightningAddress || (lightningBalance.status === 'unavailable' ? 'Provider balance unavailable' : 'Wallet balance')}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-semibold">
+                    {lightningBalance.status === 'available' ? lightningBalance.display : profileLightningAddress ? 'Configured' : lightningBalance.display}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {lightningBalance.status === 'available' ? 'Balance' : profileLightningAddress ? 'Address set' : 'Balance unavailable'}
+                  </div>
+                </div>
+              </div>
+
+              {!profileLightningAddress && (
+                <Link
+                  href="/settings#lightning-address"
+                  className="inline-flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition hover:bg-foreground/90"
+                >
+                  Set Lightning Address
+                </Link>
+              )}
+            </div>
+          ) : (
           <div className="space-y-4 p-4">
             <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -1185,16 +1374,17 @@ export default function WalletPage() {
               </div>
             </div>
           </div>
+          )}
 
-          {assetsLoading ? (
+          {!isNostrLightningAccount && assetsLoading ? (
             <div className="p-4 space-y-3">
               {[0, 1, 2].map((skeleton) => (
                 <div key={skeleton} className="h-10 rounded-lg bg-muted/40 animate-pulse" />
               ))}
             </div>
-          ) : visibleAssetCount === 0 ? (
+          ) : !isNostrLightningAccount && visibleAssetCount === 0 ? (
             <div className="p-4 text-sm text-muted-foreground hidden">No assets detected for this wallet yet.</div>
-          ) : (
+          ) : !isNostrLightningAccount ? (
             <ul>
               {visibleAssets.map((asset) => (
                 <li
@@ -1214,7 +1404,7 @@ export default function WalletPage() {
                 </li>
               ))}
             </ul>
-          )}
+          ) : null}
         </div>
       </div>
 

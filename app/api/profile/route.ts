@@ -10,6 +10,7 @@ const PROFILE_FIELDS = [
   'address',
   'username',
   'email',
+  'lightning_address',
   'display_name',
   'tagline',
   'biography',
@@ -58,6 +59,17 @@ function cleanProfilePayload(body: Record<string, unknown>) {
   });
 
   return payload;
+}
+
+function normalizeLightningAddress(value: unknown): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+
+  const trimmed = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (!trimmed) return null;
+
+  const lightningAddressRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+  return lightningAddressRegex.test(trimmed) ? trimmed : '';
 }
 
 export async function POST(request: NextRequest) {
@@ -130,6 +142,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const lightningAddress = normalizeLightningAddress(profileBody.lightning_address);
+    if (lightningAddress === '') {
+      return NextResponse.json({ error: 'Invalid Lightning address format' }, { status: 400 });
+    }
+
     const existingEmail = typeof existingProfile?.email === 'string' ? existingProfile.email.toLowerCase() : null;
     const emailRequiresVerification = Boolean(
       email &&
@@ -158,6 +175,10 @@ export async function POST(request: NextRequest) {
       updated_at: now,
       last_active: now,
     };
+
+    if (lightningAddress !== undefined) {
+      Object.assign(payload, { lightning_address: lightningAddress });
+    }
 
     if (emailRequiresVerification) {
       Object.assign(payload, { email, email_verified: true });

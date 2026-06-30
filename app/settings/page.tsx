@@ -113,11 +113,13 @@ export default function SettingsPage() {
   const searchParams = useSearchParams();
   const { walletType } = useWallet();
   const { currentWallet } = useEncryptedWallet();
+  const isNostriaWallet = walletType === 'nostria';
+  const isNostrLightningWallet = walletType === 'alby' || walletType === 'nostria';
 
   // Determine wallet type - if we have an address but no encrypted wallet, it's an extension wallet
   const isExtensionWallet = Boolean(address && !hasEncryptedWallet());
   const isNostrKeyAvailable = Boolean(currentWallet?.nostrPublicKey && isNostrPublicKey(currentWallet.nostrPublicKey));
-  const canLinkWallet = isExtensionWallet && Boolean(walletType) && isNostrKeyAvailable;
+  const canLinkWallet = isExtensionWallet && !isNostrLightningWallet && Boolean(walletType) && isNostrKeyAvailable;
   
   // Basic Profile Fields
   const [username, setUsername] = useState('');
@@ -130,6 +132,7 @@ export default function SettingsPage() {
   const [emailCodeLoading, setEmailCodeLoading] = useState(false);
   const [emailCodeMessage, setEmailCodeMessage] = useState('');
   const [emailCodeError, setEmailCodeError] = useState('');
+  const [lightningAddress, setLightningAddress] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [tagline, setTagline] = useState('');
   const [biography, setBiography] = useState('');
@@ -234,6 +237,7 @@ export default function SettingsPage() {
           setEmail(profile.email || '');
           setOriginalEmail(profile.email || '');
           setEmailVerified(profile.email_verified === true);
+          setLightningAddress(profile.lightning_address || '');
           setDisplayName(profile.display_name || '');
           setTagline(profile.tagline || '');
           setBiography(profile.biography || '');
@@ -495,6 +499,7 @@ export default function SettingsPage() {
         address,
         username: optionalText(username),
         email: optionalText(email),
+        lightning_address: optionalText(lightningAddress.toLowerCase()),
         display_name: optionalText(displayName),
         tagline: optionalText(tagline),
         biography: optionalText(biography),
@@ -786,6 +791,25 @@ export default function SettingsPage() {
                         )}
                       </div>
                     )}
+                  </div>
+
+                  <div id="lightning-address" className="scroll-mt-24">
+                    <label htmlFor="profile-lightning-address" className="block mb-2 text-sm font-medium">Lightning Address</label>
+                    <input
+                      id="profile-lightning-address"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      type="email"
+                      value={lightningAddress}
+                      onChange={e => setLightningAddress(e.target.value)}
+                      placeholder="you@getalby.com"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {isNostriaWallet
+                        ? 'Add a Lightning address so people can pay this Nostria account.'
+                        : 'Add a Lightning address so people can send sats to this profile.'}
+                    </p>
                   </div>
                   
                   <div>
@@ -1133,7 +1157,7 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
 
-          {isExtensionWallet && (
+          {isExtensionWallet && !isNostrLightningWallet && (
             <Card className="bg-accent-background border-gray-200 dark:border-gray-700 mt-8">
               <CardHeader>
                 <CardTitle>Wallet Proof Linking</CardTitle>

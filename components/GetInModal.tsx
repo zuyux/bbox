@@ -40,10 +40,10 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const [createWalletError, setCreateWalletError] = useState<string | null>(null);
 
   const walletOptions = [
-    { id: 'xverse', label: 'Xverse', icon: '/xverse.svg', mode: 'wallets' as const },
-    { id: 'leather', label: 'Leather', icon: '/leather.svg', mode: 'wallets' as const },
     { id: 'alby', label: 'Alby', icon: '/alby.svg', mode: 'wallets' as const },
+    { id: 'leather', label: 'Leather', icon: '/leather.svg', mode: 'wallets' as const },
     { id: 'nostria', label: 'Nostria Signer', icon: '/nostria.svg', mode: 'wallets' as const },
+    { id: 'xverse', label: 'Xverse', icon: '/xverse.svg', mode: 'wallets' as const },
   ];
 
   const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' | 'alby' | 'nostria' = 'imported') => {

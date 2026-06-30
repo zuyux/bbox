@@ -100,7 +100,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
   const [connectMode, setConnectMode] = useState<ConnectMode>(initialConnectMode ?? 'wallets');
   const [wallets, setWallets] = useState<Array<{id: string, name: string, url: string, installed: boolean}>>([]);
   React.useEffect(() => {
-    setWallets(detectWalletExtensions());
+    setWallets([...detectWalletExtensions()].sort((a, b) => a.name.localeCompare(b.name)));
   }, []);
   const [email, setEmail] = useState('');
   const [emailStatus, setEmailStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
