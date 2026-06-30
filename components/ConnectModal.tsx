@@ -10,6 +10,8 @@ import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 import { connectAlbyWallet } from '@/lib/albyWallet';
 import { connectNostriaSigner } from '@/lib/nostriaSigner';
+import { connectOkxWallet } from '@/lib/okxWallet';
+import { connectWalletConnect } from '@/lib/walletConnectWallet';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
 import { getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
@@ -286,29 +288,31 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
         <div className="p-6 space-y-6">
           {connectMode === 'wallets' && (
             <>
-              {(wallets.length === 0 || wallets.every(w => !w.installed)) && (
+              {(wallets.length === 0 || wallets.every(w => !w.installed && w.id !== 'walletconnect')) && (
                 <div className="mb-2 text-gray-700 text-sm">
                   You don&apos;t have unknown wallets in your browser that support this app. You need to install a wallet to proceed.
                 </div>
               )}
               <div className="space-y-3">
-                {wallets.map(w => (
-                  <div key={w.id} className="flex items-center justify-between rounded-lg px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={w.id === 'leather' ? '/leather.svg' : w.id === 'xverse' ? '/xverse.svg' : w.id === 'alby' ? '/alby.svg' : w.id === 'nostria' ? '/nostria.svg' : ''}
-                        alt={w.name}
-                        width={28}
-                        height={28}
-                        className="w-7 h-7 rounded"
-                        unoptimized
-                      />
-                      <div>
-                        <div className="font-semibold text-gray-900">{w.name}</div>
-                        <div className="text-xs text-gray-500">{w.url.replace('https://', '')}</div>
+                {wallets.map(w => {
+                  const canAttemptConnect = w.installed || w.id === 'walletconnect';
+                  return (
+                    <div key={w.id} className="flex items-center justify-between rounded-lg px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={w.id === 'leather' ? '/leather.svg' : w.id === 'xverse' ? '/xverse.svg' : w.id === 'alby' ? '/alby.svg' : w.id === 'nostria' ? '/nostria.svg' : w.id === 'okx' ? '/okx.webp' : w.id === 'walletconnect' ? '/wallet-connect.png' : ''}
+                          alt={w.name}
+                          width={28}
+                          height={28}
+                          className="w-7 h-7 rounded"
+                          unoptimized
+                        />
+                        <div>
+                          <div className="font-semibold text-gray-900">{w.name}</div>
+                          <div className="text-xs text-gray-500">{w.url.replace('https://', '')}</div>
+                        </div>
                       </div>
-                    </div>
-                    {w.installed ? (
+                      {canAttemptConnect ? (
                       <Button
                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-lg text-sm font-semibold cursor-pointer"
                         onClick={async () => {
@@ -435,6 +439,46 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 }
                                 console.error('Nostria Signer connect error:', err);
                               }
+                            } else if (w.id === 'okx') {
+                              try {
+                                const okxConnection = await connectOkxWallet();
+                                setAddress(okxConnection.address);
+                                setWalletType('okx');
+                                await persistSessionForWallet(okxConnection.address, 'okx');
+                                onSuccess?.();
+                                onClose();
+                                router.push('/apps');
+                              } catch (err: unknown) {
+                                const errorMsg = getWalletErrorMessage(err, 'Failed to connect to OKX Wallet.');
+                                if (isWalletRequestCancelled(err)) {
+                                  setWalletError('Wallet connection was cancelled. Please try again.');
+                                  onError?.('Wallet connection was cancelled. Please try again.');
+                                } else {
+                                  setWalletError(errorMsg);
+                                  onError?.(errorMsg);
+                                }
+                                console.error('OKX Wallet connect error:', err);
+                              }
+                            } else if (w.id === 'walletconnect') {
+                              try {
+                                const walletConnectConnection = await connectWalletConnect();
+                                setAddress(walletConnectConnection.address);
+                                setWalletType('walletconnect');
+                                await persistSessionForWallet(walletConnectConnection.address, 'walletconnect');
+                                onSuccess?.();
+                                onClose();
+                                router.push('/apps');
+                              } catch (err: unknown) {
+                                const errorMsg = getWalletErrorMessage(err, 'Failed to connect with WalletConnect.');
+                                if (isWalletRequestCancelled(err)) {
+                                  setWalletError('Wallet connection was cancelled. Please try again.');
+                                  onError?.('Wallet connection was cancelled. Please try again.');
+                                } else {
+                                  setWalletError(errorMsg);
+                                  onError?.(errorMsg);
+                                }
+                                console.error('WalletConnect connect error:', err);
+                              }
                             } else {
                               const errorMsg = 'Wallet provider not found. Please enable your wallet extension and refresh.';
                               setWalletError(errorMsg);
@@ -468,7 +512,8 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                       </a>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
               {walletError && (
                 <div className="mt-4 px-4 py-3 rounded-lg bg-red-50 text-sm text-red-700 border border-red-200">

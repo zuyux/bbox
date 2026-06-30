@@ -124,10 +124,13 @@ const EMPTY_NATIVE_BALANCE: NativeBalance = {
   display: '--',
 };
 
-const LOADING_NATIVE_BALANCE: NativeBalance = {
-  value: null,
-  display: 'Loading...',
+const ZERO_BTC_NATIVE_BALANCE: NativeBalance = {
+  value: 0,
+  display: '0.00 BTC',
 };
+
+const BALANCE_FETCH_TIMEOUT_MS = 2500;
+const OKX_ACCOUNTS_TIMEOUT_MS = 1200;
 
 const formatAssetCardBalance = (balance: NativeBalance) => {
   if (balance.display === 'Loading...') return balance.display;
@@ -145,6 +148,45 @@ const formatStacksAssetCardBalance = (value: string | undefined) => {
     ? parsed.toLocaleString(undefined, { maximumFractionDigits: 6, minimumFractionDigits: 2 })
     : parsed.toLocaleString(undefined, { maximumFractionDigits: 6, minimumFractionDigits: 2 });
 };
+
+function BalanceDisplay({
+  loading,
+  unavailable,
+  onRefresh,
+  refreshLabel = 'Refresh balance',
+  children,
+  className = 'text-lg font-semibold',
+}: {
+  loading: boolean;
+  unavailable?: boolean;
+  onRefresh?: () => void;
+  refreshLabel?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <span className={`inline-flex min-h-[1.5em] items-center justify-end ${className}`}>
+      {loading ? (
+        <LoaderCircle className="animate-spin text-foreground" size={18} />
+      ) : unavailable && onRefresh ? (
+        <button
+          type="button"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-transparent text-foreground transition hover:bg-[#111]"
+          onClick={(event) => {
+            event.stopPropagation();
+            onRefresh();
+          }}
+          aria-label={refreshLabel}
+          title={refreshLabel}
+        >
+          <RefreshCw size={14} />
+        </button>
+      ) : (
+        children
+      )}
+    </span>
+  );
+}
 
 const isValidBitcoinAddress = (value: string, network: 'mainnet' | 'testnet' | 'devnet') => {
   const normalized = value.trim();
@@ -187,6 +229,12 @@ const abbreviateAddress = (value: string, chars = 5) => {
   return `${value.slice(0, chars)}...${value.slice(-chars)}`;
 };
 
+const abbreviateMiddle = (value: string, start = 6, end = 4) => {
+  if (!value) return '';
+  if (value.length <= start + end + 3) return value;
+  return `${value.slice(0, start)}...${value.slice(-end)}`;
+};
+
 const formatLightningBalance = (balance: number, currency?: string) => {
   const normalizedCurrency = (currency || 'sats').toLowerCase();
   const sats = normalizedCurrency === 'msat' || normalizedCurrency === 'msats'
@@ -198,6 +246,30 @@ const formatLightningBalance = (balance: number, currency?: string) => {
   }
 
   return `${sats.toLocaleString(undefined, { maximumFractionDigits: 0 })} sats`;
+};
+
+class TimeoutError extends Error {
+  constructor() {
+    super('Request timed out');
+    this.name = 'TimeoutError';
+  }
+}
+
+const isTimeoutError = (error: unknown) => error instanceof TimeoutError;
+
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      window.setTimeout(() => reject(new TimeoutError()), timeoutMs);
+    }),
+  ]);
+};
+
+const createTimedAbortController = (timeoutMs: number) => {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+  return { controller, timeoutId };
 };
 
 async function copyToClipboard(value: string): Promise<boolean> {
@@ -254,18 +326,21 @@ import { getSBTCContract } from "@/lib/contracts";
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 import { sendSbtcDonation, sendSbtcDonationWithKey } from "@/lib/bbox-contract";
 
-import { Copy, X, LoaderCircle, Wallet } from "lucide-react";
+import { Copy, X, LoaderCircle, RefreshCw, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { fetchRecentTransactions } from "@/lib/fetchRecentTransactions";
 import Image from "next/image";
 import { getProfile } from "@/lib/profileApi";
+import { getOkxBitcoinAccounts, type OkxBitcoinAccount } from "@/lib/okxWallet";
 
 export default function WalletPage() {
   const address = useCurrentAddress() || "";
   const { walletType } = useWallet();
   const isNostrLightningAccount = walletType === 'alby' || walletType === 'nostria' || address.startsWith('npub');
+  const isOkxBitcoinAccount = walletType === 'okx';
+  const isBitcoinOnlyAccount = walletType === 'okx';
   const [sbtcBalance, setSbtcBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [lightningBalance, setLightningBalance] = useState<LightningBalanceState>({
@@ -290,11 +365,20 @@ export default function WalletPage() {
   const [btcAddress, setBtcAddress] = useState<string | null>(null);
   const [btcAddressLoading, setBtcAddressLoading] = useState(false);
   const [btcAddressError, setBtcAddressError] = useState<string | null>(null);
+  const [okxBitcoinAccounts, setOkxBitcoinAccounts] = useState<OkxBitcoinAccount[]>([]);
+  const [selectedOkxBitcoinAddress, setSelectedOkxBitcoinAddress] = useState<string | null>(null);
   const [rskAddress, setRskAddress] = useState<string | null>(null);
   const [liquidAddress, setLiquidAddress] = useState<string | null>(null);
   const [btcBalance, setBtcBalance] = useState<NativeBalance>(EMPTY_NATIVE_BALANCE);
   const [rskBalance, setRskBalance] = useState<NativeBalance>(EMPTY_NATIVE_BALANCE);
   const [liquidBalance, setLiquidBalance] = useState<NativeBalance>(EMPTY_NATIVE_BALANCE);
+  const [btcBalanceLoading, setBtcBalanceLoading] = useState(false);
+  const [rskBalanceLoading, setRskBalanceLoading] = useState(false);
+  const [liquidBalanceLoading, setLiquidBalanceLoading] = useState(false);
+  const [stacksBalanceRefreshKey, setStacksBalanceRefreshKey] = useState(0);
+  const [btcBalanceRefreshKey, setBtcBalanceRefreshKey] = useState(0);
+  const [rskBalanceRefreshKey, setRskBalanceRefreshKey] = useState(0);
+  const [liquidBalanceRefreshKey, setLiquidBalanceRefreshKey] = useState(0);
   const [showGenerateAddressesModal, setShowGenerateAddressesModal] = useState(false);
   const [generatingAddresses, setGeneratingAddresses] = useState(false);
   const [generateAddressLayer, setGenerateAddressLayer] = useState<ReceiveLayer | null>(null);
@@ -328,6 +412,25 @@ export default function WalletPage() {
   const [sendMemo, setSendMemo] = useState("");
   const [sendAsset, setSendAsset] = useState<SendAsset>('bitcoin');
   const [extensionAvailable, setExtensionAvailable] = useState(false);
+  const refreshStacksBalance = useCallback(() => setStacksBalanceRefreshKey((key) => key + 1), []);
+  const refreshBtcBalance = useCallback(() => setBtcBalanceRefreshKey((key) => key + 1), []);
+  const refreshRskBalance = useCallback(() => setRskBalanceRefreshKey((key) => key + 1), []);
+  const refreshLiquidBalance = useCallback(() => setLiquidBalanceRefreshKey((key) => key + 1), []);
+  const refreshSelectedSendAssetBalance = useCallback(() => {
+    if (sendAsset === 'bitcoin') {
+      setBtcBalanceRefreshKey((key) => key + 1);
+      return;
+    }
+    if (sendAsset === 'rootstock') {
+      setRskBalanceRefreshKey((key) => key + 1);
+      return;
+    }
+    if (sendAsset === 'liquid') {
+      setLiquidBalanceRefreshKey((key) => key + 1);
+      return;
+    }
+    setStacksBalanceRefreshKey((key) => key + 1);
+  }, [sendAsset]);
 
   const selectedSendAsset = SEND_ASSETS.find((asset) => asset.id === sendAsset) ?? SEND_ASSETS[0];
   const trimmedRecipient = sendTo.trim();
@@ -444,6 +547,7 @@ export default function WalletPage() {
       return liquidBalance.display;
     }
     if (asset === 'sbtc') {
+      if (sbtcBalance === '--') return '--';
       const sanitized = Number(String(sbtcBalance ?? '0').replace(/,/g, ''));
       return `${formatCompactBalance(Number.isFinite(sanitized) ? sanitized : 0)} BTC`;
     }
@@ -451,9 +555,25 @@ export default function WalletPage() {
     return `0.00${unit ? ` ${unit}` : ''}`;
   }, [btcBalance.display, liquidBalance.display, rskBalance.display, sbtcBalance]);
   const selectedAssetBalanceDisplay = getSendAssetBalanceDisplay(sendAsset);
+  const selectedAssetBalanceLoading = sendAsset === 'bitcoin'
+    ? btcBalanceLoading
+    : sendAsset === 'rootstock'
+      ? rskBalanceLoading
+      : sendAsset === 'liquid'
+        ? liquidBalanceLoading
+        : loading;
+  const selectedAssetBalanceUnavailable = !selectedAssetBalanceLoading && (
+    sendAsset === 'bitcoin'
+      ? btcBalance.value === null
+      : sendAsset === 'rootstock'
+        ? rskBalance.value === null
+        : sendAsset === 'liquid'
+          ? liquidBalance.value === null
+          : sbtcBalance === '--'
+  );
   const sendActionLabel = selectedSendAsset.supported
     ? (sendAsset === 'bitcoin'
-      ? isLocalWallet ? 'Send BTC Securely' : 'Send'
+      ? isLocalWallet ? 'Send' : 'Send'
       : sendAsset === 'rootstock' ? 'Send'
       : extensionAvailable ? 'Send via Extension' : 'Send')
     : 'Select Supported Asset';
@@ -470,12 +590,42 @@ export default function WalletPage() {
   const identityProviderLabel = walletType === 'nostria' ? 'Nostria Signer' : walletType === 'alby' ? 'Alby' : 'Nostr';
   const primaryBalanceDisplay = isNostrLightningAccount
     ? lightningBalance.display
+    : isBitcoinOnlyAccount
+      ? btcBalance.display
     : sbtcBalance;
+  const primaryBalanceLoading = isNostrLightningAccount
+    ? lightningBalance.status === 'loading'
+    : isBitcoinOnlyAccount
+      ? btcBalanceLoading
+      : loading;
+  const primaryBalanceUnavailable = !primaryBalanceLoading && (
+    isNostrLightningAccount
+      ? lightningBalance.status === 'unavailable'
+      : isBitcoinOnlyAccount
+        ? btcBalance.value === null
+        : sbtcBalance === '--'
+  );
+  const stxBalanceUnavailable = !loading && sbtcBalance === '--';
   const primaryBalanceLabel = isNostrLightningAccount
     ? lightningBalance.status === 'available'
       ? 'Lightning balance'
       : 'Nostr account'
+    : isBitcoinOnlyAccount
+      ? 'Bitcoin balance'
     : 'Satoshis';
+
+  useEffect(() => {
+    const previousBodyBackground = document.body.style.background;
+    const previousHtmlBackground = document.documentElement.style.background;
+
+    document.body.style.background = '#111';
+    document.documentElement.style.background = '#111';
+
+    return () => {
+      document.body.style.background = previousBodyBackground;
+      document.documentElement.style.background = previousHtmlBackground;
+    };
+  }, []);
 
   const resetSendForm = () => {
     setSendTo("");
@@ -491,6 +641,12 @@ export default function WalletPage() {
   };
 
   const closeReceiveModal = () => setShowReceive(false);
+
+  useEffect(() => {
+    if (isBitcoinOnlyAccount && receiveAsset !== 'bitcoin') {
+      setReceiveAsset('bitcoin');
+    }
+  }, [isBitcoinOnlyAccount, receiveAsset]);
 
   const handleReceiveAssetKeyDown = useCallback((event: React.KeyboardEvent<HTMLElement>, asset: ReceiveAsset) => {
     if (event.target !== event.currentTarget) return;
@@ -611,7 +767,9 @@ export default function WalletPage() {
     : unsupportedSendAssetMessage;
   const primaryReceiveAddress = btcAddress;
   const selectedReceiveAddress = receiveAsset === 'bitcoin'
-    ? primaryReceiveAddress
+    ? isOkxBitcoinAccount
+      ? selectedOkxBitcoinAddress || primaryReceiveAddress
+      : primaryReceiveAddress
     : receiveAsset === 'stacks'
       ? address
       : receiveAsset === 'rootstock'
@@ -621,8 +779,8 @@ export default function WalletPage() {
   const getReceiveCopyButtonClass = useCallback((asset: ReceiveAsset) => {
     const baseClass = 'shrink-0 text-sm p-2 rounded-lg transition';
     return receiveAsset === asset
-      ? `${baseClass} text-background hover:bg-background hover:text-foreground`
-      : `${baseClass} text-foreground hover:bg-background/70`;
+      ? `${baseClass} text-foreground hover:bg-transparent`
+      : `${baseClass} text-foreground hover:bg-[#111]`;
   }, [receiveAsset]);
   // Detect if Hiro Wallet extension is available and connected (optional, can remove if not needed)
   useEffect(() => {
@@ -735,7 +893,7 @@ export default function WalletPage() {
 
   // Fetch SBTC token balance and asset inventory
   useEffect(() => {
-    if (isNostrLightningAccount) {
+    if (isNostrLightningAccount || isBitcoinOnlyAccount) {
       setSbtcBalance(null);
       setAssets([]);
       setLoading(false);
@@ -850,7 +1008,7 @@ export default function WalletPage() {
         setLoading(false);
         setAssetsLoading(false);
       });
-  }, [address, currentNetwork, sbtcContractId, formatTokenBalance, isNostrLightningAccount]);
+  }, [address, currentNetwork, sbtcContractId, formatTokenBalance, isNostrLightningAccount, isBitcoinOnlyAccount, stacksBalanceRefreshKey]);
 
   // Send handler
   const handleSend = async (e: React.FormEvent) => {
@@ -1027,7 +1185,7 @@ export default function WalletPage() {
 
   // Fetch recent transactions
   useEffect(() => {
-    if (!address || isNostrLightningAccount) {
+    if (!address || isNostrLightningAccount || isBitcoinOnlyAccount) {
       setTransactions([]);
       setTxLoading(false);
       return;
@@ -1037,9 +1195,18 @@ export default function WalletPage() {
       .then(setTransactions)
       .catch(() => setTransactions([]))
       .finally(() => setTxLoading(false));
-  }, [address, currentNetwork, showSend, isNostrLightningAccount]);
+  }, [address, currentNetwork, showSend, isNostrLightningAccount, isBitcoinOnlyAccount]);
 
   useEffect(() => {
+    if (address && isBitcoinOnlyAccount) {
+      setBtcAddress(address);
+      setBtcAddressError(null);
+      setBtcAddressLoading(false);
+      setRskAddress(null);
+      setLiquidAddress(null);
+      return;
+    }
+
     if (!address || isNostrLightningAccount) {
       setBtcAddress(null);
       setBtcAddressError(null);
@@ -1047,6 +1214,9 @@ export default function WalletPage() {
       setBtcBalance(EMPTY_NATIVE_BALANCE);
       setRskBalance(EMPTY_NATIVE_BALANCE);
       setLiquidBalance(EMPTY_NATIVE_BALANCE);
+      setBtcBalanceLoading(false);
+      setRskBalanceLoading(false);
+      setLiquidBalanceLoading(false);
       return;
     }
 
@@ -1114,114 +1284,196 @@ export default function WalletPage() {
         }
       })
       .finally(() => setBtcAddressLoading(false));
-  }, [address, currentNetwork, isNostrLightningAccount]);
+  }, [address, currentNetwork, isNostrLightningAccount, isBitcoinOnlyAccount]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!isOkxBitcoinAccount || !address) {
+      setOkxBitcoinAccounts([]);
+      setSelectedOkxBitcoinAddress(null);
+      return;
+    }
+
+    const fallbackAccount = { address, addressType: 'unknown', label: 'Bitcoin' } satisfies OkxBitcoinAccount;
+    setOkxBitcoinAccounts((current) => current.length > 0 ? current : [fallbackAccount]);
+    setSelectedOkxBitcoinAddress((current) => current || address);
+
+    withTimeout(getOkxBitcoinAccounts(), OKX_ACCOUNTS_TIMEOUT_MS)
+      .then((accounts) => {
+        if (cancelled) return;
+        const nextAccounts = accounts.length > 0
+          ? accounts
+          : [fallbackAccount];
+        setOkxBitcoinAccounts(nextAccounts);
+        setSelectedOkxBitcoinAddress((current) => {
+          if (current && nextAccounts.some((account) => account.address === current)) {
+            return current;
+          }
+          return nextAccounts[0]?.address ?? address;
+        });
+      })
+      .catch((error) => {
+        if (!isTimeoutError(error)) {
+          console.warn('Failed to load OKX Bitcoin accounts:', error);
+        }
+        if (!cancelled) {
+          setOkxBitcoinAccounts([fallbackAccount]);
+          setSelectedOkxBitcoinAddress(address);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [address, isOkxBitcoinAccount]);
 
   useEffect(() => {
     let cancelled = false;
 
     if (!btcAddress) {
       setBtcBalance(EMPTY_NATIVE_BALANCE);
+      setBtcBalanceLoading(false);
       return;
     }
 
-    setBtcBalance(LOADING_NATIVE_BALANCE);
-    fetchBitcoinBalance(btcAddress, currentNetwork)
+    setBtcBalance(isBitcoinOnlyAccount ? ZERO_BTC_NATIVE_BALANCE : EMPTY_NATIVE_BALANCE);
+    setBtcBalanceLoading(true);
+    const { controller, timeoutId } = createTimedAbortController(BALANCE_FETCH_TIMEOUT_MS);
+    fetchBitcoinBalance(btcAddress, currentNetwork, controller.signal)
       .then((balance) => {
         if (!cancelled) setBtcBalance(balance);
       })
       .catch((error) => {
-        console.error('Failed to fetch Bitcoin balance:', error);
+        if (!isTimeoutError(error) && !controller.signal.aborted) {
+          console.error('Failed to fetch Bitcoin balance:', error);
+        }
         if (!cancelled) setBtcBalance(EMPTY_NATIVE_BALANCE);
+      })
+      .finally(() => {
+        if (!cancelled) setBtcBalanceLoading(false);
+        window.clearTimeout(timeoutId);
       });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeoutId);
+      controller.abort();
     };
-  }, [btcAddress, currentNetwork, showSend]);
+  }, [btcAddress, currentNetwork, showSend, isBitcoinOnlyAccount, btcBalanceRefreshKey]);
 
   useEffect(() => {
     let cancelled = false;
 
     if (!rskAddress) {
       setRskBalance(EMPTY_NATIVE_BALANCE);
+      setRskBalanceLoading(false);
       return;
     }
 
-    setRskBalance(LOADING_NATIVE_BALANCE);
-    fetchRootstockBalance(rskAddress, currentNetwork)
+    setRskBalance(EMPTY_NATIVE_BALANCE);
+    setRskBalanceLoading(true);
+    const { controller, timeoutId } = createTimedAbortController(BALANCE_FETCH_TIMEOUT_MS);
+    fetchRootstockBalance(rskAddress, currentNetwork, controller.signal)
       .then((balance) => {
         if (!cancelled) setRskBalance(balance);
       })
       .catch((error) => {
-        console.error('Failed to fetch Rootstock balance:', error);
+        if (!isTimeoutError(error) && !controller.signal.aborted) {
+          console.error('Failed to fetch Rootstock balance:', error);
+        }
         if (!cancelled) setRskBalance(EMPTY_NATIVE_BALANCE);
+      })
+      .finally(() => {
+        if (!cancelled) setRskBalanceLoading(false);
+        window.clearTimeout(timeoutId);
       });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeoutId);
+      controller.abort();
     };
-  }, [currentNetwork, rskAddress, showSend]);
+  }, [currentNetwork, rskAddress, showSend, rskBalanceRefreshKey]);
 
   useEffect(() => {
     let cancelled = false;
 
     if (!liquidAddress) {
       setLiquidBalance(EMPTY_NATIVE_BALANCE);
+      setLiquidBalanceLoading(false);
       return;
     }
 
-    setLiquidBalance(LOADING_NATIVE_BALANCE);
-    fetchLiquidBalance(liquidAddress, currentNetwork)
+    setLiquidBalance(EMPTY_NATIVE_BALANCE);
+    setLiquidBalanceLoading(true);
+    const { controller, timeoutId } = createTimedAbortController(BALANCE_FETCH_TIMEOUT_MS);
+    fetchLiquidBalance(liquidAddress, currentNetwork, controller.signal)
       .then((balance) => {
         if (!cancelled) setLiquidBalance(balance);
       })
       .catch((error) => {
-        console.error('Failed to fetch Liquid balance:', error);
+        if (!isTimeoutError(error) && !controller.signal.aborted) {
+          console.error('Failed to fetch Liquid balance:', error);
+        }
         if (!cancelled) setLiquidBalance(EMPTY_NATIVE_BALANCE);
+      })
+      .finally(() => {
+        if (!cancelled) setLiquidBalanceLoading(false);
+        window.clearTimeout(timeoutId);
       });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeoutId);
+      controller.abort();
     };
-  }, [currentNetwork, liquidAddress, showSend]);
+  }, [currentNetwork, liquidAddress, showSend, liquidBalanceRefreshKey]);
 
   // If no wallet address, ask to connect wallet
   if (!address) {
     return (
-      <div className="max-w-xl mx-auto my-24 p-8 rounded-2xl border shadow flex flex-col items-center justify-center select-none bg-card text-card-foreground border-border">
-        <h1 className="text-3xl font-bold mb-6">Wallet</h1>
-        <p className="mb-8 text-lg text-muted-foreground text-center">
-          Please connect your wallet to manage your funds.
-        </p>
-        <Link
-          href="/"
-          className="py-3 px-6 rounded-xl border bg-primary text-primary-foreground hover:bg-secondary hover:text-secondary-foreground border-border transition-all duration-200 focus:outline-none cursor-pointer select-none"
-        >
-          Connect Wallet
-        </Link>
+      <div className="min-h-screen bg-[#111] px-4 py-24">
+        <div className="max-w-xl mx-auto p-8 rounded-2xl border shadow flex flex-col items-center justify-center select-none bg-[#111] text-card-foreground border-border">
+          <h1 className="text-3xl font-bold mb-6">Wallet</h1>
+          <p className="mb-8 text-lg text-muted-foreground text-center">
+            Please connect your wallet to manage your funds.
+          </p>
+          <Link
+            href="/"
+            className="py-2 px-6 rounded-xl border bg-transparent text-foreground hover:bg-[#111] border-border transition-all duration-200 focus:outline-none cursor-pointer select-none"
+          >
+            Connect Wallet
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="py-12 px-4 sm:px-6 bg-background my-16">
+    <div className="min-h-screen py-12 px-4 sm:px-6 bg-[#111] my-16">
 
-      <div className="w-full max-w-xl mx-auto p-8 bg-card rounded-2xl border border-border shadow text-card-foreground select-none">
+      <div className="w-full max-w-xl mx-auto p-8 rounded-2xl border border-border shadow text-card-foreground select-none">
         <div className="my-2 flex items-center justify-start gap-3">
           <Wallet className="w-8 h-8 text-foreground" />
           <h1 className="title text-lg font-bold">Wallet</h1>
         </div>
         <div className="mt-4 flex justify-center">
         <div className="flex items-center gap-3">
-          {loading && !isNostrLightningAccount ? (
+          {loading && !isNostrLightningAccount && !isBitcoinOnlyAccount ? (
             <LoaderCircle className="animate-spin text-foreground" size={32} />
           ) : (
             <div className="my-8 text-center">
-              <div className="title text-2xl font-bold select-all">
+              <BalanceDisplay
+                loading={primaryBalanceLoading}
+                unavailable={primaryBalanceUnavailable}
+                onRefresh={isBitcoinOnlyAccount ? refreshBtcBalance : isNostrLightningAccount ? undefined : refreshStacksBalance}
+                className="title text-2xl font-bold select-all"
+              >
                 {isNostrLightningAccount && lightningBalance.status !== 'available'
                   ? abbreviateAddress(address, 8)
                   : primaryBalanceDisplay}
-              </div>
+              </BalanceDisplay>
               <div className="text-lg">{primaryBalanceLabel}</div>
             </div>
           )}
@@ -1229,8 +1481,8 @@ export default function WalletPage() {
       </div>
 
       {/* Network and Address Info - Only show if not mainnet */}
-      {!isNostrLightningAccount && currentNetwork !== 'mainnet' && (
-        <div className="mb-16 p-4 bg-muted rounded-lg">
+      {!isNostrLightningAccount && !isBitcoinOnlyAccount && currentNetwork !== 'mainnet' && (
+        <div className="mb-16 p-4 bg-transparent rounded-lg">
           <div className="flex items-center justify-center text-sm">
             <span className="text-primary text-center uppercase">{currentNetwork}</span>
           </div>
@@ -1240,22 +1492,29 @@ export default function WalletPage() {
       
       {isNostrLightningAccount ? (
         <button
-          className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
+          className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
           onClick={() => copyReceiveAddress(address, 'Nostr account')}
           type="button"
         >
           Copy Account
         </button>
+      ) : isBitcoinOnlyAccount ? (
+        <button
+          className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
+          onClick={() => setShowReceive(true)}
+        >
+          Receive
+        </button>
       ) : (
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button
-            className="bg-background border border-border text-foreground w-full px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
+            className="border border-border bg-transparent text-foreground w-full px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
             onClick={() => setShowSend(true)}
           >
             Send
           </button>
           <button
-            className="bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-secondary hover:text-secondary-foreground cursor-pointer select-none transition-all duration-200"
+            className="border border-border bg-transparent text-foreground px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
             onClick={() => setShowReceive(true)}
           >
             Receive
@@ -1265,15 +1524,15 @@ export default function WalletPage() {
 
       <div className="mt-16 w-full">
         <div className="flex items-center justify-between">
-          {!isNostrLightningAccount && !assetsLoading && (
+          {!isNostrLightningAccount && !isBitcoinOnlyAccount && !assetsLoading && (
             <span className="text-xs text-muted-foreground">{visibleAssetCount} assets</span>
           )}
         </div>
 
-        <div className="mt-4 rounded-xl border border-border bg-card/40">
+        <div className="mt-4 rounded-xl border border-border bg-transparent">
           {isNostrLightningAccount ? (
             <div className="space-y-4 p-4">
-              <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+              <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <Image src={walletType === 'nostria' ? '/nostria.svg' : '/alby.svg'} alt={identityProviderLabel} width={28} height={28} />
                   <div className="min-w-0">
@@ -1287,7 +1546,7 @@ export default function WalletPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+              <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <Image src="/icons/lightning.svg" alt="Lightning" width={28} height={28} />
                   <div>
@@ -1298,9 +1557,12 @@ export default function WalletPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-semibold">
+                  <BalanceDisplay
+                    loading={lightningBalance.status === 'loading'}
+                    unavailable={lightningBalance.status === 'unavailable' && !profileLightningAddress}
+                  >
                     {lightningBalance.status === 'available' ? lightningBalance.display : profileLightningAddress ? 'Configured' : lightningBalance.display}
-                  </div>
+                  </BalanceDisplay>
                   <div className="text-xs text-muted-foreground">
                     {lightningBalance.status === 'available' ? 'Balance' : profileLightningAddress ? 'Address set' : 'Balance unavailable'}
                   </div>
@@ -1310,7 +1572,7 @@ export default function WalletPage() {
               {!profileLightningAddress && (
                 <Link
                   href="/settings#lightning-address"
-                  className="inline-flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition hover:bg-foreground/90"
+                  className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-transparent px-3 py-2 text-sm font-semibold text-foreground transition hover:bg-[#111]"
                 >
                   Set Lightning Address
                 </Link>
@@ -1318,7 +1580,7 @@ export default function WalletPage() {
             </div>
           ) : (
           <div className="space-y-4 p-4">
-            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+            <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Image src="/btc.svg" alt="Bitcoin" width={28} height={28} />
                 <div>
@@ -1327,12 +1589,16 @@ export default function WalletPage() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-lg font-semibold">{btcBalanceDisplay}</div>
+                <BalanceDisplay loading={btcBalanceLoading} unavailable={btcBalance.value === null} onRefresh={refreshBtcBalance}>
+                  {btcBalanceDisplay}
+                </BalanceDisplay>
                 <div className="text-xs text-muted-foreground">Balance</div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+            {!isBitcoinOnlyAccount && (
+            <>
+            <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Image src="/liquid.svg" alt="Liquid" width={28} height={28} />
                 <div>
@@ -1341,12 +1607,14 @@ export default function WalletPage() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-lg font-semibold">{liquidBalanceDisplay}</div>
+                <BalanceDisplay loading={liquidBalanceLoading} unavailable={liquidBalance.value === null} onRefresh={refreshLiquidBalance}>
+                  {liquidBalanceDisplay}
+                </BalanceDisplay>
                 <div className="text-xs text-muted-foreground">Balance</div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+            <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Image src="/rsk.svg" alt="Rootstock" width={28} height={28} />
                 <div>
@@ -1355,12 +1623,14 @@ export default function WalletPage() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-lg font-semibold">{rskBalanceDisplay}</div>
+                <BalanceDisplay loading={rskBalanceLoading} unavailable={rskBalance.value === null} onRefresh={refreshRskBalance}>
+                  {rskBalanceDisplay}
+                </BalanceDisplay>
                 <div className="text-xs text-muted-foreground">Balance</div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-card/40 p-4 flex items-center justify-between gap-4">
+            <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Image src="/stx.png" alt="Stacks" width={28} height={28} />
                 <div>
@@ -1369,22 +1639,26 @@ export default function WalletPage() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-lg font-semibold">{stxBalanceDisplay}</div>
+                <BalanceDisplay loading={loading} unavailable={stxBalanceUnavailable} onRefresh={refreshStacksBalance}>
+                  {stxBalanceDisplay}
+                </BalanceDisplay>
                 <div className="text-xs text-muted-foreground">Balance</div>
               </div>
             </div>
+            </>
+            )}
           </div>
           )}
 
-          {!isNostrLightningAccount && assetsLoading ? (
+          {!isNostrLightningAccount && !isBitcoinOnlyAccount && assetsLoading ? (
             <div className="p-4 space-y-3">
               {[0, 1, 2].map((skeleton) => (
-                <div key={skeleton} className="h-10 rounded-lg bg-muted/40 animate-pulse" />
+                <div key={skeleton} className="h-10 rounded-lg bg-transparent animate-pulse" />
               ))}
             </div>
-          ) : !isNostrLightningAccount && visibleAssetCount === 0 ? (
+          ) : !isNostrLightningAccount && !isBitcoinOnlyAccount && visibleAssetCount === 0 ? (
             <div className="p-4 text-sm text-muted-foreground hidden">No assets detected for this wallet yet.</div>
-          ) : !isNostrLightningAccount ? (
+          ) : !isNostrLightningAccount && !isBitcoinOnlyAccount ? (
             <ul>
               {visibleAssets.map((asset) => (
                 <li
@@ -1411,13 +1685,13 @@ export default function WalletPage() {
       {/* Send Modal */}
       {showSend && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-100 px-4 py-6"
+          className="fixed inset-0 bg-[#111] backdrop-blur-sm flex items-center justify-center z-100 px-4 py-6"
           onClick={() => {
             if (!sendLoading) closeSendModal();
           }}
         >
           <div
-            className="bg-card text-card-foreground rounded-2xl border border-border shadow-xl w-full max-w-lg max-h-[calc(100vh-3rem)] overflow-hidden flex flex-col"
+            className="bg-[#111] text-card-foreground rounded-2xl border border-border shadow-xl w-full max-w-lg max-h-[calc(100vh-3rem)] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 p-6 pb-4 border-b border-border/60">
@@ -1432,7 +1706,7 @@ export default function WalletPage() {
               </div>
               <button
                 onClick={closeSendModal}
-                className="bg-none border-none text-muted-foreground hover:text-foreground text-xl cursor-pointer disabled:opacity-40"
+                className="bg-transparent border-none text-muted-foreground hover:text-foreground text-xl cursor-pointer disabled:opacity-40"
                 aria-label="Close"
                 type="button"
                 disabled={sendLoading}
@@ -1448,7 +1722,7 @@ export default function WalletPage() {
                 </label>
                 <select
                   id="send-asset"
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60"
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60"
                   value={sendAsset}
                   onChange={(event) => setSendAsset(event.target.value as SendAsset)}
                   disabled={sendLoading}
@@ -1461,12 +1735,19 @@ export default function WalletPage() {
                 </select>
               </div>
 
-              <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm">
+              <div className="rounded-xl border border-border bg-transparent p-4 text-sm">
                 <p className="font-medium">{sendMethodTitle}</p>
                 <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{sendMethodDescription}</p>
                 <p className="mt-3 text-xs text-muted-foreground">
                   Available balance:
-                  <span className="ml-1 font-semibold">{selectedAssetBalanceDisplay}</span>
+                  <BalanceDisplay
+                    loading={selectedAssetBalanceLoading}
+                    unavailable={selectedAssetBalanceUnavailable}
+                    onRefresh={refreshSelectedSendAssetBalance}
+                    className="ml-1 align-middle text-xs font-semibold"
+                  >
+                    {selectedAssetBalanceDisplay}
+                  </BalanceDisplay>
                 </p>
               </div>
 
@@ -1477,7 +1758,7 @@ export default function WalletPage() {
                 <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
                   <input
                     id="send-recipient"
-                    className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${recipientError ? 'border-destructive/70' : 'border-border'}`}
+                    className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${recipientError ? 'border-destructive/70' : 'border-border'}`}
                     value={sendTo}
                     onChange={e => setSendTo(e.target.value)}
                     required
@@ -1512,7 +1793,7 @@ export default function WalletPage() {
                 <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
                   <input
                     id="send-amount"
-                    className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-background text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
+                    className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
                     type="number"
                     min={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' || sendAsset === 'liquid' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 0}
                     step={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' || sendAsset === 'liquid' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 'any'}
@@ -1534,7 +1815,17 @@ export default function WalletPage() {
                 </div>
                 <div className="flex items-center justify-between text-xs mt-2 text-muted-foreground">
                   <span>{sendAsset === 'sbtc' ? 'Minimum 1 sat' : sendAsset === 'bitcoin' ? 'Amount in BTC' : sendAsset === 'liquid' ? 'Amount in L-BTC' : sendAsset === 'rootstock' ? 'Amount in RBTC' : `Amount in ${selectedSendAsset.unit}`}</span>
-                  <span>Available {selectedAssetBalanceDisplay}</span>
+                  <span className="inline-flex items-center gap-1">
+                    Available
+                    <BalanceDisplay
+                      loading={selectedAssetBalanceLoading}
+                      unavailable={selectedAssetBalanceUnavailable}
+                      onRefresh={refreshSelectedSendAssetBalance}
+                      className="text-xs"
+                    >
+                      {selectedAssetBalanceDisplay}
+                    </BalanceDisplay>
+                  </span>
                 </div>
                 {quickFillOptions.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3">
@@ -1563,7 +1854,7 @@ export default function WalletPage() {
                   </label>
                   <textarea
                     id="send-memo"
-                    className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 resize-none ${memoError ? 'border-destructive/70' : 'border-border'}`}
+                    className={`w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 resize-none ${memoError ? 'border-destructive/70' : 'border-border'}`}
                     rows={2}
                     maxLength={120}
                     value={sendMemo}
@@ -1586,7 +1877,7 @@ export default function WalletPage() {
               )}
 
               {(sendAmount || trimmedRecipient) && (
-                <div className="rounded-2xl border border-border bg-muted/20 p-4 text-sm">
+                <div className="rounded-2xl border border-border bg-transparent p-4 text-sm">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Network</span>
                     <span className="font-mono uppercase">{currentNetwork}</span>
@@ -1621,7 +1912,7 @@ export default function WalletPage() {
                   </label>
                   <input
                     id="send-password"
-                    className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${passwordError ? 'border-destructive/70' : 'border-border'}`}
+                    className={`w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${passwordError ? 'border-destructive/70' : 'border-border'}`}
                     type="password"
                     value={sendPassword}
                     onChange={e => setSendPassword(e.target.value)}
@@ -1638,14 +1929,14 @@ export default function WalletPage() {
               <div className="space-y-3">
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full py-3 px-4 rounded-xl border border-border bg-transparent text-foreground transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:bg-[#111]"
                   disabled={sendLoading || !sendFormValid}
                 >
                   {sendLoading ? (sendAsset === 'bitcoin' && !isLocalWallet || extensionAvailable && sendAsset === 'sbtc' ? 'Sending via extension...' : 'Sending...') : sendActionLabel}
                 </button>
                 <button
                   type="button"
-                  className="w-full py-3 px-4 rounded-xl border border-border bg-transparent text-foreground hover:bg-muted/60 transition-all cursor-pointer"
+                  className="w-full py-3 px-4 rounded-xl border border-border bg-transparent text-foreground hover:bg-[#111] transition-all cursor-pointer"
                   onClick={closeSendModal}
                   disabled={sendLoading}
                 >
@@ -1660,17 +1951,17 @@ export default function WalletPage() {
       {/* Receive Modal */}
       {showReceive && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+          className="fixed inset-0 bg-[#111] backdrop-blur-sm flex items-center justify-center z-50 px-4"
           onClick={closeReceiveModal}
         >
           <div
-            className="bg-background text-foreground p-8 rounded-2xl border border-[#333] shadow-xl w-full max-w-sm text-center"
+            className="bg-[#111] text-foreground p-8 rounded-2xl border border-[#333] shadow-xl w-full max-w-sm text-center"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-end">
               <button
                 onClick={closeReceiveModal}
-                className="bg-none border-none text-[#555] text-xl cursor-pointer"
+                className="bg-transparent border-none text-[#555] text-xl cursor-pointer"
                 aria-label="Close"
                 type="button"
               >
@@ -1680,30 +1971,30 @@ export default function WalletPage() {
             <h2 className="text-xl font-bold mb-6">Receive {selectedReceiveLabel}</h2>
             <div className="mb-6">
               {selectedReceiveAddress ? (
-                <div className="w-full p-6 flex items-center justify-center rounded-xl bg-background">
+                <div className="w-full p-6 flex items-center justify-center rounded-xl bg-[#111]">
                   <QRCodeSVG
                     value={selectedReceiveAddress}
                     width="100%"
                     height="100%"
                     size={256}
-                    bgColor="#fff"
-                    fgColor="#181818"
+                    bgColor="#111"
+                    fgColor="#f8fafc"
                     includeMargin={false}
                     level="M"
                     style={{ width: "100%", height: "auto", maxWidth: 256, maxHeight: 256 }}
                   />
                 </div>
               ) : (
-                <div className="w-full min-h-56 mx-auto bg-muted flex flex-col items-center justify-center gap-3 rounded-xl text-muted-foreground">
+                <div className="w-full min-h-56 mx-auto bg-transparent flex flex-col items-center justify-center gap-3 rounded-xl text-muted-foreground">
                   {btcAddressLoading ? (
                     <LoaderCircle className="animate-spin" size={28} />
                   ) : (
                     <>
                       <div className="text-sm">No {selectedReceiveLabel} address yet</div>
-                      {receiveAsset !== 'stacks' && (
+                      {receiveAsset !== 'stacks' && !isBitcoinOnlyAccount && (
                         <button
                           type="button"
-                          className="rounded-lg border border-border bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg border border-border bg-transparent px-4 py-2 text-xs font-medium text-foreground transition hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
                           onClick={() => openGenerateAddressModal(receiveAsset)}
                           disabled={generatingAddresses}
                         >
@@ -1716,19 +2007,65 @@ export default function WalletPage() {
               )}
             </div>
             <div className="space-y-4">
+              {isOkxBitcoinAccount ? (
+                <div className="grid gap-3 text-left">
+                  {(okxBitcoinAccounts.length > 0
+                    ? okxBitcoinAccounts
+                    : [{ address: address || '', addressType: 'unknown', label: 'Bitcoin' } satisfies OkxBitcoinAccount]
+                  ).filter((account) => account.address).map((account) => {
+                    const selected = (selectedOkxBitcoinAddress || primaryReceiveAddress) === account.address;
+                    return (
+                      <div
+                        key={`${account.addressType}-${account.address}`}
+                        role="button"
+                        tabIndex={0}
+                        className={`p-4 rounded-2xl border text-left text-sm transition ${selected ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent hover:bg-[#111]'}`}
+                        onClick={() => setSelectedOkxBitcoinAddress(account.address)}
+                        onKeyDown={(event) => {
+                          if (event.target !== event.currentTarget) return;
+                          if (event.key !== 'Enter' && event.key !== ' ') return;
+                          event.preventDefault();
+                          setSelectedOkxBitcoinAddress(account.address);
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <Image src="/btc.svg" alt="Bitcoin" width={28} height={28} />
+                            <div className="min-w-0">
+                              <div className="font-semibold">{account.label}</div>
+                              <div className="font-mono text-xs text-muted-foreground">{abbreviateMiddle(account.address)}</div>
+                            </div>
+                          </div>
+                          <button
+                            className={getReceiveCopyButtonClass('bitcoin')}
+                            type="button"
+                            aria-label={`Copy ${account.label} address`}
+                            onClick={async (event) => {
+                              event.stopPropagation();
+                              await copyReceiveAddress(account.address, account.label);
+                            }}
+                          >
+                            <Copy size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
               <div
                 role="button"
                 tabIndex={0}
-                className={`w-full rounded-2xl border p-4 text-left transition ${receiveAsset === 'bitcoin' ? 'border-foreground bg-foreground text-background' : 'border-border bg-muted/40 hover:bg-muted/70'}`}
+                className={`w-full rounded-2xl border p-4 text-left transition ${receiveAsset === 'bitcoin' ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent hover:bg-[#111]'}`}
                 onClick={() => setReceiveAsset('bitcoin')}
                 onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'bitcoin')}
               >
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <span className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Bitcoin L1</span>
-                  {!btcAddressLoading && !primaryReceiveAddress && (
+                  {!btcAddressLoading && !primaryReceiveAddress && !isBitcoinOnlyAccount && (
                     <button
                       type="button"
-                      className="rounded-lg border border-border bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-lg border h-full border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={(event) => {
                         event.stopPropagation();
                         openGenerateAddressModal('bitcoin');
@@ -1760,12 +2097,14 @@ export default function WalletPage() {
                   <div className="text-sm text-destructive">{btcAddressError || 'No Bitcoin address available.'}</div>
                 )}
               </div>
+              )}
 
+              {!isBitcoinOnlyAccount && (
               <div className="grid gap-3 text-left">
                 <div
                   role="button"
                   tabIndex={0}
-                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === 'stacks' ? 'border-foreground bg-foreground text-background' : 'border-transparent bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800'}`}
+                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === 'stacks' ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
                   onClick={() => setReceiveAsset('stacks')}
                   onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'stacks')}
                 >
@@ -1789,16 +2128,37 @@ export default function WalletPage() {
                 <div
                   role="button"
                   tabIndex={0}
-                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === 'rootstock' ? 'border-foreground bg-foreground text-background' : 'border-transparent bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800'}`}
+                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === 'rootstock' ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
                   onClick={() => setReceiveAsset('rootstock')}
                   onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'rootstock')}
                 >
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Rootstock</span>
-                    {!rskAddress && (
+                  {rskAddress ? (
+                    <>
+                      <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Rootstock</div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-sm break-all">{rskAddress}</span>
+                        <button
+                          className={getReceiveCopyButtonClass('rootstock')}
+                          type="button"
+                          aria-label="Copy Rootstock address"
+                          onClick={async (event) => {
+                            event.stopPropagation();
+                            await copyReceiveAddress(rskAddress, 'Rootstock');
+                          }}
+                        >
+                          <Copy size={18} />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-stretch justify-between gap-4">
+                      <div className="min-w-0 py-1">
+                        <div className="mb-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Rootstock</div>
+                        <div className="text-sm text-muted-foreground">Not configured.</div>
+                      </div>
                       <button
                         type="button"
-                        className="rounded-lg border border-border bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="self-stretch rounded-lg border border-border bg-transparent px-4 text-xs font-medium text-foreground transition hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={(event) => {
                           event.stopPropagation();
                           openGenerateAddressModal('rootstock');
@@ -1807,41 +2167,44 @@ export default function WalletPage() {
                       >
                         Generate
                       </button>
-                    )}
-                  </div>
-                  {rskAddress ? (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-sm break-all">{rskAddress}</span>
-                      <button
-                        className={getReceiveCopyButtonClass('rootstock')}
-                        type="button"
-                        aria-label="Copy Rootstock address"
-                        onClick={async (event) => {
-                          event.stopPropagation();
-                          await copyReceiveAddress(rskAddress, 'Rootstock');
-                        }}
-                      >
-                        <Copy size={18} />
-                      </button>
                     </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">Rootstock address not configured.</div>
                   )}
                 </div>
 
                 <div
                   role="button"
                   tabIndex={0}
-                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === 'liquid' ? 'border-foreground bg-foreground text-background' : 'border-transparent bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800'}`}
+                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === 'liquid' ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
                   onClick={() => setReceiveAsset('liquid')}
                   onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'liquid')}
                 >
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Liquid</span>
-                    {!liquidAddress && (
+                  {liquidAddress ? (
+                    <>
+                      <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Liquid</div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-sm break-all">{liquidAddress}</span>
+                        <button
+                          className={getReceiveCopyButtonClass('liquid')}
+                          type="button"
+                          aria-label="Copy Liquid address"
+                          onClick={async (event) => {
+                            event.stopPropagation();
+                            await copyReceiveAddress(liquidAddress, 'Liquid');
+                          }}
+                        >
+                          <Copy size={18} />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-stretch justify-between gap-4">
+                      <div className="min-w-0 py-1">
+                        <div className="mb-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Liquid</div>
+                        <div className="text-sm text-muted-foreground">Not configured.</div>
+                      </div>
                       <button
                         type="button"
-                        className="rounded-lg border border-border bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="self-stretch rounded-lg border border-border bg-transparent px-4 text-xs font-medium text-foreground transition hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={(event) => {
                           event.stopPropagation();
                           openGenerateAddressModal('liquid');
@@ -1850,28 +2213,11 @@ export default function WalletPage() {
                       >
                         Generate
                       </button>
-                    )}
-                  </div>
-                  {liquidAddress ? (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-sm break-all">{liquidAddress}</span>
-                      <button
-                        className={getReceiveCopyButtonClass('liquid')}
-                        type="button"
-                        aria-label="Copy Liquid address"
-                        onClick={async (event) => {
-                          event.stopPropagation();
-                          await copyReceiveAddress(liquidAddress, 'Liquid');
-                        }}
-                      >
-                        <Copy size={18} />
-                      </button>
                     </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">Liquid address not configured.</div>
                   )}
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>
@@ -1890,7 +2236,7 @@ export default function WalletPage() {
       {/* Recent Transactions */}
       <div className="mt-10">
         <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
-        <div className="bg-card rounded-xl py-4 max-h-96 overflow-y-auto border border-border">
+        <div className="bg-[#111] rounded-xl py-4 max-h-96 overflow-y-auto border border-border">
           {txLoading ? (
             <div className="flex justify-center items-center py-8">
               <LoaderCircle className="animate-spin text-foreground" size={32} />

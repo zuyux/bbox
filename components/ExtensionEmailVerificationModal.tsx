@@ -132,7 +132,7 @@ export default function ExtensionEmailVerificationModal({
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center text-white">
-              <Mail className="h-4 w-4" />
+              <Mail className="h-9 w-9" />
             </div>
             <div>
               <h2 className="text-base font-semibold">Verify your email</h2>

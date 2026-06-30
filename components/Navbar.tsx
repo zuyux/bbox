@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Search } from 'lucide-react';
 
 import { useState } from 'react';
@@ -12,8 +13,11 @@ const SearchModal = dynamic(() => import('./SearchModal').then((mod) => mod.Sear
 import GetInModal from './GetInModal';
 
 export const Navbar = () => {
+  const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [getInOpen, setGetInOpen] = useState(false);
+  const showSearch = !pathname?.startsWith('/settings') && !pathname?.startsWith('/wallet');
+
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 w-full z-50 select-none">
@@ -36,16 +40,19 @@ export const Navbar = () => {
             
             {/* Center: Search Input */}
             <div className="flex justify-center">
-              <div className="relative md:w-full my-5">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-100" />
-                <input
-                  type="text"
-                  placeholder="SEARCH APPS..."
-                  className="title-jersey-light w-full pl-10 pr-4 py-2 bg-background/50 border border-foreground/10 rounded-md text-xs text-foreground/20 placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all mobile-hide-placeholder"
-                  onClick={() => setSearchOpen(true)}
-                  readOnly
-                />
-              </div>
+              {showSearch && (
+                <div className="relative md:w-full my-5">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-100" />
+                  <input
+                    type="text"
+                    placeholder="SEARCH APPS..."
+                    className="title-jersey-light w-full pl-10 pr-4 py-2 bg-background/50 border border-foreground/10 rounded-md text-xs text-foreground/20 placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all mobile-hide-placeholder"
+                    onClick={() => setSearchOpen(true)}
+                    readOnly
+                  />
+                </div>
+              )}
+              {!showSearch && <div className="my-5 h-9" aria-hidden="true" />}
             </div>
             
             <div className="flex justify-end">
@@ -54,7 +61,7 @@ export const Navbar = () => {
           </div>
         </div>
       </nav>
-      {searchOpen && <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />}
+      {showSearch && searchOpen && <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />}
       {getInOpen && <GetInModal onClose={() => setGetInOpen(false)} />}
       
       <style jsx>{`

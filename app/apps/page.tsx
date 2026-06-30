@@ -113,7 +113,7 @@ export default function AppsPage() {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [emailPromptDismissed, setEmailPromptDismissed] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const isExtensionWallet = walletType === 'leather' || walletType === 'xverse' || walletType === 'alby' || walletType === 'nostria';
+  const isExtensionWallet = walletType === 'leather' || walletType === 'xverse' || walletType === 'alby' || walletType === 'nostria' || walletType === 'okx' || walletType === 'walletconnect';
   const shouldPromptForEmail =
     Boolean(address) &&
     isExtensionWallet &&

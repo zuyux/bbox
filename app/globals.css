@@ -607,6 +607,14 @@ img {
   -webkit-tap-highlight-color: transparent;
 }
 
+p,
+span {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
 /* Custom scrollbar styles */
 .scrollbar-thin {
   scrollbar-width: thin;

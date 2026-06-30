@@ -17,6 +17,8 @@ import { formatStxAddress } from '@/lib/address-utils';
 import { getStoredEncryptedWallet } from '@/lib/encryptedStorage';
 import { connectAlbyWallet } from '@/lib/albyWallet';
 import { connectNostriaSigner } from '@/lib/nostriaSigner';
+import { connectOkxWallet } from '@/lib/okxWallet';
+import { connectWalletConnect } from '@/lib/walletConnectWallet';
 
 export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const { address, setAddress, setWalletType } = useWallet();
@@ -43,10 +45,12 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     { id: 'alby', label: 'Alby', icon: '/alby.svg', mode: 'wallets' as const },
     { id: 'leather', label: 'Leather', icon: '/leather.svg', mode: 'wallets' as const },
     { id: 'nostria', label: 'Nostria Signer', icon: '/nostria.svg', mode: 'wallets' as const },
+    { id: 'okx', label: 'OKX Wallet', icon: '/okx.webp', mode: 'wallets' as const },
+    { id: 'walletconnect', label: 'WalletConnect', icon: '/wallet-connect.png', mode: 'wallets' as const },
     { id: 'xverse', label: 'Xverse', icon: '/xverse.svg', mode: 'wallets' as const },
   ];
 
-  const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' | 'alby' | 'nostria' = 'imported') => {
+  const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' | 'alby' | 'nostria' | 'okx' | 'walletconnect' = 'imported') => {
     persistCachedWalletState(newAddress, type);
     setAddress(newAddress);
     setWalletType(type);
@@ -56,6 +60,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const [xverseInstalled, setXverseInstalled] = useState(false);
   const [leatherInstalled, setLeatherInstalled] = useState(false);
   const [albyInstalled, setAlbyInstalled] = useState(false);
+  const [okxInstalled, setOkxInstalled] = useState(false);
   const [walletInstallUrl, setWalletInstallUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,6 +69,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     setXverseInstalled(wallets.some((wallet) => wallet.id === 'xverse' && wallet.installed));
     setLeatherInstalled(wallets.some((wallet) => wallet.id === 'leather' && wallet.installed));
     setAlbyInstalled(wallets.some((wallet) => wallet.id === 'alby' && wallet.installed));
+    setOkxInstalled(wallets.some((wallet) => wallet.id === 'okx' && wallet.installed));
   }, []);
 
   const handleXverseConnect = async () => {
@@ -222,6 +228,56 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       }
       setWalletInstallUrl('https://www.nostria.app/');
       console.error('Nostria Signer connect error:', err);
+    }
+  };
+
+  const handleOkxConnect = async () => {
+    setWalletError(null);
+    setWalletInstallUrl(null);
+
+    if (!okxInstalled) {
+      setWalletError(
+        'OKX Wallet was not detected. Install OKX Wallet or enable it for this page, then refresh and try again.'
+      );
+      setWalletInstallUrl('https://web3.okx.com/wallet');
+      return;
+    }
+
+    try {
+      const okxConnection = await connectOkxWallet();
+      persistWalletContext(okxConnection.address, 'okx');
+      if (onClose) onClose();
+      router.push('/apps');
+    } catch (err: unknown) {
+      const errorMsg = getWalletErrorMessage(err, 'Failed to connect to OKX Wallet.');
+      if (isWalletRequestCancelled(err)) {
+        setWalletError('Wallet connection was cancelled. Please try again.');
+      } else {
+        setWalletError(errorMsg);
+      }
+      setWalletInstallUrl('https://web3.okx.com/wallet');
+      console.error('OKX Wallet connect error:', err);
+    }
+  };
+
+  const handleWalletConnect = async () => {
+    setWalletError(null);
+    setWalletInstallUrl(null);
+
+    try {
+      const walletConnectConnection = await connectWalletConnect();
+      persistWalletContext(walletConnectConnection.address, 'walletconnect');
+      if (onClose) onClose();
+      router.push('/apps');
+    } catch (err: unknown) {
+      const errorMsg = getWalletErrorMessage(err, 'Failed to connect with WalletConnect.');
+      if (isWalletRequestCancelled(err)) {
+        setWalletError('Wallet connection was cancelled. Please try again.');
+      } else {
+        setWalletError(errorMsg);
+      }
+      setWalletInstallUrl('https://walletconnect.network');
+      console.error('WalletConnect connect error:', err);
     }
   };
 
@@ -434,7 +490,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
               </TooltipTrigger>
               <TooltipContent side="bottom" className="bg-background text-foreground max-w-xs text-sm z-100">
                                   <div>
-                    Connect or create your account using your wallet or seed phrase.<br />
+                    Connect or create your account using your wallet or email.<br />
                     <span className="text-foreground underline">
                       <a href="mailto:fabohax@gmail.com">Need help? Contact us</a>
                     </span>
@@ -528,6 +584,14 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                         handleNostriaConnect();
                         return;
                       }
+                      if (option.id === 'okx') {
+                        handleOkxConnect();
+                        return;
+                      }
+                      if (option.id === 'walletconnect') {
+                        handleWalletConnect();
+                        return;
+                      }
                       setImportModalMode(option.mode);
                       setShowImportModal(true);
                     }}
@@ -575,13 +639,13 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 >
                   <Image
                     src="/wallet.svg"
-                    alt="Login With Email"
+                    alt="Sign in With Email"
                     width={18}
                     height={18}
                     className="mr-3"
                     unoptimized
                   />
-                  <span className="text-center flex-1">Login With Email</span>
+                  <span className="text-center flex-1">Email Signing</span>
                 </Button>
               </div>
 

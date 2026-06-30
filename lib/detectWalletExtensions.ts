@@ -31,6 +31,10 @@ type BrowserWalletWindow = typeof window & {
     }) => Promise<unknown>;
   };
   webln?: unknown;
+  okxwallet?: {
+    bitcoin?: unknown;
+  };
+  ethereum?: unknown;
 };
 
 export function detectWalletExtensions() {
@@ -88,6 +92,20 @@ export function detectWalletExtensions() {
     name: 'Nostria Signer',
     url: 'https://www.nostria.app/',
     installed: typeof (browserWindow.nostria ?? browserWindow.blockcore)?.request === 'function',
+  });
+
+  wallets.push({
+    id: 'okx',
+    name: 'OKX Wallet',
+    url: 'https://web3.okx.com/wallet',
+    installed: Boolean(browserWindow.okxwallet?.bitcoin),
+  });
+
+  wallets.push({
+    id: 'walletconnect',
+    name: 'WalletConnect',
+    url: 'https://walletconnect.network',
+    installed: true,
   });
   
   // MetaMask detection (prevent auto-connection errors)

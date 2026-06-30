@@ -3,6 +3,8 @@ import type { StacksProvider } from '@stacks/connect/dist/types';
 import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 
 import { getNostriaPublicKey, signNostriaEvent } from '@/lib/nostriaSigner';
+import { signOkxBitcoinMessage } from '@/lib/okxWallet';
+import { signWalletConnectMessage } from '@/lib/walletConnectWallet';
 import { getPersistedNetwork } from '@/lib/network';
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 
@@ -23,7 +25,7 @@ type BrowserStacksWindow = typeof window & {
   };
 };
 
-export type SupportedWalletType = 'leather' | 'xverse' | 'hiro' | 'alby' | 'nostria' | 'imported' | null;
+export type SupportedWalletType = 'leather' | 'xverse' | 'hiro' | 'alby' | 'nostria' | 'okx' | 'walletconnect' | 'imported' | null;
 
 type ResolvedStacksProvider = {
   provider: RpcCapableStacksProvider;
@@ -171,6 +173,10 @@ const providerNotFoundMessage = (walletType: SupportedWalletType) => {
       return 'Alby wallet not detected. Reconnect and try again.';
     case 'nostria':
       return 'Nostria Signer not detected. Reconnect and try again.';
+    case 'okx':
+      return 'OKX Wallet not detected. Reconnect and try again.';
+    case 'walletconnect':
+      return 'WalletConnect session not available. Reconnect and try again.';
     case 'imported':
       return 'Imported wallets cannot sign comments. Connect a browser wallet to continue.';
     default:
@@ -292,6 +298,25 @@ export const signStacksMessage = async (
 ): Promise<StacksSignatureResult> => {
   if (walletType === 'alby' || walletType === 'nostria') {
     return signNostrMessage(payload, walletType);
+  }
+
+  if (walletType === 'okx') {
+    const result = await signOkxBitcoinMessage(payload);
+    return {
+      signature: result.signature,
+      signedPayload: payload,
+      walletType: 'okx',
+      publicKey: result.publicKey,
+    };
+  }
+
+  if (walletType === 'walletconnect') {
+    const result = await signWalletConnectMessage(payload);
+    return {
+      signature: result.signature,
+      signedPayload: payload,
+      walletType: 'walletconnect',
+    };
   }
 
   const resolvedProvider = getStacksProvider(walletType);

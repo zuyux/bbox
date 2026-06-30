@@ -61,10 +61,11 @@ const getConfirmedAndMempoolBalance = (info: AddressInfo) => {
   return funded - spent;
 };
 
-async function rpcCall<T>(rpcUrl: string, method: string, params: unknown[]): Promise<T> {
+async function rpcCall<T>(rpcUrl: string, method: string, params: unknown[], signal?: AbortSignal): Promise<T> {
   const response = await fetch(rpcUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal,
     body: JSON.stringify({
       jsonrpc: '2.0',
       id: Date.now(),
@@ -81,8 +82,8 @@ async function rpcCall<T>(rpcUrl: string, method: string, params: unknown[]): Pr
   return payload.result as T;
 }
 
-export async function fetchBitcoinBalance(address: string, network: AppNetwork): Promise<NativeBalance> {
-  const response = await fetch(`${getBitcoinApiBaseUrl(network)}/address/${address}`);
+export async function fetchBitcoinBalance(address: string, network: AppNetwork, signal?: AbortSignal): Promise<NativeBalance> {
+  const response = await fetch(`${getBitcoinApiBaseUrl(network)}/address/${address}`, { signal });
   if (response.status === 404) {
     return {
       value: 0,
@@ -100,9 +101,9 @@ export async function fetchBitcoinBalance(address: string, network: AppNetwork):
   };
 }
 
-export async function fetchRootstockBalance(address: string, network: AppNetwork): Promise<NativeBalance> {
+export async function fetchRootstockBalance(address: string, network: AppNetwork, signal?: AbortSignal): Promise<NativeBalance> {
   const rpcUrl = ROOTSTOCK_RPC_URLS[network];
-  const balanceHex = await rpcCall<string>(rpcUrl, 'eth_getBalance', [address, 'latest']);
+  const balanceHex = await rpcCall<string>(rpcUrl, 'eth_getBalance', [address, 'latest'], signal);
   const balanceWei = BigInt(balanceHex || '0x0');
   const value = baseUnitsToNumber(balanceWei, RBTC_DECIMALS);
   return {
@@ -111,7 +112,7 @@ export async function fetchRootstockBalance(address: string, network: AppNetwork
   };
 }
 
-export async function fetchLiquidBalance(address: string, network: AppNetwork): Promise<NativeBalance> {
+export async function fetchLiquidBalance(address: string, network: AppNetwork, signal?: AbortSignal): Promise<NativeBalance> {
   if (network !== 'mainnet') {
     return {
       value: null,
@@ -119,7 +120,7 @@ export async function fetchLiquidBalance(address: string, network: AppNetwork): 
     };
   }
 
-  const response = await fetch(`${LIQUID_MAINNET_API_URL}/address/${address}/utxo`);
+  const response = await fetch(`${LIQUID_MAINNET_API_URL}/address/${address}/utxo`, { signal });
   if (!response.ok) throw new Error(`Liquid balance request failed with ${response.status}`);
 
   const utxos = await response.json() as LiquidUtxo[];

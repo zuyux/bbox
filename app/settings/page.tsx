@@ -115,11 +115,25 @@ export default function SettingsPage() {
   const { currentWallet } = useEncryptedWallet();
   const isNostriaWallet = walletType === 'nostria';
   const isNostrLightningWallet = walletType === 'alby' || walletType === 'nostria';
+  const isBitcoinOnlyExtensionWallet = walletType === 'okx';
 
   // Determine wallet type - if we have an address but no encrypted wallet, it's an extension wallet
   const isExtensionWallet = Boolean(address && !hasEncryptedWallet());
   const isNostrKeyAvailable = Boolean(currentWallet?.nostrPublicKey && isNostrPublicKey(currentWallet.nostrPublicKey));
-  const canLinkWallet = isExtensionWallet && !isNostrLightningWallet && Boolean(walletType) && isNostrKeyAvailable;
+  const canLinkWallet = isExtensionWallet && !isNostrLightningWallet && !isBitcoinOnlyExtensionWallet && Boolean(walletType) && isNostrKeyAvailable;
+
+  useEffect(() => {
+    const previousBodyBackground = document.body.style.background;
+    const previousHtmlBackground = document.documentElement.style.background;
+
+    document.body.style.background = '#111';
+    document.documentElement.style.background = '#111';
+
+    return () => {
+      document.body.style.background = previousBodyBackground;
+      document.documentElement.style.background = previousHtmlBackground;
+    };
+  }, []);
   
   // Basic Profile Fields
   const [username, setUsername] = useState('');
@@ -670,15 +684,17 @@ export default function SettingsPage() {
 
   if (!address) {
     return (
-  <div className="max-w-2xl mx-auto my-24 p-8 rounded-2xl border text-center bg-accent-background border-gray-200 dark:border-gray-800 text-foreground">
-          <h1 className="text-2xl font-bold mb-4">Connect Your Wallet</h1>
-        <p className="text-foreground">Please connect your wallet to access settings.</p>
+      <div className="min-h-screen bg-[#111] px-4 py-24">
+        <div className="max-w-2xl mx-auto p-8 rounded-2xl border text-center bg-accent-background border-gray-200 dark:border-gray-800 text-foreground">
+          <h1 className="text-2xl font-bold mb-4">...</h1>
+        </div>
       </div>
     );
   }
 
   return (
-  <div className="max-w-4xl mx-auto my-24 p-8 rounded-2xl border bg-accent-background border-none text-foreground">
+    <div className="min-h-screen bg-[#111] px-4 py-24">
+      <div className="max-w-4xl mx-auto p-0 rounded-2xl text-foreground">
       <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
       
       <Tabs defaultValue="profile" className="w-full">
@@ -1157,7 +1173,7 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
 
-          {isExtensionWallet && !isNostrLightningWallet && (
+          {isExtensionWallet && !isNostrLightningWallet && !isBitcoinOnlyExtensionWallet && (
             <Card className="bg-accent-background border-gray-200 dark:border-gray-700 mt-8">
               <CardHeader>
                 <CardTitle>Wallet Proof Linking</CardTitle>
@@ -1351,7 +1367,7 @@ export default function SettingsPage() {
       )}
 
       {/* Account Management Links */}
-      <div className="mt-12 pt-8 border-t border-gray-700">
+      <div className="mt-12 pt-8">
         <div className="space-y-3">
           {/* Only show Change Password button for encrypted wallet users */}
           {!isExtensionWallet && (
@@ -1371,6 +1387,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      </div>
     </div>
   );
 }

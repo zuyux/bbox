@@ -1,7 +1,7 @@
 'use client'
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-export type WalletType = 'leather' | 'xverse' | 'alby' | 'nostria' | 'imported';
+export type WalletType = 'leather' | 'xverse' | 'alby' | 'nostria' | 'okx' | 'walletconnect' | 'imported';
 
 const WALLET_ADDRESS_STORAGE_KEY = 'walletAddress';
 const WALLET_TYPE_STORAGE_KEY = 'walletType';
@@ -16,7 +16,7 @@ interface WalletContextType {
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 const normalizeWalletType = (value: string | null): WalletType | null => {
-  return value === 'leather' || value === 'xverse' || value === 'alby' || value === 'nostria' || value === 'imported'
+  return value === 'leather' || value === 'xverse' || value === 'alby' || value === 'nostria' || value === 'okx' || value === 'walletconnect' || value === 'imported'
     ? value
     : null;
 };
