@@ -16,6 +16,7 @@ import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErr
 import { formatStxAddress } from '@/lib/address-utils';
 import { getStoredEncryptedWallet } from '@/lib/encryptedStorage';
 import { connectAlbyWallet } from '@/lib/albyWallet';
+import { connectNostriaSigner } from '@/lib/nostriaSigner';
 
 export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const { address, setAddress, setWalletType } = useWallet();
@@ -45,7 +46,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     { id: 'nostria', label: 'Nostria Signer', icon: '/nostria.svg', mode: 'wallets' as const },
   ];
 
-  const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' | 'alby' = 'imported') => {
+  const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' | 'alby' | 'nostria' = 'imported') => {
     persistCachedWalletState(newAddress, type);
     setAddress(newAddress);
     setWalletType(type);
@@ -192,6 +193,35 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       }
       setWalletInstallUrl('https://getalby.com');
       console.error('Alby connect error:', err);
+    }
+  };
+
+  const handleNostriaConnect = async () => {
+    setWalletError(null);
+    setWalletInstallUrl(null);
+
+    try {
+      const nostriaConnection = await connectNostriaSigner();
+      persistWalletContext(nostriaConnection.address, 'nostria');
+      if (typeof window !== 'undefined' && nostriaConnection.authEvent) {
+        localStorage.setItem('bbox_nostria_auth', JSON.stringify({
+          address: nostriaConnection.address,
+          publicKeyHex: nostriaConnection.publicKeyHex,
+          authEvent: nostriaConnection.authEvent,
+          connectedAt: Date.now(),
+        }));
+      }
+      if (onClose) onClose();
+      router.push('/apps');
+    } catch (err: unknown) {
+      const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Nostria Signer.');
+      if (isWalletRequestCancelled(err)) {
+        setWalletError('Signer connection was cancelled. Please try again.');
+      } else {
+        setWalletError(errorMsg);
+      }
+      setWalletInstallUrl('https://www.nostria.app/');
+      console.error('Nostria Signer connect error:', err);
     }
   };
 
@@ -492,6 +522,10 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                       }
                       if (option.id === 'alby') {
                         handleAlbyConnect();
+                        return;
+                      }
+                      if (option.id === 'nostria') {
+                        handleNostriaConnect();
                         return;
                       }
                       setImportModalMode(option.mode);

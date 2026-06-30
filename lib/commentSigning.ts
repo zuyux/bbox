@@ -2,6 +2,7 @@ import type { SignatureRequestOptions } from '@stacks/connect';
 import type { StacksProvider } from '@stacks/connect/dist/types';
 import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 
+import { getNostriaPublicKey, signNostriaEvent } from '@/lib/nostriaSigner';
 import { getPersistedNetwork } from '@/lib/network';
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 
@@ -22,7 +23,7 @@ type BrowserStacksWindow = typeof window & {
   };
 };
 
-export type SupportedWalletType = 'leather' | 'xverse' | 'hiro' | 'alby' | 'imported' | null;
+export type SupportedWalletType = 'leather' | 'xverse' | 'hiro' | 'alby' | 'nostria' | 'imported' | null;
 
 type ResolvedStacksProvider = {
   provider: RpcCapableStacksProvider;
@@ -30,7 +31,7 @@ type ResolvedStacksProvider = {
 };
 
 type NostrUnsignedEvent = {
-  pubkey: string;
+  pubkey?: string;
   created_at: number;
   kind: number;
   tags: string[][];
@@ -136,6 +137,7 @@ const getStacksProvider = (walletType: SupportedWalletType): ResolvedStacksProvi
 
   if (walletType === 'imported') return undefined;
   if (walletType === 'alby') return undefined;
+  if (walletType === 'nostria') return undefined;
   if (walletType === 'leather') {
     if (leather) return { provider: leather, walletType: 'leather' };
     if (hiro) return { provider: hiro, walletType: 'hiro' };
@@ -167,6 +169,8 @@ const providerNotFoundMessage = (walletType: SupportedWalletType) => {
       return 'Stacks wallet not detected. Reconnect your browser wallet and try again.';
     case 'alby':
       return 'Alby wallet not detected. Reconnect and try again.';
+    case 'nostria':
+      return 'Nostria Signer not detected. Reconnect and try again.';
     case 'imported':
       return 'Imported wallets cannot sign comments. Connect a browser wallet to continue.';
     default:
@@ -174,7 +178,7 @@ const providerNotFoundMessage = (walletType: SupportedWalletType) => {
   }
 };
 
-const getNostrProvider = (): NostrSigningProvider | undefined => {
+const getNostrProvider = (walletType: SupportedWalletType): NostrSigningProvider | undefined => {
   if (typeof window === 'undefined') return undefined;
 
   const browserWindow = window as typeof window & {
@@ -184,18 +188,41 @@ const getNostrProvider = (): NostrSigningProvider | undefined => {
     nostr?: NostrSigningProvider;
   };
 
-  return browserWindow.alby?.nostr ?? browserWindow.nostr;
+  if (walletType === 'alby') return browserWindow.alby?.nostr ?? browserWindow.nostr;
+
+  return undefined;
 };
 
-const signNostrMessage = async (payload: string): Promise<StacksSignatureResult> => {
-  const provider = getNostrProvider();
+const signNostrMessage = async (
+  payload: string,
+  walletType: Extract<SupportedWalletType, 'alby' | 'nostria'>
+): Promise<StacksSignatureResult> => {
+  const walletLabel = walletType === 'nostria' ? 'Nostria Signer' : 'Alby';
+
+  if (walletType === 'nostria') {
+    const publicKey = await getNostriaPublicKey();
+    const event = await signNostriaEvent({
+      created_at: Math.floor(Date.now() / 1000),
+      kind: 27235,
+      tags: [['client', 'BBOX']],
+      content: payload,
+    });
+
+    return {
+      signature: event.sig,
+      signedPayload: JSON.stringify(event),
+      walletType,
+      publicKey: event.pubkey || publicKey,
+    };
+  }
+
+  const provider = getNostrProvider(walletType);
   if (!provider?.getPublicKey || !provider.signEvent) {
-    throw new Error('Alby Nostr signing is not available. Enable Nostr permissions in Alby and try again.');
+    throw new Error(`${walletLabel} Nostr signing is not available. Enable signer permissions and try again.`);
   }
 
   const publicKey = (await provider.getPublicKey()).trim().toLowerCase();
   const event = await provider.signEvent({
-    pubkey: publicKey,
     created_at: Math.floor(Date.now() / 1000),
     kind: 27235,
     tags: [['client', 'BBOX']],
@@ -203,13 +230,13 @@ const signNostrMessage = async (payload: string): Promise<StacksSignatureResult>
   });
 
   if (!event.sig) {
-    throw new Error('Alby returned an invalid signature payload');
+    throw new Error(`${walletLabel} returned an invalid signature payload`);
   }
 
   return {
     signature: event.sig,
     signedPayload: JSON.stringify(event),
-    walletType: 'alby',
+    walletType,
     publicKey: event.pubkey || publicKey,
   };
 };
@@ -263,8 +290,8 @@ export const signStacksMessage = async (
   payload: string,
   walletType: SupportedWalletType
 ): Promise<StacksSignatureResult> => {
-  if (walletType === 'alby') {
-    return signNostrMessage(payload);
+  if (walletType === 'alby' || walletType === 'nostria') {
+    return signNostrMessage(payload, walletType);
   }
 
   const resolvedProvider = getStacksProvider(walletType);

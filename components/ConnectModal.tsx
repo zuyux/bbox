@@ -9,6 +9,7 @@ import { X, Wallet, Mail } from 'lucide-react';
 import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 import { connectAlbyWallet } from '@/lib/albyWallet';
+import { connectNostriaSigner } from '@/lib/nostriaSigner';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
 import { getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
@@ -295,7 +296,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                   <div key={w.id} className="flex items-center justify-between rounded-lg px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Image
-                        src={w.id === 'leather' ? '/leather.svg' : w.id === 'xverse' ? '/xverse.svg' : w.id === 'alby' ? '/alby.svg' : ''}
+                        src={w.id === 'leather' ? '/leather.svg' : w.id === 'xverse' ? '/xverse.svg' : w.id === 'alby' ? '/alby.svg' : w.id === 'nostria' ? '/nostria.svg' : ''}
                         alt={w.name}
                         width={28}
                         height={28}
@@ -405,6 +406,34 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                   onError?.(errorMsg);
                                 }
                                 console.error('Alby connect error:', err);
+                              }
+                            } else if (w.id === 'nostria') {
+                              try {
+                                const nostriaConnection = await connectNostriaSigner();
+                                setAddress(nostriaConnection.address);
+                                setWalletType('nostria');
+                                await persistSessionForWallet(nostriaConnection.address, 'nostria');
+                                if (typeof window !== 'undefined' && nostriaConnection.authEvent) {
+                                  localStorage.setItem('bbox_nostria_auth', JSON.stringify({
+                                    address: nostriaConnection.address,
+                                    publicKeyHex: nostriaConnection.publicKeyHex,
+                                    authEvent: nostriaConnection.authEvent,
+                                    connectedAt: Date.now(),
+                                  }));
+                                }
+                                onSuccess?.();
+                                onClose();
+                                router.push('/apps');
+                              } catch (err: unknown) {
+                                const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Nostria Signer.');
+                                if (isWalletRequestCancelled(err)) {
+                                  setWalletError('Signer connection was cancelled. Please try again.');
+                                  onError?.('Signer connection was cancelled. Please try again.');
+                                } else {
+                                  setWalletError(errorMsg);
+                                  onError?.(errorMsg);
+                                }
+                                console.error('Nostria Signer connect error:', err);
                               }
                             } else {
                               const errorMsg = 'Wallet provider not found. Please enable your wallet extension and refresh.';

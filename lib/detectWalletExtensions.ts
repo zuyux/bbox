@@ -13,8 +13,22 @@ declare global {
 
 type BrowserWalletWindow = typeof window & {
   alby?: unknown;
+  nostria?: {
+    name?: string;
+    request?: (request: { method: string; params?: unknown[] }) => Promise<unknown>;
+  };
+  blockcore?: {
+    name?: string;
+    request?: (request: { method: string; params?: unknown[] }) => Promise<unknown>;
+  };
   nostr?: {
     getPublicKey?: () => Promise<string>;
+    signEvent?: (event: {
+      created_at: number;
+      kind: number;
+      tags: string[][];
+      content: string;
+    }) => Promise<unknown>;
   };
   webln?: unknown;
 };
@@ -60,7 +74,6 @@ export function detectWalletExtensions() {
   const browserWindow = window as BrowserWalletWindow;
   const hasAlby =
     'alby' in browserWindow ||
-    Boolean(browserWindow.nostr?.getPublicKey) ||
     'webln' in browserWindow;
 
   wallets.push({
@@ -68,6 +81,13 @@ export function detectWalletExtensions() {
     name: 'Alby',
     url: 'https://getalby.com',
     installed: hasAlby,
+  });
+
+  wallets.push({
+    id: 'nostria',
+    name: 'Nostria Signer',
+    url: 'https://www.nostria.app/',
+    installed: typeof (browserWindow.nostria ?? browserWindow.blockcore)?.request === 'function',
   });
   
   // MetaMask detection (prevent auto-connection errors)
