@@ -1,11 +1,12 @@
 // Utility to detect installed wallet extensions
 
 declare global {
+  interface XverseProviders {
+    StacksProvider?: unknown;
+    [key: string]: unknown;
+  }
+
   interface Window {
-    XverseProviders?: {
-      StacksProvider?: unknown;
-      [key: string]: unknown;
-    };
     LeatherProvider?: unknown;
     ethereum?: unknown;
   }

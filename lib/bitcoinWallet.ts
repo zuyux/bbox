@@ -2,6 +2,9 @@ import { bech32 } from 'bech32';
 import { keccak256 } from 'js-sha3';
 import CryptoJS from 'crypto-js';
 import { privateKeyToPublic } from '@stacks/transactions';
+import * as secp from '@noble/secp256k1';
+import { sha256 } from '@noble/hashes/sha2';
+import { bech32m } from 'bech32';
 
 const hexToBytes = (hex: string): Uint8Array => {
   const normalized = hex.replace(/^0x/, '');
@@ -39,6 +42,44 @@ export function getBitcoinAddressFromPrivateKey(
 
   const prefix = network === 'testnet' ? 'tb' : 'bc';
   return bech32.encode(prefix, words);
+}
+
+const taggedHash = (tag: string, data: Uint8Array) => {
+  const tagHash = sha256(new TextEncoder().encode(tag));
+  const merged = new Uint8Array(tagHash.length * 2 + data.length);
+  merged.set(tagHash, 0);
+  merged.set(tagHash, tagHash.length);
+  merged.set(data, tagHash.length * 2);
+  return sha256(merged);
+};
+
+const bytesToBigInt = (bytes: Uint8Array) =>
+  bytes.reduce((value, byte) => (value << BigInt(8)) + BigInt(byte), BigInt(0));
+
+export function getBitcoinTaprootAddressFromPrivateKey(
+  privateKey: string,
+  network: 'mainnet' | 'testnet' = 'mainnet'
+): string {
+  const privateKeyHex = privateKey.replace(/^0x/, '');
+  const publicKeyBytes = secp.getPublicKey(hexToBytes(privateKeyHex), true);
+  let internalPoint = secp.Point.fromHex(bytesToHex(publicKeyBytes));
+
+  if (internalPoint.y & BigInt(1)) {
+    internalPoint = internalPoint.negate();
+  }
+
+  const internalX = internalPoint.toBytes(false).slice(1, 33);
+  const tweak = bytesToBigInt(taggedHash('TapTweak', internalX));
+  if (tweak >= secp.Point.CURVE().n) {
+    throw new Error('Invalid Taproot tweak');
+  }
+
+  const outputPoint = internalPoint.add(secp.Point.BASE.multiply(tweak));
+  const outputX = outputPoint.toBytes(false).slice(1, 33);
+  const words = bech32m.toWords(outputX);
+  words.unshift(1);
+
+  return bech32m.encode(network === 'mainnet' ? 'bc' : 'tb', words);
 }
 
 export function getRootstockAddressFromPrivateKey(privateKey: string): string {

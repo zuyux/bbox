@@ -39,6 +39,16 @@ import { signStacksMessage, type StacksSignatureResult } from '@/lib/commentSign
 import { uploadAppMetadataToIPFS, validateAppMetadata, createMetadataFromFormData } from '@/lib/ipfs-metadata';
 import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
 import { getProfileDeveloperMode } from '@/lib/profileApi';
+import {
+  createBarPayload,
+  createSignedBarPayloadWithPasskey,
+  estimateBarInscriptionFees,
+  getBarOrdinalsAddress,
+  inscribeBarPayloadWithExtension,
+  submitBarPayloadWithPasskey,
+  BAR_CANONICAL_TAPROOT_ADDRESS,
+  type BarFeeEstimate,
+} from '@/lib/bar-inscription';
 
 // Extend Window interface for Stacks wallet
 declare global {
@@ -72,7 +82,10 @@ interface AppFormData {
   publisher_email: string;
 }
 
-type SubmitStatus = 'idle' | 'metadata' | 'contract' | 'uploading' | 'email' | 'success' | 'error';
+type SubmitStatus = 'idle' | 'metadata' | 'bar' | 'contract' | 'uploading' | 'email' | 'success' | 'error';
+type BarSigningMethod = 'extension' | 'passkey';
+const BAR_INSCRIPTIONS_UNDER_CONSTRUCTION = true;
+const APP_SUBMISSIONS_UNDER_CONSTRUCTION = true;
 
 const CATEGORIES = [
   'Wallet',
@@ -154,6 +167,15 @@ export default function PublishPage() {
   const [signatureResult, setSignatureResult] = useState<StacksSignatureResult | null>(null);
   const [metadataCid, setMetadataCid] = useState<string | null>(null);
   const [contractTxId, setContractTxId] = useState<string | null>(null);
+  const [barTxId, setBarTxId] = useState<string | null>(null);
+  const [barInscriptionId, setBarInscriptionId] = useState<string | null>(null);
+  const [barOwnerAddress, setBarOwnerAddress] = useState<string | null>(null);
+  const [barFeeEstimate, setBarFeeEstimate] = useState<BarFeeEstimate | null>(null);
+  const [publishToBar, setPublishToBar] = useState(false);
+  const [publishToClarity, setPublishToClarity] = useState(true);
+  const [barSigningMethod, setBarSigningMethod] = useState<BarSigningMethod>('extension');
+  const [barFeeRate, setBarFeeRate] = useState(8);
+  const [barServiceFee, setBarServiceFee] = useState(0);
   const [showGetInModal, setShowGetInModal] = useState(false);
   const [developerMode, setDeveloperMode] = useState<boolean | null>(null);
   const effectiveListingFee = listingFee ?? DEFAULT_LISTING_FEE;
@@ -259,6 +281,11 @@ export default function PublishPage() {
     publisher_name: '',
     publisher_email: ''
   });
+  const barPreviewEstimate = estimateBarInscriptionFees(
+    createBarPayload(formData, barOwnerAddress || BAR_CANONICAL_TAPROOT_ADDRESS, metadataCid || undefined),
+    Math.max(1, Math.round(Number(barFeeRate) || 1)),
+    Math.max(0, Math.round(Number(barServiceFee) || 0))
+  );
 
   const clearSignatureState = () => {
     setSignatureResult(null);
@@ -380,6 +407,12 @@ export default function PublishPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (APP_SUBMISSIONS_UNDER_CONSTRUCTION) {
+      setErrorMessage('App submissions are under construction. Please check back soon.');
+      setSubmitStatus('error');
+      return;
+    }
     
     if (!currentAddress) {
       setErrorMessage('Please connect your wallet to publish an app');
@@ -393,6 +426,10 @@ export default function PublishPage() {
     setValidationErrors([]);
     setMetadataCid(null);
     setContractTxId(null);
+    setBarTxId(null);
+    setBarInscriptionId(null);
+    setBarOwnerAddress(null);
+    setBarFeeEstimate(null);
 
     try {
       // Validate required fields
@@ -408,6 +445,14 @@ export default function PublishPage() {
       if (baseValidationErrors.length > 0) {
         setValidationErrors(baseValidationErrors);
         throw new Error(baseValidationErrors[0]);
+      }
+
+      if (BAR_INSCRIPTIONS_UNDER_CONSTRUCTION && publishToBar) {
+        throw new Error('BAR inscriptions are under construction. Use the Stacks Clarity contract option for now.');
+      }
+
+      if (!publishToClarity) {
+        throw new Error('Use the Stacks Clarity contract option for submissions while BAR inscriptions are under construction.');
       }
 
       let submissionSignature = signatureResult;
@@ -439,28 +484,88 @@ export default function PublishPage() {
       const ipfsHash = await uploadAppMetadataToIPFS(metadataPayload);
       setMetadataCid(ipfsHash);
 
-      const feeForTx = listingFee ?? DEFAULT_LISTING_FEE;
-      if (!listingFee) {
-        console.warn('Listing fee unavailable at submit time. Using fallback default.');
-        setListingFee(feeForTx);
-        setListingFeeSource('fallback');
+      let resolvedBarTxId = '';
+      let resolvedBarInscriptionId = '';
+      let resolvedBarOwnerAddress = '';
+
+      if (publishToBar && !BAR_INSCRIPTIONS_UNDER_CONSTRUCTION) {
+        setSubmitStatus('bar');
+        const normalizedFeeRate = Math.max(1, Math.round(Number(barFeeRate) || 1));
+        const normalizedServiceFee = Math.max(0, Math.round(Number(barServiceFee) || 0));
+
+        if (barSigningMethod === 'extension') {
+          const ownerAddress = await getBarOrdinalsAddress();
+          const barPayload = createBarPayload(formData, ownerAddress, ipfsHash);
+          const previewEstimate = estimateBarInscriptionFees(barPayload, normalizedFeeRate, normalizedServiceFee);
+          setBarOwnerAddress(ownerAddress);
+          setBarFeeEstimate(previewEstimate);
+
+          const result = await inscribeBarPayloadWithExtension(
+            barPayload,
+            normalizedFeeRate,
+            normalizedServiceFee,
+            BAR_CANONICAL_TAPROOT_ADDRESS
+          );
+          resolvedBarTxId = result.txId;
+          resolvedBarInscriptionId = result.inscriptionId || '';
+          resolvedBarOwnerAddress = ownerAddress;
+          setBarTxId(result.txId);
+          setBarInscriptionId(result.inscriptionId || null);
+          setBarFeeEstimate(result.feeEstimate);
+        } else {
+          const password = window.prompt('Enter your wallet password to authorize the BAR inscription relay.');
+          if (!password) {
+            throw new Error('Passkey authorization is required for BAR inscription.');
+          }
+          const signedPayload = await createSignedBarPayloadWithPasskey(
+            currentAddress,
+            password,
+            formData,
+            ipfsHash,
+            normalizedFeeRate,
+            normalizedServiceFee
+          );
+          setBarOwnerAddress(signedPayload.payload.owner);
+          setBarFeeEstimate(signedPayload.feeEstimate);
+          const result = await submitBarPayloadWithPasskey(
+            signedPayload.authorization,
+            signedPayload.payload,
+            signedPayload.feeEstimate
+          );
+          resolvedBarTxId = result.txId;
+          resolvedBarInscriptionId = result.inscriptionId || '';
+          resolvedBarOwnerAddress = result.ownerAddress;
+          setBarTxId(result.txId);
+          setBarInscriptionId(result.inscriptionId || null);
+        }
       }
 
-      const awaitContractTx = async (): Promise<string> =>
-        new Promise((resolve, reject) => {
-          submitAppToContract(
-            {
-              ipfsHash,
-              listingFee: feeForTx,
-            },
-            (txId) => resolve(txId),
-            () => reject(new Error('Contract call cancelled by user'))
-          ).catch((error) => reject(error));
-        });
+      let resolvedContractTxId = '';
 
-      setSubmitStatus('contract');
-      const txId = await awaitContractTx();
-      setContractTxId(txId);
+      if (publishToClarity) {
+        const feeForTx = listingFee ?? DEFAULT_LISTING_FEE;
+        if (!listingFee) {
+          console.warn('Listing fee unavailable at submit time. Using fallback default.');
+          setListingFee(feeForTx);
+          setListingFeeSource('fallback');
+        }
+
+        const awaitContractTx = async (): Promise<string> =>
+          new Promise((resolve, reject) => {
+            submitAppToContract(
+              {
+                ipfsHash,
+                listingFee: feeForTx,
+              },
+              (txId) => resolve(txId),
+              () => reject(new Error('Contract call cancelled by user'))
+            ).catch((error) => reject(error));
+          });
+
+        setSubmitStatus('contract');
+        resolvedContractTxId = await awaitContractTx();
+        setContractTxId(resolvedContractTxId);
+      }
 
       // Step 1: Submit to Supabase
       setSubmitStatus('uploading');
@@ -473,8 +578,11 @@ export default function PublishPage() {
           ...formData,
           publisher_address: currentAddress,
           metadata_cid: ipfsHash,
-          contract_txid: txId,
-          contract_network: network,
+          contract_txid: resolvedContractTxId,
+          contract_network: publishToClarity ? network : '',
+          bar_txid: resolvedBarTxId,
+          bar_inscription_id: resolvedBarInscriptionId,
+          bar_owner_address: resolvedBarOwnerAddress,
         }),
       });
 
@@ -525,8 +633,9 @@ export default function PublishPage() {
       setIsSubmitting(false);
       setTimeout(() => {
         const query = new URLSearchParams();
-        if (txId) {
-          query.set('txid', txId);
+        const primaryTxId = resolvedContractTxId || resolvedBarTxId;
+        if (primaryTxId) {
+          query.set('txid', primaryTxId);
         }
         const redirectNetwork = network || getPersistedNetwork();
         if (redirectNetwork) {
@@ -648,6 +757,27 @@ export default function PublishPage() {
             </Card>
           )}
 
+          {submitStatus === 'bar' && (
+            <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-900/40 dark:bg-orange-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
+                  <span className="text-orange-900 dark:text-orange-100">
+                    Confirm the BAR inscription in your Bitcoin wallet
+                  </span>
+                </div>
+                <p className="text-xs text-orange-800 dark:text-orange-200 mt-2 ml-7">
+                  The wallet will inscribe a brc-app JSON record to Bitcoin L1 and handle miner fees.
+                </p>
+                {barFeeEstimate && (
+                  <p className="text-[11px] text-orange-800 dark:text-orange-200 mt-2 ml-7">
+                    Estimate: {barFeeEstimate.estimatedTotalSats.toLocaleString()} sats at {barFeeEstimate.feeRate} sat/vB
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {submitStatus === 'uploading' && (
             <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
               <CardContent className="p-4">
@@ -668,6 +798,11 @@ export default function PublishPage() {
                 {contractTxId && (
                   <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1 ml-7 break-all">
                     Contract TX: <span className="font-mono">{contractTxId}</span>
+                  </p>
+                )}
+                {barTxId && (
+                  <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1 ml-7 break-all">
+                    BAR TX: <span className="font-mono">{barTxId}</span>
                   </p>
                 )}
               </CardContent>
@@ -710,6 +845,16 @@ export default function PublishPage() {
                 {metadataCid && (
                   <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-7 break-all">
                     Metadata CID: <span className="font-mono">{metadataCid}</span>
+                  </p>
+                )}
+                {barTxId && (
+                  <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-7 break-all">
+                    BAR TX: <span className="font-mono">{barTxId}</span>
+                  </p>
+                )}
+                {barInscriptionId && (
+                  <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-7 break-all">
+                    BAR Inscription: <span className="font-mono">{barInscriptionId}</span>
                   </p>
                 )}
               </CardContent>
@@ -1206,6 +1351,122 @@ export default function PublishPage() {
               </CardContent>
             </Card>
 
+            {/* On-chain Submission */}
+            <Card>
+              <CardHeader>
+                <CardTitle>On-chain Submission</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="rounded-md border p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="publish-to-bar"
+                        checked={BAR_INSCRIPTIONS_UNDER_CONSTRUCTION ? false : publishToBar}
+                        onCheckedChange={(checked) => setPublishToBar(Boolean(checked))}
+                        disabled={BAR_INSCRIPTIONS_UNDER_CONSTRUCTION}
+                        className="mt-1 cursor-not-allowed bg-foreground/50"
+                      />
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Label htmlFor="publish-to-bar" className="font-semibold">
+                            Bitcoin L1 BAR inscription
+                          </Label>
+                          <Badge variant="secondary" className="text-[10px] uppercase tracking-normal">
+                            Under construction
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Inscribes a brc-app JSON record with your app metadata onto Bitcoin Layer 1 through Ordinals.
+                          The publisher owner is a Taproot address, updates create new inscriptions, and miner fees are paid in BTC.
+                        </p>
+                        <p className="text-xs text-amber-700 dark:text-amber-300">
+                          This path is visible for review but disabled until the BAR inscription relay and fee funding flow are ready.
+                        </p>
+                      </div>
+                    </div>
+
+                    {publishToBar && !BAR_INSCRIPTIONS_UNDER_CONSTRUCTION && (
+                      <div className="space-y-3 pl-7">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div>
+                            <Label htmlFor="bar-signing-method">Signing Method</Label>
+                            <Select value={barSigningMethod} onValueChange={(value) => setBarSigningMethod(value as BarSigningMethod)}>
+                              <SelectTrigger id="bar-signing-method">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="extension">Extension wallet</SelectItem>
+                                <SelectItem value="passkey">Passkey relay</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="bar-fee-rate">Fee Rate (sat/vB)</Label>
+                            <Input
+                              id="bar-fee-rate"
+                              type="number"
+                              min="1"
+                              step="1"
+                              value={barFeeRate}
+                              onChange={(e) => setBarFeeRate(Number(e.target.value))}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="bar-service-fee">Optional App Fee (sats)</Label>
+                          <Input
+                            id="bar-service-fee"
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={barServiceFee}
+                            onChange={(e) => setBarServiceFee(Number(e.target.value))}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Estimated BAR payload: {barPreviewEstimate.payloadBytes} bytes, about{' '}
+                          {barPreviewEstimate.estimatedTotalSats.toLocaleString()} sats total at{' '}
+                          {barPreviewEstimate.feeRate} sat/vB.
+                        </p>
+                        {barSigningMethod === 'passkey' && (
+                          <p className="text-xs text-amber-700 dark:text-amber-300">
+                            Passkey signing authorizes a server-side inscription relay. Configure BAR_INSCRIPTION_ENDPOINT
+                            for this path; extension wallets can inscribe directly.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-md border p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="publish-to-clarity"
+                        checked={publishToClarity}
+                        onCheckedChange={(checked) => setPublishToClarity(Boolean(checked))}
+                        className="mt-1 cursor-pointer bg-foreground/50"
+                      />
+                      <div className="space-y-1">
+                        <Label htmlFor="publish-to-clarity" className="font-semibold">
+                          Clarity contract on Stacks
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Calls the BBOX registry contract on Stacks with the IPFS metadata CID. The contract keeps compact
+                          app state, charges the listing fee in sBTC, and uses STX for transaction gas.
+                        </p>
+                      </div>
+                    </div>
+                    {publishToClarity && (
+                      <p className="pl-7 text-xs text-muted-foreground">
+                        Listing fee: {listingFeeDisplay}{isFallbackListingFee ? ' estimate' : ''}. Network: {network || 'loading'}.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Submission Signature */}
             <div className="rounded-lg border border-dashed p-4 space-y-2">
               <div className="flex items-center gap-2 text-sm font-semibold">
@@ -1252,16 +1513,28 @@ export default function PublishPage() {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end gap-4">
+            <div className="space-y-2">
               <Button
                 type="submit"
-                className="w-full py-6 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 cursor-pointer"
-                disabled={isSubmitting || !currentAddress || iconUploadStatus === 'uploading' || signatureStatus === 'signing'}
+                className="w-full py-6 bg-orange-500 hover:bg-orange-600 text-white disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={
+                  APP_SUBMISSIONS_UNDER_CONSTRUCTION ||
+                  isSubmitting ||
+                  !currentAddress ||
+                  iconUploadStatus === 'uploading' ||
+                  signatureStatus === 'signing'
+                }
               >
-                {isSubmitting ? (
+                {APP_SUBMISSIONS_UNDER_CONSTRUCTION ? (
+                  <>
+                    <AlertCircle className="w-4 h-4 mr-2" />
+                    Under Construction
+                  </>
+                ) : isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {submitStatus === 'metadata' && 'Uploading metadata...'}
+                    {submitStatus === 'bar' && 'Inscribing BAR...'}
                     {submitStatus === 'contract' && 'Awaiting wallet...'}
                     {submitStatus === 'uploading' && 'Submitting...'}
                     {submitStatus === 'email' && 'Sending emails...'}
@@ -1275,6 +1548,11 @@ export default function PublishPage() {
                   </>
                 )}
               </Button>
+              {APP_SUBMISSIONS_UNDER_CONSTRUCTION && (
+                <p className="text-center text-xs text-amber-700 dark:text-amber-300">
+                  App submissions are temporarily disabled while the on-chain publishing flow is being finished.
+                </p>
+              )}
             </div>
 
           {/* Network Warning */}

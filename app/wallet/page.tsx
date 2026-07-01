@@ -310,12 +310,13 @@ async function copyToClipboard(value: string): Promise<boolean> {
 
 // Extend the Window interface to include StacksProvider and Xverse provider helpers
 declare global {
+  interface XverseProviders {
+    StacksProvider?: unknown;
+    [key: string]: unknown;
+  }
+
   interface Window {
     StacksProvider?: unknown;
-    XverseProviders?: {
-      StacksProvider?: unknown;
-      [key: string]: unknown;
-    };
     LeatherProvider?: unknown;
   }
 }

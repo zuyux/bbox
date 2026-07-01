@@ -9,6 +9,12 @@ create table public.bbox_apps (
   verified boolean not null default false,
   link text null,
   imgcid text null,
+  metadata_cid text null,
+  contract_txid text null,
+  contract_network text null,
+  bar_txid text null,
+  bar_inscription_id text null,
+  bar_owner_address text null,
   created_at timestamp with time zone not null default now(),
   constraint bbox_apps_pkey primary key (id)
 ) TABLESPACE pg_default;

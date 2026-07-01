@@ -34,6 +34,12 @@ export async function POST(request: NextRequest) {
     const signaturePayload = typeof body.signature_payload === 'string' ? body.signature_payload.trim() : '';
     const signatureWalletType = typeof body.signature_wallet_type === 'string' ? body.signature_wallet_type.trim() : '';
     const signaturePublicKey = typeof body.signature_public_key === 'string' ? body.signature_public_key.trim() : '';
+    const metadataCid = typeof body.metadata_cid === 'string' ? body.metadata_cid.trim() : '';
+    const contractTxid = typeof body.contract_txid === 'string' ? body.contract_txid.trim() : '';
+    const contractNetwork = typeof body.contract_network === 'string' ? body.contract_network.trim() : '';
+    const barTxid = typeof body.bar_txid === 'string' ? body.bar_txid.trim() : '';
+    const barInscriptionId = typeof body.bar_inscription_id === 'string' ? body.bar_inscription_id.trim() : '';
+    const barOwnerAddress = typeof body.bar_owner_address === 'string' ? body.bar_owner_address.trim() : '';
 
     // Prepare the app data with only the known bbox_apps columns.
     const appData: Record<string, unknown> = {
@@ -51,6 +57,12 @@ export async function POST(request: NextRequest) {
       verified: false,
       link: body.website_url || '',
       imgcid: body.icon_cid || '',
+      metadata_cid: metadataCid || null,
+      contract_txid: contractTxid || null,
+      contract_network: contractNetwork || null,
+      bar_txid: barTxid || null,
+      bar_inscription_id: barInscriptionId || null,
+      bar_owner_address: barOwnerAddress || null,
     };
 
     // Signatures are logged for debugging only; they are no longer stored on the apps table

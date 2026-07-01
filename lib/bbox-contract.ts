@@ -804,7 +804,7 @@ async function executeBboxContractCall(options: BboxContractCallOptions): Promis
   if (hasXverseStacksProvider) {
     console.log('📱 Using Xverse StacksProvider RPC API...');
     try {
-      const xverseProvider = (window as Window & {
+      const xverseProvider = (window as unknown as Window & {
         XverseProviders: {
           StacksProvider: {
             request: (
