@@ -13,6 +13,7 @@ type AdminEditPayload = {
     description?: unknown;
     category?: unknown;
     link?: unknown;
+    githubUrl?: unknown;
     imgCID?: unknown;
     tags?: unknown;
   };
@@ -80,6 +81,7 @@ const verifyAdminSignature = ({
     String(payloadApp.description ?? '').trim() !== requestedUpdates.description ||
     String(payloadApp.category ?? '').trim() !== requestedUpdates.category ||
     String(payloadApp.link ?? '').trim() !== requestedUpdates.link ||
+    String(payloadApp.githubUrl ?? '').trim() !== String(requestedUpdates.github_url ?? '') ||
     String(payloadApp.imgCID ?? '').trim() !== requestedUpdates.imgcid ||
     !arraysEqual(payloadTags, updateTags)
   ) {
@@ -143,6 +145,7 @@ export async function PATCH(
   if (typeof body.description === 'string') updates.description = body.description.trim();
   if (typeof body.category === 'string') updates.category = body.category.trim();
   if (typeof body.link === 'string') updates.link = body.link.trim();
+  if (typeof body.github_url === 'string') updates.github_url = body.github_url.trim();
   if (typeof body.imgcid === 'string') updates.imgcid = body.imgcid.trim();
 
   if (typeof body.tags === 'string' || Array.isArray(body.tags)) {

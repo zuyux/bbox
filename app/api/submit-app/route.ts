@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     const barTxid = typeof body.bar_txid === 'string' ? body.bar_txid.trim() : '';
     const barInscriptionId = typeof body.bar_inscription_id === 'string' ? body.bar_inscription_id.trim() : '';
     const barOwnerAddress = typeof body.bar_owner_address === 'string' ? body.bar_owner_address.trim() : '';
+    const githubUrl = typeof body.github_url === 'string' ? body.github_url.trim() : '';
 
     // Prepare the app data with only the known bbox_apps columns.
     const appData: Record<string, unknown> = {
@@ -56,14 +57,16 @@ export async function POST(request: NextRequest) {
       rating: 0,
       verified: false,
       link: body.website_url || '',
+      github_url: githubUrl,
       imgcid: body.icon_cid || '',
-      metadata_cid: metadataCid || null,
-      contract_txid: contractTxid || null,
-      contract_network: contractNetwork || null,
-      bar_txid: barTxid || null,
-      bar_inscription_id: barInscriptionId || null,
-      bar_owner_address: barOwnerAddress || null,
     };
+
+    if (metadataCid) appData.metadata_cid = metadataCid;
+    if (contractTxid) appData.contract_txid = contractTxid;
+    if (contractNetwork) appData.contract_network = contractNetwork;
+    if (barTxid) appData.bar_txid = barTxid;
+    if (barInscriptionId) appData.bar_inscription_id = barInscriptionId;
+    if (barOwnerAddress) appData.bar_owner_address = barOwnerAddress;
 
     // Signatures are logged for debugging only; they are no longer stored on the apps table
 

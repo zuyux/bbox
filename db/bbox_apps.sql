@@ -8,6 +8,7 @@ create table public.bbox_apps (
   rating numeric(3, 2) null,
   verified boolean not null default false,
   link text null,
+  github_url text null,
   imgcid text null,
   metadata_cid text null,
   contract_txid text null,

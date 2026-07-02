@@ -23,6 +23,12 @@ const SATS_PER_BTC = 100_000_000;
 type ReceiveLayer = 'bitcoin' | 'rootstock' | 'liquid';
 type ReceiveAsset = ReceiveLayer | 'stacks';
 type SendAsset = 'bitcoin' | 'sbtc' | 'rootstock' | 'liquid';
+type ReceiveAddressPayload = {
+  address: string;
+  bitcoinAddress?: string;
+  rootstockAddress?: string;
+  liquidAddress?: string;
+};
 type LightningBalanceState = {
   display: string;
   status: 'idle' | 'loading' | 'available' | 'unavailable';
@@ -37,6 +43,21 @@ const RECEIVE_LAYER_LABELS: Record<ReceiveLayer, string> = {
   rootstock: 'Rootstock',
   liquid: 'Liquid',
 };
+
+async function saveReceiveAddressesToSupabase(payload: ReceiveAddressPayload) {
+  const response = await fetch('/api/wallet/addresses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.details || body?.error || 'Failed to save receive addresses to Supabase');
+  }
+}
 
 const RECEIVE_ASSET_LABELS: Record<ReceiveAsset, string> = {
   bitcoin: 'Bitcoin L1',
@@ -685,28 +706,56 @@ export default function WalletPage() {
 
     try {
       const wallet = await retrieveEncryptedWallet(password);
-      if (!wallet?.privateKey) {
-        throw new Error('Unable to unlock wallet private key');
+      if (!wallet?.privateKey?.trim()) {
+        throw new Error('Wallet unlocked, but this local account does not include a private key. Restore or reconnect the wallet before generating receive addresses.');
       }
 
       const bitcoinNetwork = currentNetwork === 'testnet' ? 'testnet' : 'mainnet';
+      const addressUpdates: {
+        bitcoinAddress?: string;
+        rootstockAddress?: string;
+        liquidAddress?: string;
+      } = {};
+
       if (generateAddressLayer === 'bitcoin') {
         const nextBitcoinAddress = wallet.bitcoinAddress || getBitcoinAddressFromPrivateKey(wallet.privateKey, bitcoinNetwork);
-        updateEncryptedWalletAddresses({ bitcoinAddress: nextBitcoinAddress });
-        setBtcAddress(nextBitcoinAddress);
-        setBtcAddressError(null);
+        addressUpdates.bitcoinAddress = nextBitcoinAddress;
       }
 
       if (generateAddressLayer === 'rootstock') {
         const nextRootstockAddress = wallet.rootstockAddress || getRootstockAddressFromPrivateKey(wallet.privateKey);
-        updateEncryptedWalletAddresses({ rootstockAddress: nextRootstockAddress });
-        setRskAddress(nextRootstockAddress);
+        addressUpdates.rootstockAddress = nextRootstockAddress;
       }
 
       if (generateAddressLayer === 'liquid') {
         const nextLiquidAddress = wallet.liquidAddress || getLiquidAddressFromPrivateKey(wallet.privateKey, bitcoinNetwork);
-        updateEncryptedWalletAddresses({ liquidAddress: nextLiquidAddress });
-        setLiquidAddress(nextLiquidAddress);
+        addressUpdates.liquidAddress = nextLiquidAddress;
+      }
+
+      const nextBitcoinAddress = addressUpdates.bitcoinAddress || wallet.bitcoinAddress || btcAddress || undefined;
+      const nextRootstockAddress = addressUpdates.rootstockAddress || wallet.rootstockAddress || rskAddress || undefined;
+      const nextLiquidAddress = addressUpdates.liquidAddress || wallet.liquidAddress || liquidAddress || undefined;
+
+      await saveReceiveAddressesToSupabase({
+        address: wallet.address || address,
+        ...(nextBitcoinAddress ? { bitcoinAddress: nextBitcoinAddress } : {}),
+        ...(nextRootstockAddress ? { rootstockAddress: nextRootstockAddress } : {}),
+        ...(nextLiquidAddress ? { liquidAddress: nextLiquidAddress } : {}),
+      });
+
+      updateEncryptedWalletAddresses(addressUpdates);
+
+      if (addressUpdates.bitcoinAddress) {
+        setBtcAddress(addressUpdates.bitcoinAddress);
+        setBtcAddressError(null);
+      }
+
+      if (addressUpdates.rootstockAddress) {
+        setRskAddress(addressUpdates.rootstockAddress);
+      }
+
+      if (addressUpdates.liquidAddress) {
+        setLiquidAddress(addressUpdates.liquidAddress);
       }
 
       setShowGenerateAddressesModal(false);
@@ -715,7 +764,7 @@ export default function WalletPage() {
     } finally {
       setGeneratingAddresses(false);
     }
-  }, [currentNetwork, generateAddressLayer]);
+  }, [address, btcAddress, currentNetwork, generateAddressLayer, liquidAddress, rskAddress]);
 
   const handlePasteRecipient = useCallback(async () => {
     if (sendLoading) {
@@ -1338,7 +1387,7 @@ export default function WalletPage() {
       return;
     }
 
-    setBtcBalance(isBitcoinOnlyAccount ? ZERO_BTC_NATIVE_BALANCE : EMPTY_NATIVE_BALANCE);
+    setBtcBalance(ZERO_BTC_NATIVE_BALANCE);
     setBtcBalanceLoading(true);
     const { controller, timeoutId } = createTimedAbortController(BALANCE_FETCH_TIMEOUT_MS);
     fetchBitcoinBalance(btcAddress, currentNetwork, controller.signal)
@@ -1349,7 +1398,7 @@ export default function WalletPage() {
         if (!isTimeoutError(error) && !controller.signal.aborted) {
           console.error('Failed to fetch Bitcoin balance:', error);
         }
-        if (!cancelled) setBtcBalance(EMPTY_NATIVE_BALANCE);
+        if (!cancelled) setBtcBalance(ZERO_BTC_NATIVE_BALANCE);
       })
       .finally(() => {
         if (!cancelled) setBtcBalanceLoading(false);

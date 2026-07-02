@@ -25,6 +25,7 @@ const rows = apps.map((app) => ({
   rating: app.rating,
   verified: app.verified,
   link: app.link,
+  github_url: app.github_url || app.githubUrl || app.repository || app.repo || '',
   imgcid: app.imgCID,
 }));
 

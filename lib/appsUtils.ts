@@ -9,6 +9,7 @@ export interface BitcoinApp {
   reviewCount: number;
   verified: boolean;
   link: string;
+  githubUrl: string;
   imgCID: string;
 }
 
@@ -25,6 +26,7 @@ export const normalizeAppRow = (row: SupabaseAppRow): BitcoinApp => ({
   reviewCount: typeof row.reviewCount === 'number' ? row.reviewCount : Number(row.review_count) || 0,
   verified: Boolean(row.verified),
   link: String(row.link ?? ''),
+  githubUrl: String(row.github_url ?? row.githubUrl ?? row.repository ?? row.repo ?? ''),
   imgCID: typeof row.imgcid === 'string' ? row.imgcid : String(row.imgCID ?? ''),
 });
 

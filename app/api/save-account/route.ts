@@ -21,6 +21,9 @@ export async function POST(request: NextRequest) {
       iv,
       version,
       label: walletLabel,
+      bitcoinAddress,
+      rootstockAddress,
+      liquidAddress,
     } = encryptedWallet || {};
 
     if (!encryptedMnemonic || !encryptedPrivateKey || !salt || !iv) {
@@ -130,6 +133,9 @@ export async function POST(request: NextRequest) {
           encryption_iv: iv,
           encryption_version: version || '1.0.0',
           wallet_label: walletLabel || 'BBOX Wallet',
+          bitcoin_address: bitcoinAddress || null,
+          rootstock_address: rootstockAddress || null,
+          liquid_address: liquidAddress || null,
           created_at: new Date().toISOString(),
         }
       ])
@@ -163,6 +169,9 @@ export async function POST(request: NextRequest) {
           .update({
             email: normalizedEmail,
             email_verified: true,
+            bitcoin_address: bitcoinAddress || null,
+            rootstock_address: rootstockAddress || null,
+            liquid_address: liquidAddress || null,
             updated_at: now,
             last_active: now
           })
@@ -175,6 +184,9 @@ export async function POST(request: NextRequest) {
               address,
               email: normalizedEmail,
               email_verified: true,
+              bitcoin_address: bitcoinAddress || null,
+              rootstock_address: rootstockAddress || null,
+              liquid_address: liquidAddress || null,
               created_at: now,
               updated_at: now,
               last_active: now,

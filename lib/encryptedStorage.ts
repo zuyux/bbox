@@ -32,6 +32,22 @@ export interface WalletData {
   label: string;
 }
 
+export type EncryptedWalletErrorCode =
+  | 'not_found'
+  | 'corrupt_data'
+  | 'decrypt_failed'
+  | 'missing_private_key';
+
+export class EncryptedWalletError extends Error {
+  code: EncryptedWalletErrorCode;
+
+  constructor(code: EncryptedWalletErrorCode, message: string) {
+    super(message);
+    this.name = 'EncryptedWalletError';
+    this.code = code;
+  }
+}
+
 export type WalletAddressUpdates = Partial<Pick<WalletData, 'bitcoinAddress' | 'rootstockAddress' | 'liquidAddress' | 'nostrPublicKey'>>;
 
 export interface PortableEncryptedWalletData {
@@ -221,11 +237,37 @@ export async function retrieveEncryptedWallet(passphrase: string): Promise<Walle
 
   const encryptedDataStr = localStorage.getItem(STORAGE_KEY);
   if (!encryptedDataStr) {
-    return null;
+    throw new EncryptedWalletError(
+      'not_found',
+      'No encrypted wallet is stored in this browser. Reconnect or restore your wallet before trying again.'
+    );
+  }
+
+  let encryptedData: EncryptedWalletData;
+  try {
+    encryptedData = JSON.parse(encryptedDataStr) as EncryptedWalletData;
+  } catch (error) {
+    console.error('Encrypted wallet data is not valid JSON:', error);
+    throw new EncryptedWalletError(
+      'corrupt_data',
+      'The saved wallet data is corrupted and cannot be read. Restore or reconnect your wallet.'
+    );
+  }
+
+  if (
+    !encryptedData ||
+    typeof encryptedData.encryptedMnemonic !== 'string' ||
+    typeof encryptedData.encryptedPrivateKey !== 'string' ||
+    typeof encryptedData.salt !== 'string' ||
+    typeof encryptedData.iv !== 'string'
+  ) {
+    throw new EncryptedWalletError(
+      'corrupt_data',
+      'The saved wallet data is incomplete. Restore or reconnect your wallet.'
+    );
   }
 
   try {
-    const encryptedData: EncryptedWalletData = JSON.parse(encryptedDataStr);
     const key = deriveKey(passphrase, encryptedData.salt);
 
     // Decrypt sensitive data
@@ -233,8 +275,25 @@ export async function retrieveEncryptedWallet(passphrase: string): Promise<Walle
     const privateKey = decryptData(encryptedData.encryptedPrivateKey, key, encryptedData.iv);
 
     // Verify decryption success (check if decrypted data looks valid)
-    if (!mnemonic || !privateKey) {
-      throw new Error('Decryption failed');
+    if (!mnemonic && !privateKey) {
+      throw new EncryptedWalletError(
+        'decrypt_failed',
+        'This password did not decrypt the saved wallet. If the password is correct, the local wallet data may be corrupted or from another wallet.'
+      );
+    }
+
+    if (!privateKey) {
+      throw new EncryptedWalletError(
+        'missing_private_key',
+        'Wallet unlocked, but no private key was stored for this local account. Restore or reconnect the wallet to generate receive addresses.'
+      );
+    }
+
+    if (!mnemonic) {
+      throw new EncryptedWalletError(
+        'corrupt_data',
+        'Wallet decrypted, but the recovery phrase is missing from local storage. Restore or reconnect your wallet.'
+      );
     }
 
     // Update last accessed time
@@ -255,8 +314,15 @@ export async function retrieveEncryptedWallet(passphrase: string): Promise<Walle
       label: encryptedData.label,
     };
   } catch (error) {
+    if (error instanceof EncryptedWalletError) {
+      throw error;
+    }
+
     console.error('Failed to decrypt wallet data:', error);
-    throw new Error('Invalid passphrase or corrupted data');
+    throw new EncryptedWalletError(
+      'decrypt_failed',
+      'This password did not decrypt the saved wallet. If the password is correct, the local wallet data may be corrupted or from another wallet.'
+    );
   }
 }
 

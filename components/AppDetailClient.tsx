@@ -19,6 +19,7 @@ import {
   Star,
   ArrowLeft,
   ArrowRight,
+  Github,
   Loader2,
   X
 } from 'lucide-react';
@@ -52,6 +53,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
     description: app.description,
     category: app.category,
     link: app.link,
+    githubUrl: app.githubUrl,
     imgCID: app.imgCID,
     tags: app.tags.join(', '),
   });
@@ -97,6 +99,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
         description: editData.description,
         category: editData.category,
         link: editData.link,
+        githubUrl: editData.githubUrl,
         imgCID: editData.imgCID,
         tags: editData.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
       },
@@ -134,6 +137,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
           description: editData.description.trim(),
           category: editData.category.trim(),
           link: editData.link.trim(),
+          github_url: editData.githubUrl.trim(),
           imgcid: editData.imgCID.trim(),
           tags: editData.tags,
           publisher_address: currentAddress,
@@ -155,6 +159,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
         description: result.app.description ?? prev.description,
         category: result.app.category ?? prev.category,
         link: result.app.link ?? prev.link,
+        githubUrl: result.app.github_url ?? prev.githubUrl,
         imgCID: result.app.imgcid ?? prev.imgCID,
         tags: Array.isArray(result.app.tags) ? result.app.tags.map(String) : prev.tags,
       }));
@@ -339,18 +344,36 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                 <div className="font-medium">{displayApp.verified ? 'Yes' : 'No'}</div>
               </div>
             </div>
-            <div>
-              <span className="text-muted-foreground text-xs">Website</span>
-              <div className="font-medium text-sm break-all">
-                <a
-                  href={displayApp.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 hover:underline"
-                >
-                  {displayApp.link}
-                </a>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+              <div>
+                <span className="text-muted-foreground text-xs">Website</span>
+                <div className="font-medium text-sm break-all">
+                  <a
+                    href={displayApp.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:text-blue-600 hover:underline"
+                  >
+                    {displayApp.link}
+                  </a>
+                </div>
               </div>
+              {displayApp.githubUrl && (
+                <div>
+                  <span className="text-muted-foreground text-xs">Source Code</span>
+                  <div className="font-medium text-sm break-all">
+                    <a
+                      href={displayApp.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-blue-500 hover:text-blue-600 hover:underline"
+                    >
+                      <Github className="h-4 w-4 flex-shrink-0" />
+                      {displayApp.githubUrl}
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -482,13 +505,22 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edit-imgcid">Image CID</Label>
+                    <Label htmlFor="edit-github-url">GitHub Repository</Label>
                     <Input
-                      id="edit-imgcid"
-                      value={editData.imgCID}
-                      onChange={(event) => updateField('imgCID', event.target.value)}
+                      id="edit-github-url"
+                      value={editData.githubUrl}
+                      onChange={(event) => updateField('githubUrl', event.target.value)}
+                      placeholder="https://github.com/username/repo"
                     />
                   </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-imgcid">Image CID</Label>
+                  <Input
+                    id="edit-imgcid"
+                    value={editData.imgCID}
+                    onChange={(event) => updateField('imgCID', event.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="edit-tags">Tags</Label>

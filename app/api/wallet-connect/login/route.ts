@@ -14,6 +14,9 @@ interface ConnectedAccountRecord {
   encryption_iv: string | null;
   encryption_version: string | null;
   wallet_label: string | null;
+  bitcoin_address: string | null;
+  rootstock_address: string | null;
+  liquid_address: string | null;
 }
 
 export async function POST(request: NextRequest) {
@@ -46,7 +49,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from('connected_accounts')
       .select(
-        'email,address,passkey,encrypted_private_key,encrypted_mnemonic,encryption_salt,encryption_iv,encryption_version,wallet_label'
+        'email,address,passkey,encrypted_private_key,encrypted_mnemonic,encryption_salt,encryption_iv,encryption_version,wallet_label,bitcoin_address,rootstock_address,liquid_address'
       )
       .ilike('email', normalizedEmail)
       .single<ConnectedAccountRecord>();
@@ -87,6 +90,9 @@ export async function POST(request: NextRequest) {
         salt: data.encryption_salt,
         iv: data.encryption_iv,
         version: data.encryption_version ?? '1.0.0',
+        bitcoinAddress: data.bitcoin_address ?? undefined,
+        rootstockAddress: data.rootstock_address ?? undefined,
+        liquidAddress: data.liquid_address ?? undefined,
       };
 
       decryptedWallet = decryptPortableEncryptedWallet(payload, password);
@@ -115,6 +121,9 @@ export async function POST(request: NextRequest) {
         privateKey: decryptedWallet.privateKey,
         mnemonic: decryptedWallet.mnemonic,
         label: decryptedWallet.label,
+        bitcoinAddress: decryptedWallet.bitcoinAddress,
+        rootstockAddress: decryptedWallet.rootstockAddress,
+        liquidAddress: decryptedWallet.liquidAddress,
       },
       account: {
         email: data.email,

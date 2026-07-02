@@ -68,6 +68,9 @@ interface EmailWalletLoginResponse {
     privateKey: string;
     mnemonic: string;
     label?: string;
+    bitcoinAddress?: string;
+    rootstockAddress?: string;
+    liquidAddress?: string;
   };
   account?: {
     email: string;
@@ -219,6 +222,9 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
           privateKey: payload.wallet.privateKey,
           address: payload.wallet.address,
           label: payload.wallet.label || 'BBOX Wallet',
+          bitcoinAddress: payload.wallet.bitcoinAddress,
+          rootstockAddress: payload.wallet.rootstockAddress,
+          liquidAddress: payload.wallet.liquidAddress,
         };
       } else if (isEmailAccountPayload(payload)) {
         const account = payload.account;

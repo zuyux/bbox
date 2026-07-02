@@ -373,15 +373,18 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 passkey: stxPrivateKey, 
                 passphrase: password,
                 address,
-                encryptedWallet: {
-                  encryptedMnemonic: encryptedSnapshot.encryptedMnemonic,
-                  encryptedPrivateKey: encryptedSnapshot.encryptedPrivateKey,
-                  salt: encryptedSnapshot.salt,
-                  iv: encryptedSnapshot.iv,
-                  version: encryptedSnapshot.version,
-                  label: encryptedSnapshot.label,
-                }
-              }),
+	                encryptedWallet: {
+	                  encryptedMnemonic: encryptedSnapshot.encryptedMnemonic,
+	                  encryptedPrivateKey: encryptedSnapshot.encryptedPrivateKey,
+	                  salt: encryptedSnapshot.salt,
+	                  iv: encryptedSnapshot.iv,
+	                  version: encryptedSnapshot.version,
+	                  label: encryptedSnapshot.label,
+	                  bitcoinAddress: encryptedSnapshot.bitcoinAddress,
+	                  rootstockAddress: encryptedSnapshot.rootstockAddress,
+	                  liquidAddress: encryptedSnapshot.liquidAddress,
+	                }
+	              }),
             });
             
             const result = await response.json();
