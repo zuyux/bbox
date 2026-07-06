@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, ArrowRight, Home, ExternalLink, Sparkles } from 'lucide-react';
@@ -19,8 +18,6 @@ export default function SubmitSuccessPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
-      
       <div className="container mx-auto px-4 pt-20 pb-12">
         <div className="max-w-3xl mx-auto">
           {/* Success Card */}

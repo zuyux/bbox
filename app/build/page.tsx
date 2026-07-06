@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { ArrowUpRight } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -109,8 +108,7 @@ const ResourceGrid = ({ title, blurb, items }: { title: string; blurb: string; i
 export default function BuildPage() {
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
-      <main className="container mx-auto px-4 pt-16 pb-20">
+      <div className="container mx-auto px-4 pt-16 pb-20">
         <section className="text-center mb-16">
           <p className="text-sm uppercase tracking-[0.35em] text-orange-500 mb-4">Start Building</p>
           <h1 className="title text-4xl md:text-5xl font-bold mb-6">Everything You Need to Ship Sovereign Software</h1>
@@ -174,7 +172,7 @@ export default function BuildPage() {
             </CardContent>
           </Card>
         </section>
-      </main>
+      </div>
     </div>
   );
 }

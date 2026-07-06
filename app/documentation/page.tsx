@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
@@ -44,8 +43,7 @@ const howItWorks = [
 export default function DocumentationPage() {
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
-      <main className="container mx-auto px-4 pt-16 pb-20">
+      <div className="container mx-auto px-4 pt-16 pb-20">
         <section className="text-center mb-16">
           <p className="text-sm uppercase tracking-[0.35em] text-orange-500 mb-4">Documentation</p>
           <h1 className="title text-4xl md:text-5xl font-bold mb-6">BBOX in Plain English</h1>
@@ -117,7 +115,7 @@ export default function DocumentationPage() {
             <Link href="mailto:40230@pm.me">Email the BBOX Team</Link>
           </Button>
         </section>
-      </main>
+      </div>
     </div>
   );
 }

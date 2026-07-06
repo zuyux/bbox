@@ -12,7 +12,6 @@ import {
   Zap,
 } from "lucide-react";
 
-import { Navbar } from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,8 +87,6 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
 
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
-
       <div className="container mx-auto px-4 pt-20 pb-12 max-w-5xl">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <Button variant="ghost" asChild className="w-fit px-0 text-muted-foreground hover:text-foreground">

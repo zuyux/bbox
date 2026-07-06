@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Navbar } from '@/components/Navbar';
 import GetInModal from '@/components/GetInModal';
 import { Button } from '@/components/ui/button';
 import { H1, Lead } from '@/components/ui/typography';
@@ -40,7 +39,7 @@ const defaultCategoryIcon = '/icons/explore.svg';
 const bboxHighlights = [
   {
     title: 'Discover sovereign software',
-    description: 'Browse Bitcoin apps, privacy tools, safe AI projects, and off-chain open-source systems in one verified index.',
+    description: 'Browse Bitcoin apps, privacy tools, safe AI projects, and open-source systems in one verified index.',
     icon: Compass,
   },
   {
@@ -444,8 +443,6 @@ export default function HomePage() {
 
   return (
     <div className="bg-background l-dotted-grid-background min-h-screen">
-      <Navbar />
-      
       <div className="container mx-auto px-4 pt-24 pb-16">
         {/* Hero Section */}
         <section className="mb-16 grid min-h-[64vh] items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
@@ -455,11 +452,10 @@ export default function HomePage() {
               HUMANS SANDBOX
             </div>
             <H1 className="title mb-6 max-w-4xl text-left text-5xl leading-[0.95] md:text-7xl lg:text-8xl">
-              BBOX is the universal registry for verified open-source apps.
+              BBOX is the open App Store for everyone
             </H1>
             <Lead className="mb-8 max-w-2xl text-left text-base text-muted-foreground md:text-xl">
-              Discover sovereign software, compare trusted app details, and support useful public goods through transparent milestones instead of opaque gatekeepers.
-            </Lead>
+              Discover useful apps, compare trusted details, and support projects openly instead of relying on hidden gatekeepers.            </Lead>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600" asChild>
                 <Link href="/apps">
@@ -480,7 +476,7 @@ export default function HomePage() {
             <div className="relative overflow-hidden rounded-lg border border-border bg-card/95 shadow-2xl shadow-black/10">
               <div className="flex items-center justify-between border-b border-border px-5">
                   <Sparkles className="h-5 w-5 text-orange-500" />
-                  <p className="font-mono text-xs pt-2">Open App Registry</p>
+                  <p className="font-mono text-xs pt-2">App Registry Protocol</p>
               </div>
               <div className="grid grid-cols-2 gap-px bg-border">
                 <div className="bg-card p-5">

@@ -71,9 +71,12 @@ export default function RootLayout({
         <WalletProvider>
           <Providers>
             <AppLoadingProvider>
+              <a href="#main-content" className="skip-link">
+                Skip to main content
+              </a>
               <GetInButton />
               <Navbar />              
-              <main className="pb-20">
+              <main id="main-content" tabIndex={-1} className="pb-20" aria-label="Main content">
                 {children}
               </main>
               <Footer />

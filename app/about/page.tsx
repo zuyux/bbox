@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function AboutPage() {
   return (
-    <main className="max-w-2xl mx-auto py-36 px-4">
+    <div className="max-w-2xl mx-auto py-36 px-4">
       <h1 className="title text-3xl font-bold mb-4">What is BBOX?</h1>
       <p className="mb-4">
         <strong>BBOX</strong> is a universal registry for verified open-source software. It helps people discover, compare, fund, and coordinate high-integrity apps across Bitcoin, other chains, privacy tooling, safe AI, and independent off-chain software.
@@ -24,6 +24,6 @@ export default function AboutPage() {
             <Image src="/github.svg" height={18} width={18} alt="" className="invert my-12" />
         </Link>
       </p>
-    </main>
+    </div>
   );
 }

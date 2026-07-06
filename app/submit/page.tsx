@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Navbar } from '@/components/Navbar';
 import GetInModal from '@/components/GetInModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -662,7 +661,6 @@ export default function PublishPage() {
   if (developerMode === null) {
     return (
       <div className="bg-background min-h-screen">
-        <Navbar />
       </div>
     );
   }
@@ -670,7 +668,6 @@ export default function PublishPage() {
   if (developerMode === false) {
     return (
       <div className="bg-background min-h-screen">
-        <Navbar />
         <div className="container mx-auto px-4 pt-28 pb-12">
           <Card className="mx-auto max-w-xl border-border bg-card">
             <CardHeader>
@@ -691,7 +688,6 @@ export default function PublishPage() {
   if (!currentAddress) {
     return (
       <div className="bg-background min-h-screen">
-        <Navbar />
         {showGetInModal && <GetInModal onClose={handleGetInModalClose} />}
       </div>
     );
@@ -699,8 +695,6 @@ export default function PublishPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
-      
       <div className="container mx-auto px-4 pt-20 pb-12">
         <div className="max-w-4xl mx-auto">
           {/* Header */}

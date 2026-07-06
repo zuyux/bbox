@@ -17,7 +17,6 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-import { Navbar } from '@/components/Navbar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -492,8 +491,7 @@ export default function FundingDashboardPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
-      <main className="container mx-auto px-4 pt-24 pb-12 max-w-6xl space-y-10">
+      <div className="container mx-auto px-4 pt-24 pb-12 max-w-6xl space-y-10">
         <section className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div className="max-w-3xl">
             <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-orange-500/25 bg-orange-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-600 dark:text-orange-300">
@@ -675,7 +673,7 @@ export default function FundingDashboardPage() {
           </div>
         )}
         </section>
-      </main>
+      </div>
     </div>
   );
 }

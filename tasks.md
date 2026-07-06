@@ -17,18 +17,18 @@
 
 - Add retry and caching logic for external APIs (Hiro, Supabase, Pinata, IPFS) ✓
 - Surface network status / offline mode when RPC or backend fails ✓
-- Validate and sanitize metadata before rendering app listings and comments
+- Validate and sanitize metadata before rendering app listings and comments ✓
 
 ## 4. Accessibility
 
 - Ensure all interactive controls have proper labels, focus states, and keyboard support
 - Improve contrast ratios and ARIA roles on dialogs and modals
-- Add skip links and semantic HTML for screen readers
+- Add skip links and semantic HTML for screen readers ✓
 
 ## 5. Performance
 
 - Audit page load with Next.js and optimize heavy bundles
-- Optimize IPFS-hosted images and lazy-load non-critical media
+- Optimize IPFS-hosted images and lazy-load non-critical media ✓
 - Reduce unnecessary client-side hydration for static content
 
 ## 6. Testing and quality
@@ -39,15 +39,15 @@
 
 ## 7. Feature stability
 
-- Improve form validation for app submission, funding requests, and email flows
+- Improve form validation for app submission, funding requests, and email flows ✓
 - Add rate limits and spam protection on comments and recovery link endpoints
 - Add confirmation/undo for destructive actions like wallet disconnect or metadata deletion
 
 ## 8. Documentation and onboarding
 
 - Add in-app help or tooltips for milestone funding and DAO governance
-- Update README with exact dev setup commands and architecture notes
-- Add a “how to use BBOX” page for new users
+- Update README with exact dev setup commands and architecture notes ✓
+- Add a “how to use BBOX” page for new users ✓
 
 ## 9. Security and privacy
 
@@ -59,9 +59,9 @@
 
 - Add analytics or telemetry to identify most-used pages and pain points
 - Create a prioritized backlog for milestone funding, DAO voting, and app registry verification
-- Improve discovery with filters, categories, and search ranking
+- Improve discovery with filters, categories, and search ranking ✓
 
 ## Additional
 
 - make profile page loading faster.
-- add reviewing processes
+- add reviewing processes ✓

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Navbar } from '@/components/Navbar';
 import GetInModal from '@/components/GetInModal';
 import IPFSImage from '@/components/IPFSImage';
 import { Button } from '@/components/ui/button';
@@ -262,7 +261,6 @@ export default function AdminSubmitPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
       <div className="container mx-auto px-4 pt-20 pb-16 max-w-4xl">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>

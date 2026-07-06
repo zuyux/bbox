@@ -3,7 +3,6 @@
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -226,7 +225,6 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
 
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
       <div className="container mx-auto px-4 pt-20 pb-12 max-w-4xl">
         {/* Back Button */}
         <Button variant="link" className="mb-4" asChild>

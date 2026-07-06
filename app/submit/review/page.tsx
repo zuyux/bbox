@@ -15,7 +15,6 @@ import {
   Zap,
 } from "lucide-react";
 
-import { Navbar } from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -190,8 +189,6 @@ export default function SubmittedAppsPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
-
       <div className="container mx-auto px-4 pt-20 pb-12 max-w-6xl">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
           <div>

@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -274,8 +273,6 @@ export default function AppsPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <Navbar />
-      
       <div className="container mx-auto px-4 pt-20 pb-12 max-w-4xl">
         {/* Search Bar */}
         <div className="mb-6">
