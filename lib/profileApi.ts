@@ -76,6 +76,7 @@ export interface Profile {
   profile_public?: boolean;
   show_email?: boolean;
   show_location?: boolean;
+  hide_welcome_modal?: boolean;
   linked_nostr_public_key?: string;
   wallet_type?: string;
   wallet_public_key?: string;

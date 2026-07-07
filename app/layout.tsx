@@ -5,6 +5,7 @@ import { GetInButton } from "@/components/GetIn";
 import Footer from "@/components/Footer";
 import { Providers } from '@/components/ui/provider';
 import { WalletProvider } from '@/components/WalletProvider';
+import WelcomeModal from '@/components/WelcomeModal';
 import { Toaster } from "@/components/ui/sonner"
 import AppLoadingProvider from "@/components/AppLoadingProvider";
 import GlobalErrorHandler from "@/components/GlobalErrorHandler";
@@ -76,6 +77,7 @@ export default function RootLayout({
               </a>
               <GetInButton />
               <Navbar />              
+              <WelcomeModal />
               <main id="main-content" tabIndex={-1} className="pb-20" aria-label="Main content">
                 {children}
               </main>

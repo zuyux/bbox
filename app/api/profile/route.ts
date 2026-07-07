@@ -42,6 +42,7 @@ const PROFILE_FIELDS = [
   'profile_public',
   'show_email',
   'show_location',
+  'hide_welcome_modal',
   'email_notifications',
   'push_notifications',
   'marketing_emails',
