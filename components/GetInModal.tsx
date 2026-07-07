@@ -19,6 +19,7 @@ import { connectAlbyWallet } from '@/lib/albyWallet';
 import { connectNostriaSigner } from '@/lib/nostriaSigner';
 import { connectOkxWallet } from '@/lib/okxWallet';
 import { connectWalletConnect } from '@/lib/walletConnectWallet';
+import { requestLeatherStacksSignIn, requestXverseStacksSignIn } from '@/lib/stacksSignInMessage';
 
 export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const { address, setAddress, setWalletType } = useWallet();
@@ -99,6 +100,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         const stxAddress = stacksAddressItem?.address;
 
         if (stxAddress) {
+          await requestXverseStacksSignIn(stxAddress);
           persistWalletContext(stxAddress, 'xverse');
           if (onClose) onClose();
           router.push('/apps');
@@ -154,6 +156,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         : undefined;
 
       if (stxAddress) {
+        await requestLeatherStacksSignIn(provider as { request: (method: string, params?: unknown) => Promise<unknown> }, stxAddress);
         persistWalletContext(stxAddress, 'leather');
         if (onClose) onClose();
         router.push('/apps');

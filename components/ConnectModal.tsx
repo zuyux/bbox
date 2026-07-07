@@ -12,6 +12,7 @@ import { connectAlbyWallet } from '@/lib/albyWallet';
 import { connectNostriaSigner } from '@/lib/nostriaSigner';
 import { connectOkxWallet } from '@/lib/okxWallet';
 import { connectWalletConnect } from '@/lib/walletConnectWallet';
+import { requestLeatherStacksSignIn, requestXverseStacksSignIn } from '@/lib/stacksSignInMessage';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
 import { getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
@@ -338,6 +339,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                   ? ((response as { result: { addresses: { symbol: string; address: string }[] } }).result.addresses.find(addr => addr.symbol === 'STX')?.address)
                                   : undefined;
                                 if (stxAddress) {
+                                  await requestLeatherStacksSignIn(provider as { request: (method: string, params?: unknown) => Promise<unknown> }, stxAddress);
                                   setAddress(stxAddress);
                                   setWalletType('leather');
                                   await persistSessionForWallet(stxAddress, 'leather');
@@ -366,6 +368,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                     : undefined;
                                   const stxAddress = stacksAddressItem?.address;
                                   if (stxAddress) {
+                                    await requestXverseStacksSignIn(stxAddress);
                                     setAddress(stxAddress);
                                     setWalletType('xverse');
                                     await persistSessionForWallet(stxAddress, 'xverse');
