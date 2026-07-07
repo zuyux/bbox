@@ -156,7 +156,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-start justify-center bg-background/50 backdrop-blur-md pt-20">
-      <div ref={modalRef} className="relative w-full max-w-2xl mx-4 bg-background/95 backdrop-blur-xl border border-gray-800/50 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+      <div ref={modalRef} className="relative w-full max-w-2xl mx-6 bg-background/95 backdrop-blur-xl border border-gray-800/50 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
         {/* Header */}
         <div className="p-4 border-b border-gray-800/50">
           <div className="flex items-center gap-3">

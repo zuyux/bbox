@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     if ((profileMatch && !matchesCurrentProfile) || (accountMatch && !matchesCurrentAccount)) {
       return NextResponse.json(
-        { error: 'Email is already registered. Try a different email or recover the existing wallet.' },
+        { error: 'Email is already registered.' },
         { status: 409 }
       );
     }

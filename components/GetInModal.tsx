@@ -334,7 +334,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
           });
           const duplicateData = await duplicateResponse.json();
           if (duplicateResponse.ok && duplicateData.exists) {
-            setCreateWalletError('Email is already registered. Try a different email or recover the existing wallet.');
+            setCreateWalletError('Email is already registered.');
             return;
           }
         } catch (checkError) {

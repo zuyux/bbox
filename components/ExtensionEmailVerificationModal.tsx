@@ -127,37 +127,43 @@ export default function ExtensionEmailVerificationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/60 px-4">
+    <div
+      className="fixed inset-0 z-[220] flex items-center justify-center bg-black/60 px-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div className="w-full max-w-[360px] rounded-xl border border-border bg-background p-4 text-foreground shadow-2xl">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center text-white">
-              <Mail className="h-9 w-9" />
-            </div>
-            <div>
-              <h2 className="text-base font-semibold">Verify your email</h2>
-              <p className="text-xs text-muted-foreground">Secure this wallet profile.</p>
-            </div>
+        <div className="grid grid-cols-[2.25rem_minmax(0,1fr)_1.25rem] items-start gap-3">
+          <div className="flex h-9 w-9 items-center justify-center text-foreground">
+            <Mail className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 pt-0.5">
+            <h2 className="text-base font-semibold leading-6">Verify your email</h2>
+            <p className="text-xs leading-5 text-muted-foreground mb-4">Secure this wallet profile.</p>
           </div>
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="text-muted-foreground transition hover:text-foreground"
+            className="flex h-5 w-5 items-center justify-center text-muted-foreground transition hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="space-y-2.5">
+        <div className="grid gap-3">
           <Input
             type="email"
             value={email}
             onChange={(event) => resetForEmailChange(event.target.value)}
             placeholder="Enter your email address"
             disabled={loading || codeSent}
-            className="h-10"
-            autoComplete="email"
+            className="h-12 w-full"
+            autoComplete="off"
+            name="bbox-profile-email"
             autoFocus
           />
 
@@ -170,7 +176,7 @@ export default function ExtensionEmailVerificationModal({
               onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="6-digit code"
               disabled={loading}
-              className="h-10"
+              className="h-12 w-full"
             />
           )}
 
@@ -180,14 +186,16 @@ export default function ExtensionEmailVerificationModal({
             </p>
           )}
 
-          <Button
-            type="button"
-            onClick={handlePrimaryAction}
-            disabled={loading || !emailValid || (codeSent && !codeValid)}
-            className="h-10 w-full bg-[#0000ff] text-white hover:bg-[#0000ff]"
-          >
-            {loading ? (codeSent ? 'Verifying...' : 'Sending...') : codeSent ? 'Verify Email' : 'Send Code'}
-          </Button>
+          <div className="pt-0.5">
+            <Button
+              type="button"
+              onClick={handlePrimaryAction}
+              disabled={loading || !emailValid || (codeSent && !codeValid)}
+              className="h-10 w-full bg-[#0000ff] text-white hover:bg-[#0000ff]"
+            >
+              {loading ? (codeSent ? 'Verifying...' : 'Sending...') : codeSent ? 'Verify Email' : 'Send Code'}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

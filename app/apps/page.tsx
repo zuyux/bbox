@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import IPFSImage from '@/components/IPFSImage';
 import { extractIPFSHash } from '@/lib/ipfs-utils';
 import type { BitcoinApp } from '@/lib/appsUtils';
@@ -15,7 +14,6 @@ import { useWallet } from '@/components/WalletProvider';
 import ExtensionEmailVerificationModal from '@/components/ExtensionEmailVerificationModal';
 import { getProfile, type Profile } from '@/lib/profileApi';
 import { 
-  Search, 
   Star, 
   Download, 
   Shield, 
@@ -102,7 +100,6 @@ export default function AppsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { address, walletType } = useWallet();
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [visibleCount, setVisibleCount] = useState(CHUNK_SIZE);
   const [apps, setApps] = useState<BitcoinApp[]>([]);
@@ -190,24 +187,17 @@ export default function AppsPage() {
   }, [pathname, router, searchParams]);
   
   const filteredApps = useMemo(() => {
-    const normalizedSearchQuery = searchQuery.toLowerCase();
-    const categoryFiltered = selectedCategory === 'all'
+    return selectedCategory === 'all'
       ? apps
       : apps.filter(app => app.category.toLowerCase() === selectedCategory.toLowerCase());
-
-    return categoryFiltered.filter(app =>
-      app.name.toLowerCase().includes(normalizedSearchQuery) ||
-      app.description.toLowerCase().includes(normalizedSearchQuery) ||
-      app.tags.some(tag => tag.toLowerCase().includes(normalizedSearchQuery))
-    );
-  }, [apps, selectedCategory, searchQuery]);
+  }, [apps, selectedCategory]);
 
   const visibleApps = filteredApps.slice(0, visibleCount);
   const hasMoreApps = visibleCount < filteredApps.length;
 
   useEffect(() => {
     setVisibleCount(CHUNK_SIZE);
-  }, [searchQuery, selectedCategory]);
+  }, [selectedCategory]);
 
   const handleLoadMore = useCallback(() => {
     setVisibleCount(prev => Math.min(prev + CHUNK_SIZE, filteredApps.length));
@@ -274,19 +264,6 @@ export default function AppsPage() {
   return (
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-4 pt-20 pb-12 max-w-4xl">
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative max-w-4xl mx-auto">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Search open-source apps..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 text-base rounded-xl bg-muted/50 border-0 placeholder:text-foreground/50"
-            />
-          </div>
-        </div>
-
         {appsLoading && (
           <div className="text-center py-8 text-sm text-muted-foreground">Loading apps...</div>
         )}
@@ -411,7 +388,7 @@ export default function AppsPage() {
         {filteredApps.length === 0 && (
           <div className="text-center py-16">
             <div className="text-muted-foreground text-lg mb-2">No apps found</div>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+            <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
           </div>
         )}
       </div>
