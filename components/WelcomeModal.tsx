@@ -10,14 +10,13 @@ import {
   WELCOME_MODAL_AFTER_SIGN_IN_EVENT,
 } from '@/components/WalletProvider';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { getProfile, upsertProfile } from '@/lib/profileApi';
 import { cn } from '@/lib/utils';
 
 const slides = [
   {
     icon: ShieldCheck,
-    title: 'Welcome to BBOX',
+    title: 'WELCOME ABOARD',
     body: 'BBOX is a universal registry for verified software. Discover open-source apps with clearer metadata, links, reviews, and trust signals in one place.',
   },
   {
@@ -36,7 +35,7 @@ export default function WelcomeModal() {
   const { address } = useWallet();
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [dontShowAgain, setDontShowAgain] = useState(true);
+  const dontShowAgain = true;
   const [activeSlide, setActiveSlide] = useState(0);
 
   const slide = slides[activeSlide];
@@ -102,7 +101,9 @@ export default function WelcomeModal() {
     }
   }, [address]);
 
-  const dismiss = async () => {
+  const dismiss = async (options: { hideWelcomeModalPreference?: boolean } = {}) => {
+    const shouldHideWelcomeModal = options.hideWelcomeModalPreference ?? dontShowAgain;
+
     if (!address) {
       setVisible(false);
       return;
@@ -110,7 +111,7 @@ export default function WelcomeModal() {
 
     setVisible(false);
 
-    if (dontShowAgain) {
+    if (shouldHideWelcomeModal) {
       if (localStorageKey) {
         localStorage.setItem(localStorageKey, 'true');
       }
@@ -145,11 +146,11 @@ export default function WelcomeModal() {
         aria-labelledby="bbox-welcome-title"
         aria-modal="true"
         role="dialog"
-        className="relative flex min-h-[460px] w-full max-w-[576px] flex-col overflow-hidden rounded-lg border border-white/15 bg-[#09051f] px-6 py-8 text-white shadow-2xl sm:px-12 sm:py-10"
+        className="relative flex min-h-[460px] w-full max-w-[576px] flex-col overflow-hidden rounded-lg border border-white/15 bg-[#0a0400] px-6 py-8 text-white shadow-2xl sm:px-12 sm:py-10"
       >
         <button
           type="button"
-          onClick={dismiss}
+          onClick={() => dismiss({ hideWelcomeModalPreference: false })}
           className="absolute right-4 top-4 inline-flex size-9 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
           aria-label="Close welcome modal"
         >
@@ -180,7 +181,7 @@ export default function WelcomeModal() {
         </div>
 
         <div className="mt-6 min-h-[150px]">
-          <h2 id="bbox-welcome-title" className="text-2xl font-bold leading-tight text-white sm:text-[26px]">
+          <h2 id="bbox-welcome-title" className="title text-5xl font-bold leading-tight text-white sm:text-[26px]">
             {slide.title}
           </h2>
           <p className="mt-4 max-w-[460px] text-base leading-7 text-white/78">
@@ -204,30 +205,11 @@ export default function WelcomeModal() {
           ))}
         </div>
 
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={dismiss}
-            className="h-11 justify-center px-0 text-white hover:bg-white/10 hover:text-white sm:justify-start"
-          >
-            Skip
-          </Button>
-
-          <label className="flex cursor-pointer items-center justify-center gap-2 text-sm font-medium text-white/86 sm:ml-auto">
-            <Checkbox
-              checked={dontShowAgain}
-              onCheckedChange={(checked) => setDontShowAgain(checked === true)}
-              className="border-white/35 bg-white/15 text-white data-[state=checked]:border-violet-300 data-[state=checked]:bg-violet-400"
-              aria-label="Do not show this welcome modal again"
-            />
-            Don&apos;t show this again
-          </label>
-
+        <div className="flex">
           <Button
             type="button"
             onClick={handlePrimaryAction}
-            className="h-11 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-700 px-6 text-white hover:from-violet-400 hover:to-fuchsia-600"
+            className="h-11 w-full rounded-md bg-gradient-to-r from-orange-500 to-orange-700 px-6 text-white hover:from-orange-400 hover:to-orange-600"
           >
             {isLastSlide ? 'Start' : 'Next'}
             <ArrowRight className="size-4" />

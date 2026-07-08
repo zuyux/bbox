@@ -1,4 +1,4 @@
-import { request as satsRequest } from 'sats-connect';
+import { AddressPurpose, BitcoinNetworkType, request as satsRequest } from 'sats-connect';
 
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 
@@ -7,6 +7,8 @@ const BBOX_SIGN_IN_URI = 'https://bbox.lol';
 const BBOX_SIGN_IN_STATEMENT = 'BBOX';
 const BBOX_SIGN_IN_VERSION = '1';
 const BBOX_SIGN_IN_CHAIN_ID = '1';
+const BBOX_SIGN_IN_NETWORK = BitcoinNetworkType.Mainnet;
+const MAINNET_STACKS_ADDRESS_PREFIXES = ['SP', 'SM'];
 
 type RpcSignatureResponse = {
   result?: {
@@ -21,6 +23,27 @@ type StacksSignInSignature = {
   signature: string;
   publicKey?: string;
   message: string;
+};
+
+type WalletConnectAddress = {
+  purpose?: string;
+  address?: string;
+};
+
+type WalletConnectResponse = {
+  status?: string;
+  result?: {
+    addresses?: WalletConnectAddress[];
+  };
+  addresses?: WalletConnectAddress[];
+  error?: unknown;
+};
+
+type StacksAddressResponse = {
+  result?: {
+    addresses?: WalletConnectAddress[];
+  };
+  addresses?: WalletConnectAddress[];
 };
 
 type RpcCapableProvider = {
@@ -54,6 +77,14 @@ export const buildBboxStacksSignInMessage = (address: string, issuedAt = new Dat
   ].join('\n');
 };
 
+const assertMainnetStacksAddress = (address: string, walletLabel: string) => {
+  const prefix = address.slice(0, 2).toUpperCase();
+
+  if (!MAINNET_STACKS_ADDRESS_PREFIXES.includes(prefix)) {
+    throw new Error(`${walletLabel} returned a testnet Stacks address. Switch your wallet to mainnet and try again.`);
+  }
+};
+
 const parseSignatureResponse = (response: unknown, message: string): StacksSignInSignature => {
   const payload = (response as RpcSignatureResponse)?.result ?? (response as RpcSignatureResponse);
 
@@ -79,10 +110,63 @@ const normalizeSignInError = (error: unknown, walletLabel: string) => {
   return message;
 };
 
+export const requestXverseMainnetStacksAddress = async (): Promise<string> => {
+  const response = await satsRequest('wallet_connect', {
+    addresses: [AddressPurpose.Stacks],
+    network: BBOX_SIGN_IN_NETWORK,
+  }) as WalletConnectResponse;
+
+  if (response.status && response.status !== 'success') {
+    throw response.error ?? new Error('Failed to connect to Xverse.');
+  }
+
+  const stacksAddress = (response.result?.addresses ?? response.addresses)?.find(
+    (address) => address.purpose === AddressPurpose.Stacks
+  )?.address;
+
+  if (!stacksAddress) {
+    throw new Error('No mainnet Stacks address found in Xverse. Switch Xverse to mainnet and try again.');
+  }
+
+  assertMainnetStacksAddress(stacksAddress, 'Xverse');
+
+  return stacksAddress;
+};
+
+export const requestLeatherMainnetStacksAddress = async (provider: RpcCapableProvider): Promise<string> => {
+  const requests: Array<[string, unknown?]> = [
+    ['stx_getAddresses', { network: 'mainnet' }],
+    ['getAddresses', { network: 'mainnet' }],
+    ['getAddresses'],
+  ];
+
+  for (const [method, params] of requests) {
+    try {
+      const response = await provider.request(method, params);
+      const addresses = ((response as StacksAddressResponse)?.result?.addresses ?? (response as StacksAddressResponse)?.addresses) ?? [];
+      const stacksAddress = addresses.find(
+        (address) => address.purpose === AddressPurpose.Stacks || address.address?.toUpperCase().startsWith('S')
+      )?.address;
+
+      if (stacksAddress) {
+        assertMainnetStacksAddress(stacksAddress, 'Leather');
+        return stacksAddress;
+      }
+    } catch (error) {
+      if (error instanceof Error && /testnet Stacks address/i.test(error.message)) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error('No mainnet Stacks address found in Leather. Switch Leather to mainnet and try again.');
+};
+
 export const requestLeatherStacksSignIn = async (
   provider: RpcCapableProvider,
   address: string
 ): Promise<StacksSignInSignature> => {
+  assertMainnetStacksAddress(address, 'Leather');
   const message = buildBboxStacksSignInMessage(address);
 
   try {
@@ -94,6 +178,7 @@ export const requestLeatherStacksSignIn = async (
 };
 
 export const requestXverseStacksSignIn = async (address: string): Promise<StacksSignInSignature> => {
+  assertMainnetStacksAddress(address, 'Xverse');
   const message = buildBboxStacksSignInMessage(address);
 
   try {

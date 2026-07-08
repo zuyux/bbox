@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
-import { request as satsRequest } from 'sats-connect';
 import { persistCachedWalletState, queueWelcomeModalAfterSignIn, useWallet, type WalletType } from './WalletProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +11,12 @@ import { connectAlbyWallet } from '@/lib/albyWallet';
 import { connectNostriaSigner } from '@/lib/nostriaSigner';
 import { connectOkxWallet } from '@/lib/okxWallet';
 import { connectWalletConnect } from '@/lib/walletConnectWallet';
-import { requestLeatherStacksSignIn, requestXverseStacksSignIn } from '@/lib/stacksSignInMessage';
+import {
+  requestLeatherMainnetStacksAddress,
+  requestLeatherStacksSignIn,
+  requestXverseMainnetStacksAddress,
+  requestXverseStacksSignIn,
+} from '@/lib/stacksSignInMessage';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
 import { getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
@@ -334,25 +338,15 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 'request' in provider &&
                                 typeof (provider as { request?: unknown }).request === 'function'
                               ) {
-                                // Use the latest Leather API: getAddresses
-                                const response = await (provider as { request: (method: string, params?: unknown) => Promise<unknown> }).request('getAddresses');
-                                const stxAddress = Array.isArray((response as { result?: { addresses?: { symbol: string; address: string }[] } })?.result?.addresses)
-                                  ? ((response as { result: { addresses: { symbol: string; address: string }[] } }).result.addresses.find(addr => addr.symbol === 'STX')?.address)
-                                  : undefined;
-                                if (stxAddress) {
-                                  await requestLeatherStacksSignIn(provider as { request: (method: string, params?: unknown) => Promise<unknown> }, stxAddress);
-                                  setAddress(stxAddress);
-                                  setWalletType('leather');
-                                  await persistSessionForWallet(stxAddress, 'leather');
-                                  onSuccess?.();
-                                  onClose();
-                                  router.push('/apps');
-                                } else {
-                                  const errorMsg = 'No Stacks address found in Leather. Please check your wallet and try again.';
-                                  setWalletError(errorMsg);
-                                  onError?.(errorMsg);
-                                  console.warn('No Stacks address found in Leather.');
-                                }
+                                const leatherProvider = provider as { request: (method: string, params?: unknown) => Promise<unknown> };
+                                const stxAddress = await requestLeatherMainnetStacksAddress(leatherProvider);
+                                await requestLeatherStacksSignIn(leatherProvider, stxAddress);
+                                setAddress(stxAddress);
+                                setWalletType('leather');
+                                await persistSessionForWallet(stxAddress, 'leather');
+                                onSuccess?.();
+                                onClose();
+                                router.push('/apps');
                               } else {
                                 const errorMsg = 'Leather provider does not support request. Unlock the wallet and refresh the page.';
                                 setWalletError(errorMsg);
@@ -360,36 +354,15 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 console.warn('Leather provider does not support request.');
                               }
                             } else if (w.id === 'xverse') {
-                              // Use Sats Connect API for Xverse
                               try {
-                                const response = await satsRequest('wallet_connect', null);
-                                if (response.status === 'success') {
-                                  const stacksAddressItem = Array.isArray(response.result.addresses)
-                                    ? (response.result.addresses as { purpose: string; address: string }[]).find(address => address.purpose === 'stacks')
-                                    : undefined;
-                                  const stxAddress = stacksAddressItem?.address;
-                                  if (stxAddress) {
-                                    await requestXverseStacksSignIn(stxAddress);
-                                    setAddress(stxAddress);
-                                    setWalletType('xverse');
-                                    await persistSessionForWallet(stxAddress, 'xverse');
-                                    onSuccess?.();
-                                    onClose();
-                                    router.push('/apps');
-                                  } else {
-                                    const errorMsg = 'No Stacks address found in Xverse. Please check your wallet and try again.';
-                                    setWalletError(errorMsg);
-                                    onError?.(errorMsg);
-                                    console.warn('No Stacks address found in Xverse.');
-                                  }
-                                } else {
-                                  const errorMsg = response.error
-                                    ? getWalletErrorMessage(response.error, 'Failed to connect to Xverse.')
-                                    : 'Failed to connect to Xverse.';
-                                  setWalletError(errorMsg);
-                                  onError?.(errorMsg);
-                                  console.warn('Xverse connect error:', response.error);
-                                }
+                                const stxAddress = await requestXverseMainnetStacksAddress();
+                                await requestXverseStacksSignIn(stxAddress);
+                                setAddress(stxAddress);
+                                setWalletType('xverse');
+                                await persistSessionForWallet(stxAddress, 'xverse');
+                                onSuccess?.();
+                                onClose();
+                                router.push('/apps');
                               } catch (err: unknown) {
                                 const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Xverse.');
                                 if (isWalletRequestCancelled(err)) {
