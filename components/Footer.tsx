@@ -7,8 +7,8 @@ export default function Footer() {
       <div className="mx-auto h-full px-3 sm:px-4">
         <div className="flex justify-between items-center h-full">
           <Link href="/about" className='flex items-center gap-1'>
-            <span className="title text-left truncate">
-              BBOX <span className="hidden sm:inline hover:text-[#fff]/70 text-[#fff] ml-2">Our Open App Store</span>
+            <span className="open-sans text-left truncate">
+              BBOX <span className="hidden sm:inline hover:text-[#fff]/70 text-[#555] ml-2">Our Open App Store</span>
             </span>
           </Link>
           <div className="flex items-center gap-3 sm:gap-5">
