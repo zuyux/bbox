@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from 'next/link';
-import { persistCachedWalletState, useWallet } from './WalletProvider';
+import { persistCachedWalletState, queueWelcomeModalAfterSignIn, useWallet } from './WalletProvider';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -51,10 +51,17 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     { id: 'xverse', label: 'Xverse', icon: '/xverse.svg', mode: 'wallets' as const },
   ];
 
-  const persistWalletContext = (newAddress: string, type: 'imported' | 'xverse' | 'leather' | 'alby' | 'nostria' | 'okx' | 'walletconnect' = 'imported') => {
+  const persistWalletContext = (
+    newAddress: string,
+    type: 'imported' | 'xverse' | 'leather' | 'alby' | 'nostria' | 'okx' | 'walletconnect' = 'imported',
+    options: { showWelcomeModalAfterSignIn?: boolean } = {}
+  ) => {
     persistCachedWalletState(newAddress, type);
     setAddress(newAddress);
     setWalletType(type);
+    if (options.showWelcomeModalAfterSignIn !== false) {
+      queueWelcomeModalAfterSignIn(newAddress);
+    }
     console.log('[GetInModal] Persisted wallet session via WalletProvider', { newAddress, type });
   };
 
@@ -353,7 +360,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
           label: 'sumak'
         };
         await createEncryptedWallet(walletData, password);
-        persistWalletContext(walletData.address);
+        persistWalletContext(walletData.address, 'imported', { showWelcomeModalAfterSignIn: false });
 
         const encryptedSnapshot = getStoredEncryptedWallet();
         if (!encryptedSnapshot) {

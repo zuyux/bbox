@@ -5,6 +5,8 @@ export type WalletType = 'leather' | 'xverse' | 'alby' | 'nostria' | 'okx' | 'wa
 
 const WALLET_ADDRESS_STORAGE_KEY = 'walletAddress';
 const WALLET_TYPE_STORAGE_KEY = 'walletType';
+const WELCOME_MODAL_PENDING_STORAGE_KEY = 'bbox-welcome-modal-pending';
+export const WELCOME_MODAL_AFTER_SIGN_IN_EVENT = 'bbox-welcome-modal-after-sign-in';
 
 interface WalletContextType {
   address: string | null;
@@ -48,6 +50,28 @@ export const persistCachedWalletState = (address: string | null, walletType: Wal
   }
 
   window.dispatchEvent(new Event('bbox-wallet-update'));
+};
+
+export const queueWelcomeModalAfterSignIn = (address: string) => {
+  if (typeof window === 'undefined') return;
+
+  sessionStorage.setItem(WELCOME_MODAL_PENDING_STORAGE_KEY, address);
+  window.dispatchEvent(
+    new CustomEvent(WELCOME_MODAL_AFTER_SIGN_IN_EVENT, {
+      detail: { address },
+    })
+  );
+};
+
+export const consumeQueuedWelcomeModalAddress = () => {
+  if (typeof window === 'undefined') return null;
+
+  const pendingAddress = sessionStorage.getItem(WELCOME_MODAL_PENDING_STORAGE_KEY);
+  if (pendingAddress) {
+    sessionStorage.removeItem(WELCOME_MODAL_PENDING_STORAGE_KEY);
+  }
+
+  return pendingAddress;
 };
 
 export function WalletProvider({ children }: { children: ReactNode }) {

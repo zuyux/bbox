@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { request as satsRequest } from 'sats-connect';
-import { persistCachedWalletState, useWallet, type WalletType } from './WalletProvider';
+import { persistCachedWalletState, queueWelcomeModalAfterSignIn, useWallet, type WalletType } from './WalletProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -137,6 +137,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
     if (typeof window === 'undefined') return;
 
     persistCachedWalletState(connectedAddress, providerType);
+    queueWelcomeModalAfterSignIn(connectedAddress);
 
     try {
       const existingAccount = await getConnectedAccountByAddress(connectedAddress);

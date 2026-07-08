@@ -1,10 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Boxes, CheckCircle2, ShieldCheck, Sparkles, X } from 'lucide-react';
 
-import { useWallet } from '@/components/WalletProvider';
+import {
+  consumeQueuedWelcomeModalAddress,
+  useWallet,
+  WELCOME_MODAL_AFTER_SIGN_IN_EVENT,
+} from '@/components/WalletProvider';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getProfile, upsertProfile } from '@/lib/profileApi';
@@ -34,7 +38,6 @@ export default function WelcomeModal() {
   const [loading, setLoading] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
-  const [profileCheckedForAddress, setProfileCheckedForAddress] = useState<string | null>(null);
 
   const slide = slides[activeSlide];
   const SlideIcon = slide.icon;
@@ -44,43 +47,58 @@ export default function WelcomeModal() {
     return address ? `bbox-welcome-modal-seen:${address.toLowerCase()}` : null;
   }, [address]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadWelcomePreference() {
-      if (!address || profileCheckedForAddress?.toLowerCase() === address.toLowerCase()) {
-        return;
-      }
-
-      setLoading(true);
-
-      try {
-        const profile = await getProfile(address);
-
-        if (cancelled) return;
-
-        const locallyDismissed = localStorageKey ? localStorage.getItem(localStorageKey) === 'true' : false;
-        setVisible(profile?.hide_welcome_modal !== true && !locallyDismissed);
-        setProfileCheckedForAddress(address);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+  const showForSignedInAddress = useCallback(async (signedInAddress: string, signal?: AbortSignal) => {
+    if (!address || signedInAddress.toLowerCase() !== address.toLowerCase()) {
+      return;
     }
 
-    loadWelcomePreference();
+    setLoading(true);
+    setActiveSlide(0);
+
+    try {
+      const profile = await getProfile(address);
+
+      if (signal?.aborted) return;
+
+      const locallyDismissed = localStorageKey ? localStorage.getItem(localStorageKey) === 'true' : false;
+      setVisible(profile?.hide_welcome_modal !== true && !locallyDismissed);
+    } finally {
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
+    }
+  }, [address, localStorageKey]);
+
+  useEffect(() => {
+    if (!address) return;
+
+    const controller = new AbortController();
+    const queuedAddress = consumeQueuedWelcomeModalAddress();
+
+    if (queuedAddress) {
+      showForSignedInAddress(queuedAddress, controller.signal);
+    }
+
+    const handleWelcomeAfterSignIn = (event: Event) => {
+      const signedInAddress = event instanceof CustomEvent && typeof event.detail?.address === 'string'
+        ? event.detail.address
+        : address;
+
+      showForSignedInAddress(signedInAddress, controller.signal);
+    };
+
+    window.addEventListener(WELCOME_MODAL_AFTER_SIGN_IN_EVENT, handleWelcomeAfterSignIn);
 
     return () => {
-      cancelled = true;
+      controller.abort();
+      window.removeEventListener(WELCOME_MODAL_AFTER_SIGN_IN_EVENT, handleWelcomeAfterSignIn);
     };
-  }, [address, localStorageKey, profileCheckedForAddress]);
+  }, [address, showForSignedInAddress]);
 
   useEffect(() => {
     if (!address) {
       setVisible(false);
       setActiveSlide(0);
-      setProfileCheckedForAddress(null);
     }
   }, [address]);
 
