@@ -21,8 +21,8 @@
 
 ## 4. Accessibility
 
-- Ensure all interactive controls have proper labels, focus states, and keyboard support
-- Improve contrast ratios and ARIA roles on dialogs and modals
+- Ensure all interactive controls have proper labels, focus states, and keyboard support ✓
+- Improve contrast ratios and ARIA roles on dialogs and modals ✓
 - Add skip links and semantic HTML for screen readers ✓
 
 ## 5. Performance

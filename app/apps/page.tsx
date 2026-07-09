@@ -274,21 +274,9 @@ export default function AppsPage() {
           </div>
         )}
 
-        {/* Category Pills - 2 Rows */}
+        {/* Category filters */}
         <div className="mb-8 w-full mx-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => updateCategorySelection('all')}
-              className={`rounded-full whitespace-nowrap text-xs cursor-pointer border border-green-500 transition-colors ${
-                selectedCategory === 'all'
-                  ? 'bg-green-500 text-white hover:bg-green-600 hover:text-foreground'
-                  : 'text-green-600 hover:bg-green-500 hover:text-foreground'
-              }`}
-            >
-              All Apps
-            </Button>
+          <div className="flex flex-wrap gap-1.5">
             {categories.map(category => {
               return (
                 <Button
@@ -296,10 +284,10 @@ export default function AppsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => updateCategorySelection(category)}
-                  className={`rounded-md whitespace-nowrap flex items-center justify-center gap-1 text-xs cursor-pointer border border-green-500 transition-colors ${
+                  className={`h-7 rounded-md px-2 whitespace-nowrap flex items-center justify-center gap-1 text-xs cursor-pointer shadow-none transition-colors ${
                     selectedCategory === category
-                      ? 'bg-green-500 text-white hover:bg-green-600 hover:text-foreground'
-                      : 'text-green-600 hover:bg-green-500 hover:text-foreground'
+                      ? 'border-foreground bg-foreground text-background hover:bg-foreground/85 hover:text-background'
+                      : 'border-border bg-background text-foreground hover:bg-foreground hover:text-background'
                   }`}
                 >
                   <CategoryIcon category={category} />

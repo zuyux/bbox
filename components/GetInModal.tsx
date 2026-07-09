@@ -667,7 +667,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         )}
         {/* Terms */}
         <div className="w-full rounded-b-2xl text-center text-xs text-foreground tracking-wider p-6 px-8">
-          By Connecting into, you agree to our <Link href="/terms" className="hover:text-accent-primary hover:underline">Terms of Service</Link> and <Link href="/privacy" className="hover:text-accent-primary hover:underline">Privacy Policy</Link>
+          By connecting, you agree to our <Link href="/terms-of-service" className="hover:text-accent-primary hover:underline">Terms of Service</Link> and <Link href="/privacy-policy" className="hover:text-accent-primary hover:underline">Privacy Policy</Link>
         </div>
       </div>
     </div>

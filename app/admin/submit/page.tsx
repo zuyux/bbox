@@ -294,12 +294,12 @@ export default function AdminSubmitPage() {
         )}
 
         {currentAddress && !isAuthorizedAdmin && (
-          <Card className="mb-6 border border-red-300 bg-red-50">
+          <Card className="mb-6 border border-destructive/50 bg-transparent">
             <CardHeader>
-              <CardTitle className="text-red-700">Unauthorized Address</CardTitle>
+              <CardTitle className="text-destructive">Unauthorized Address</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-red-700">
+              <p className="text-sm text-destructive">
                 Your connected wallet address is not authorized for admin submission.
               </p>
               <p className="text-sm text-muted-foreground mt-2 break-words">

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { persistCachedWalletState, queueWelcomeModalAfterSignIn, useWallet, type WalletType } from './WalletProvider';
 import { Button } from '@/components/ui/button';
@@ -279,8 +280,12 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-foreground/30 flex items-center justify-center z-[101] select-none">
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 bg-background/20 backdrop-blur-md flex items-center justify-center z-[201] select-none">
       <div className="bg-background text-foreground rounded-2xl w-[400px] max-w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
@@ -566,6 +571,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
