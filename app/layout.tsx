@@ -78,7 +78,7 @@ export default function RootLayout({
               <GetInButton />
               <Navbar />              
               <WelcomeModal />
-              <main id="main-content" tabIndex={-1} className="pb-20" aria-label="Main content">
+              <main id="main-content" tabIndex={-1} className="pb-28" aria-label="Main content">
                 {children}
               </main>
               <Footer />
