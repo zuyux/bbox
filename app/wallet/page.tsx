@@ -1,15 +1,18 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { getStoredEncryptedWallet, retrieveEncryptedWallet, updateEncryptedWalletAddresses } from "@/lib/encryptedStorage";
+import { getStoredEncryptedWallet, retrieveEncryptedWallet, updateEncryptedWalletAddresses, type WalletData } from "@/lib/encryptedStorage";
 import { getBitcoinAddressFromPrivateKey, getLiquidAddressFromPrivateKey, getRootstockAddressFromPrivateKey } from "@/lib/bitcoinWallet";
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { PasswordSigningModal } from "@/components/PasswordSigningModal";
+import { PasswordInput } from "@/components/PasswordInput";
+import { useEncryptedWallet } from "@/components/EncryptedWalletProvider";
 import { request as satsRequest } from 'sats-connect';
-import { useWallet } from "@/components/WalletProvider";
+import { persistCachedWalletState, useWallet } from "@/components/WalletProvider";
 import { sendBitcoinWithKey } from "@/lib/bitcoinTransfer";
 import { parseLiquidAmount, sendLiquidWithKey } from "@/lib/liquidTransfer";
 import { fetchBitcoinBalance, fetchLiquidBalance, fetchRootstockBalance, type NativeBalance } from "@/lib/nativeBalances";
 import { parseRbtcAmount, sendRootstockWithKey } from "@/lib/rootstockTransfer";
+import { createStacksAccount } from "@/lib/stacksWallet";
 
 const STACKS_ADDRESS_REGEX = /^(SP|SM|SN|ST|SU|TP|TM|TN|TS)[A-Za-z0-9]{30,40}$/i;
 const BITCOIN_MAINNET_ADDRESS_REGEX = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/i;
@@ -209,6 +212,63 @@ function BalanceDisplay({
   );
 }
 
+function CreatePasskeyAddressModal({
+  isOpen,
+  title,
+  description,
+  error,
+  isLoading,
+  onClose,
+  onSubmit,
+}: {
+  isOpen: boolean;
+  title: string;
+  description: string;
+  error: string | null;
+  isLoading: boolean;
+  onClose: () => void;
+  onSubmit: (password: string, email?: string, verifiedEmailToken?: string) => Promise<void>;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 mx-4 w-full max-w-md rounded-lg border border-black/10 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-black">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/10 dark:bg-white/10">
+              <Wallet className="h-5 w-5 text-black dark:text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-black dark:text-white">{title}</h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isLoading}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-black hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-white/10"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="mb-6 text-sm text-black/70 dark:text-white/70">{description}</p>
+        <PasswordInput
+          mode="create"
+          onSubmit={onSubmit}
+          isLoading={isLoading}
+          error={error}
+          placeholder="Create a wallet password"
+          showStrengthIndicator
+          onCancel={onClose}
+        />
+        <div className="mt-4 text-center text-xs text-black/50 dark:text-white/50">
+          Your password encrypts the new wallet locally and is never sent to our servers.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const isValidBitcoinAddress = (value: string, network: 'mainnet' | 'testnet' | 'devnet') => {
   const normalized = value.trim();
   if (!normalized) return false;
@@ -359,7 +419,8 @@ import { getOkxBitcoinAccounts, type OkxBitcoinAccount } from "@/lib/okxWallet";
 
 export default function WalletPage() {
   const address = useCurrentAddress() || "";
-  const { walletType } = useWallet();
+  const { walletType, setAddress, setWalletType } = useWallet();
+  const { createEncryptedWallet } = useEncryptedWallet();
   const isNostrLightningAccount = walletType === 'alby' || walletType === 'nostria' || address.startsWith('npub');
   const isOkxBitcoinAccount = walletType === 'okx';
   const isBitcoinOnlyAccount = walletType === 'okx';
@@ -404,6 +465,8 @@ export default function WalletPage() {
   const [showGenerateAddressesModal, setShowGenerateAddressesModal] = useState(false);
   const [generatingAddresses, setGeneratingAddresses] = useState(false);
   const [generateAddressLayer, setGenerateAddressLayer] = useState<ReceiveLayer | null>(null);
+  const [generateAddressAuthMode, setGenerateAddressAuthMode] = useState<'unlock' | 'create'>('unlock');
+  const [createPasskeyError, setCreatePasskeyError] = useState<string | null>(null);
 
   const formatTokenBalance = useCallback((balance: string, decimals = 0) => {
     if (!balance) return '0';
@@ -688,6 +751,8 @@ export default function WalletPage() {
 
   const openGenerateAddressModal = useCallback((layer: ReceiveLayer) => {
     setGenerateAddressLayer(layer);
+    setGenerateAddressAuthMode(getStoredEncryptedWallet() ? 'unlock' : 'create');
+    setCreatePasskeyError(null);
     setShowGenerateAddressesModal(true);
   }, []);
 
@@ -695,7 +760,63 @@ export default function WalletPage() {
     if (generatingAddresses) return;
     setShowGenerateAddressesModal(false);
     setGenerateAddressLayer(null);
+    setGenerateAddressAuthMode('unlock');
+    setCreatePasskeyError(null);
   }, [generatingAddresses]);
+
+  const persistGeneratedReceiveAddress = useCallback(async (wallet: WalletData, layer: ReceiveLayer) => {
+    if (!wallet?.privateKey?.trim()) {
+      throw new Error('Wallet unlocked, but this local account does not include a private key. Restore or reconnect the wallet before generating receive addresses.');
+    }
+
+    const bitcoinNetwork = currentNetwork === 'testnet' ? 'testnet' : 'mainnet';
+    const addressUpdates: {
+      bitcoinAddress?: string;
+      rootstockAddress?: string;
+      liquidAddress?: string;
+    } = {};
+
+    if (layer === 'bitcoin') {
+      const nextBitcoinAddress = wallet.bitcoinAddress || getBitcoinAddressFromPrivateKey(wallet.privateKey, bitcoinNetwork);
+      addressUpdates.bitcoinAddress = nextBitcoinAddress;
+    }
+
+    if (layer === 'rootstock') {
+      const nextRootstockAddress = wallet.rootstockAddress || getRootstockAddressFromPrivateKey(wallet.privateKey);
+      addressUpdates.rootstockAddress = nextRootstockAddress;
+    }
+
+    if (layer === 'liquid') {
+      const nextLiquidAddress = wallet.liquidAddress || getLiquidAddressFromPrivateKey(wallet.privateKey, bitcoinNetwork);
+      addressUpdates.liquidAddress = nextLiquidAddress;
+    }
+
+    const nextBitcoinAddress = addressUpdates.bitcoinAddress || wallet.bitcoinAddress || btcAddress || undefined;
+    const nextRootstockAddress = addressUpdates.rootstockAddress || wallet.rootstockAddress || rskAddress || undefined;
+    const nextLiquidAddress = addressUpdates.liquidAddress || wallet.liquidAddress || liquidAddress || undefined;
+
+    await saveReceiveAddressesToSupabase({
+      address: wallet.address || address,
+      ...(nextBitcoinAddress ? { bitcoinAddress: nextBitcoinAddress } : {}),
+      ...(nextRootstockAddress ? { rootstockAddress: nextRootstockAddress } : {}),
+      ...(nextLiquidAddress ? { liquidAddress: nextLiquidAddress } : {}),
+    });
+
+    updateEncryptedWalletAddresses(addressUpdates);
+
+    if (addressUpdates.bitcoinAddress) {
+      setBtcAddress(addressUpdates.bitcoinAddress);
+      setBtcAddressError(null);
+    }
+
+    if (addressUpdates.rootstockAddress) {
+      setRskAddress(addressUpdates.rootstockAddress);
+    }
+
+    if (addressUpdates.liquidAddress) {
+      setLiquidAddress(addressUpdates.liquidAddress);
+    }
+  }, [address, btcAddress, currentNetwork, liquidAddress, rskAddress]);
 
   const handleGenerateAddress = useCallback(async (password: string) => {
     if (!generateAddressLayer) {
@@ -706,65 +827,136 @@ export default function WalletPage() {
 
     try {
       const wallet = await retrieveEncryptedWallet(password);
-      if (!wallet?.privateKey?.trim()) {
-        throw new Error('Wallet unlocked, but this local account does not include a private key. Restore or reconnect the wallet before generating receive addresses.');
+      if (!wallet) {
+        throw new Error('Invalid wallet password');
       }
-
-      const bitcoinNetwork = currentNetwork === 'testnet' ? 'testnet' : 'mainnet';
-      const addressUpdates: {
-        bitcoinAddress?: string;
-        rootstockAddress?: string;
-        liquidAddress?: string;
-      } = {};
-
-      if (generateAddressLayer === 'bitcoin') {
-        const nextBitcoinAddress = wallet.bitcoinAddress || getBitcoinAddressFromPrivateKey(wallet.privateKey, bitcoinNetwork);
-        addressUpdates.bitcoinAddress = nextBitcoinAddress;
-      }
-
-      if (generateAddressLayer === 'rootstock') {
-        const nextRootstockAddress = wallet.rootstockAddress || getRootstockAddressFromPrivateKey(wallet.privateKey);
-        addressUpdates.rootstockAddress = nextRootstockAddress;
-      }
-
-      if (generateAddressLayer === 'liquid') {
-        const nextLiquidAddress = wallet.liquidAddress || getLiquidAddressFromPrivateKey(wallet.privateKey, bitcoinNetwork);
-        addressUpdates.liquidAddress = nextLiquidAddress;
-      }
-
-      const nextBitcoinAddress = addressUpdates.bitcoinAddress || wallet.bitcoinAddress || btcAddress || undefined;
-      const nextRootstockAddress = addressUpdates.rootstockAddress || wallet.rootstockAddress || rskAddress || undefined;
-      const nextLiquidAddress = addressUpdates.liquidAddress || wallet.liquidAddress || liquidAddress || undefined;
-
-      await saveReceiveAddressesToSupabase({
-        address: wallet.address || address,
-        ...(nextBitcoinAddress ? { bitcoinAddress: nextBitcoinAddress } : {}),
-        ...(nextRootstockAddress ? { rootstockAddress: nextRootstockAddress } : {}),
-        ...(nextLiquidAddress ? { liquidAddress: nextLiquidAddress } : {}),
-      });
-
-      updateEncryptedWalletAddresses(addressUpdates);
-
-      if (addressUpdates.bitcoinAddress) {
-        setBtcAddress(addressUpdates.bitcoinAddress);
-        setBtcAddressError(null);
-      }
-
-      if (addressUpdates.rootstockAddress) {
-        setRskAddress(addressUpdates.rootstockAddress);
-      }
-
-      if (addressUpdates.liquidAddress) {
-        setLiquidAddress(addressUpdates.liquidAddress);
-      }
-
+      await persistGeneratedReceiveAddress(wallet, generateAddressLayer);
       setShowGenerateAddressesModal(false);
       setGenerateAddressLayer(null);
       toast.success(`${RECEIVE_LAYER_LABELS[generateAddressLayer]} address generated`);
     } finally {
       setGeneratingAddresses(false);
     }
-  }, [address, btcAddress, currentNetwork, generateAddressLayer, liquidAddress, rskAddress]);
+  }, [generateAddressLayer, persistGeneratedReceiveAddress]);
+
+  const handleCreatePasskeyAndGenerateAddress = useCallback(async (
+    password: string,
+    email?: string,
+    verifiedEmailToken?: string
+  ) => {
+    if (!generateAddressLayer) {
+      setCreatePasskeyError('Select an address layer to generate');
+      return;
+    }
+
+    const trimmedEmail = email?.trim();
+    if (!trimmedEmail) {
+      setCreatePasskeyError('Email is required to create a passkey account.');
+      return;
+    }
+
+    if (!verifiedEmailToken) {
+      setCreatePasskeyError('Verify your email before creating your passkey account.');
+      return;
+    }
+
+    setGeneratingAddresses(true);
+    setCreatePasskeyError(null);
+
+    try {
+      const duplicateResponse = await fetch('/api/profile/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail }),
+      });
+      const duplicateResult = await duplicateResponse.json().catch(() => null);
+      if (duplicateResponse.ok && duplicateResult?.exists) {
+        throw new Error('Email is already registered.');
+      }
+
+      const networkForWallet = currentNetwork === 'testnet' ? 'testnet' : 'mainnet';
+      const {
+        mnemonic,
+        stxPrivateKey,
+        address: walletAddress,
+        bitcoinAddress,
+        rootstockAddress,
+        liquidAddress,
+        nostrPublicKey,
+      } = await createStacksAccount(networkForWallet);
+
+      const walletData: WalletData = {
+        mnemonic,
+        privateKey: stxPrivateKey,
+        bitcoinAddress,
+        rootstockAddress,
+        liquidAddress,
+        nostrPublicKey,
+        address: walletAddress,
+        label: `BBOX Wallet - ${trimmedEmail}`,
+      };
+
+      await createEncryptedWallet(walletData, password);
+      persistCachedWalletState(walletData.address, 'imported');
+      setAddress(walletData.address);
+      setWalletType('imported');
+
+      const encryptedSnapshot = getStoredEncryptedWallet();
+      if (!encryptedSnapshot) {
+        throw new Error('Failed to capture encrypted wallet snapshot. Please try again.');
+      }
+
+      const saveResponse = await fetch('/api/save-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          verifiedEmailToken,
+          passkey: stxPrivateKey,
+          passphrase: password,
+          address: walletData.address,
+          encryptedWallet: {
+            encryptedMnemonic: encryptedSnapshot.encryptedMnemonic,
+            encryptedPrivateKey: encryptedSnapshot.encryptedPrivateKey,
+            salt: encryptedSnapshot.salt,
+            iv: encryptedSnapshot.iv,
+            version: encryptedSnapshot.version,
+            label: encryptedSnapshot.label,
+            bitcoinAddress: encryptedSnapshot.bitcoinAddress,
+            rootstockAddress: encryptedSnapshot.rootstockAddress,
+            liquidAddress: encryptedSnapshot.liquidAddress,
+          },
+        }),
+      });
+      const saveResult = await saveResponse.json().catch(() => null);
+
+      if (!saveResponse.ok) {
+        if (saveResponse.status === 409) {
+          throw new Error(saveResult?.error || 'Email is already registered.');
+        }
+        throw new Error(saveResult?.error || 'Failed to create passkey account.');
+      }
+
+      await fetch('/api/wallet-connect/account-created', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, address: walletData.address, preVerified: true }),
+      }).catch((error) => {
+        console.warn('Failed to send account created email:', error);
+      });
+
+      await persistGeneratedReceiveAddress(walletData, generateAddressLayer);
+      setShowGenerateAddressesModal(false);
+      setGenerateAddressLayer(null);
+      toast.success(`${RECEIVE_LAYER_LABELS[generateAddressLayer]} address generated`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to create passkey account';
+      setCreatePasskeyError(message);
+      throw error;
+    } finally {
+      setGeneratingAddresses(false);
+    }
+  }, [createEncryptedWallet, currentNetwork, generateAddressLayer, persistGeneratedReceiveAddress, setAddress, setWalletType]);
 
   const handlePasteRecipient = useCallback(async () => {
     if (sendLoading) {
@@ -2273,15 +2465,27 @@ export default function WalletPage() {
         </div>
       )}
 
-      <PasswordSigningModal
-        isOpen={showGenerateAddressesModal}
-        onClose={closeGenerateAddressModal}
-        onSign={handleGenerateAddress}
-        title={`Generate ${generateAddressLayer ? RECEIVE_LAYER_LABELS[generateAddressLayer] : 'Receive'} Address`}
-        description={`Enter your wallet password to decrypt the local private key and generate ${generateAddressLayer ? `your ${RECEIVE_LAYER_LABELS[generateAddressLayer]}` : 'the selected'} receive address in this browser.`}
-        actionText="Generate"
-        isLoading={generatingAddresses}
-      />
+      {generateAddressAuthMode === 'unlock' ? (
+        <PasswordSigningModal
+          isOpen={showGenerateAddressesModal}
+          onClose={closeGenerateAddressModal}
+          onSign={handleGenerateAddress}
+          title={`Generate ${generateAddressLayer ? RECEIVE_LAYER_LABELS[generateAddressLayer] : 'Receive'} Address`}
+          description={`Enter your wallet password to decrypt the local private key and generate ${generateAddressLayer ? `your ${RECEIVE_LAYER_LABELS[generateAddressLayer]}` : 'the selected'} receive address in this browser.`}
+          actionText="Generate"
+          isLoading={generatingAddresses}
+        />
+      ) : (
+        <CreatePasskeyAddressModal
+          isOpen={showGenerateAddressesModal}
+          onClose={closeGenerateAddressModal}
+          onSubmit={handleCreatePasskeyAndGenerateAddress}
+          title={`Create Passkey Account`}
+          description={`Create a passkey account with your email and password to generate ${generateAddressLayer ? `your ${RECEIVE_LAYER_LABELS[generateAddressLayer]}` : 'the selected'} receive address.`}
+          error={createPasskeyError}
+          isLoading={generatingAddresses}
+        />
+      )}
 
       {/* Recent Transactions */}
       <div className="mt-10">
