@@ -881,6 +881,7 @@ export default function SettingsPage() {
                 
               </CardContent>
             </Card>
+
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6 mt-6">
@@ -976,6 +977,29 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <Card id="developer-mode" className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground scroll-mt-24">
+              <CardHeader>
+                <CardTitle>Developer Mode</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <SettingsCheckboxRow
+                  id="developer-mode-toggle"
+                  title="Show publishing tools"
+                  description="Turn this on only when you want to submit or manage app listings."
+                  checked={developerMode}
+                  disabled={savingDeveloperMode}
+                  onCheckedChange={handleDeveloperModeChange}
+                />
+
+                {developerMode && (
+                  <Button asChild className="w-full bg-orange-500 text-white hover:bg-orange-600">
+                    <Link href="/submit">Submit an App</Link>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+
           </TabsContent>
 
           {developerMode && (
@@ -1171,6 +1195,100 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {!isExtensionWallet && (
+              <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
+                <CardHeader>
+                  <CardTitle>Reveal Recovery Keys</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <p className="text-sm text-gray-400">
+                    Enter your wallet password to decrypt and show your mnemonic, private key, and Nostr nsec key locally in this browser.
+                  </p>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <input
+                      className="min-w-0 flex-1 px-4 py-3 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      type="password"
+                      value={recoveryPassword}
+                      onChange={event => setRecoveryPassword(event.target.value)}
+                      onKeyDown={event => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          void handleRevealRecoveryKeys();
+                        }
+                      }}
+                      placeholder="Wallet password"
+                      autoComplete="current-password"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleRevealRecoveryKeys}
+                      disabled={revealingKeys || !recoveryPassword.trim()}
+                      className="shrink-0 bg-red-600 text-white hover:bg-red-700"
+                    >
+                      <KeyRound className="h-4 w-4" />
+                      {revealingKeys ? 'Unlocking...' : 'Reveal Keys'}
+                    </Button>
+                  </div>
+
+                  {recoveryKeys && (
+                    <div className="space-y-4 rounded-lg border border-red-500/40 bg-red-500/5 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-sm font-medium text-red-600 dark:text-red-300">
+                          Keep these keys private. Anyone with them can control your wallet.
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowRecoveryKeys(value => !value)}
+                            className="border-border text-muted-foreground hover:bg-muted"
+                          >
+                            {showRecoveryKeys ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            {showRecoveryKeys ? 'Hide' : 'Show'}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={clearRecoveryKeys}
+                            className="border-border text-muted-foreground hover:bg-muted"
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      </div>
+
+                      {[
+                        { label: 'Mnemonic', value: recoveryKeys.mnemonic },
+                        { label: 'Private Key', value: recoveryKeys.privateKey },
+                        { label: 'Nostr nsec Key', value: recoveryKeys.nsec },
+                      ].map(secret => (
+                        <div key={secret.label} className="space-y-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <label className="text-xs font-medium uppercase text-gray-500">{secret.label}</label>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copySecret(secret.label, secret.value)}
+                              className="h-8 border-border text-muted-foreground hover:bg-muted"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="min-h-12 break-all rounded-lg border border-[#222] bg-background p-3 font-mono text-sm text-foreground">
+                            {showRecoveryKeys ? secret.value : '********************************'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {isExtensionWallet && !isNostrLightningWallet && !isBitcoinOnlyExtensionWallet && (
@@ -1249,122 +1367,6 @@ export default function SettingsPage() {
           </div>
         </form>
       </Tabs>
-
-      <Card id="developer-mode" className="mt-8 bg-accent-background border-gray-200 dark:border-gray-700 text-foreground scroll-mt-24">
-        <CardHeader>
-          <CardTitle>Developer Mode</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <SettingsCheckboxRow
-            id="developer-mode-toggle"
-            title="Show publishing tools"
-            description="Turn this on only when you want to submit or manage app listings."
-            checked={developerMode}
-            disabled={savingDeveloperMode}
-            onCheckedChange={handleDeveloperModeChange}
-          />
-
-          {developerMode && (
-            <Button asChild className="w-full bg-orange-500 text-white hover:bg-orange-600">
-              <Link href="/submit">Submit an App</Link>
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
-      {!isExtensionWallet && (
-        <Card className="mt-8 bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
-          <CardHeader>
-            <CardTitle>Reveal Recovery Keys</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <p className="text-sm text-gray-400">
-              Enter your wallet password to decrypt and show your mnemonic, private key, and Nostr nsec key locally in this browser.
-            </p>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                className="min-w-0 flex-1 px-4 py-3 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                type="password"
-                value={recoveryPassword}
-                onChange={event => setRecoveryPassword(event.target.value)}
-                onKeyDown={event => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    void handleRevealRecoveryKeys();
-                  }
-                }}
-                placeholder="Wallet password"
-                autoComplete="current-password"
-              />
-              <Button
-                type="button"
-                onClick={handleRevealRecoveryKeys}
-                disabled={revealingKeys || !recoveryPassword.trim()}
-                className="shrink-0 bg-red-600 text-white hover:bg-red-700"
-              >
-                <KeyRound className="h-4 w-4" />
-                {revealingKeys ? 'Unlocking...' : 'Reveal Keys'}
-              </Button>
-            </div>
-
-            {recoveryKeys && (
-              <div className="space-y-4 rounded-lg border border-red-500/40 bg-red-500/5 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm font-medium text-red-600 dark:text-red-300">
-                    Keep these keys private. Anyone with them can control your wallet.
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowRecoveryKeys(value => !value)}
-                      className="border-border text-muted-foreground hover:bg-muted"
-                    >
-                      {showRecoveryKeys ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      {showRecoveryKeys ? 'Hide' : 'Show'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={clearRecoveryKeys}
-                      className="border-border text-muted-foreground hover:bg-muted"
-                    >
-                      Clear
-                    </Button>
-                  </div>
-                </div>
-
-                {[
-                  { label: 'Mnemonic', value: recoveryKeys.mnemonic },
-                  { label: 'Private Key', value: recoveryKeys.privateKey },
-                  { label: 'Nostr nsec Key', value: recoveryKeys.nsec },
-                ].map(secret => (
-                  <div key={secret.label} className="space-y-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <label className="text-xs font-medium uppercase text-gray-500">{secret.label}</label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copySecret(secret.label, secret.value)}
-                        className="h-8 border-border text-muted-foreground hover:bg-muted"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="min-h-12 break-all rounded-lg border border-[#222] bg-background p-3 font-mono text-sm text-foreground">
-                      {showRecoveryKeys ? secret.value : '********************************'}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Account Management Links */}
       <div className="mt-12 pt-8">

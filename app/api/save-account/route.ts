@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     const [existingAccountResult, existingProfileResult] = await Promise.all([
       supabaseAdmin
         .from('connected_accounts')
-        .select('email')
+        .select('email, address')
         .ilike('email', trimmedEmail)
         .limit(1),
       supabaseAdmin
@@ -105,41 +105,61 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const hasAccount = Array.isArray(existingAccountResult.data) && existingAccountResult.data.length > 0;
-    const hasProfile = Array.isArray(existingProfileResult.data) && existingProfileResult.data.length > 0;
+    const accountMatch = Array.isArray(existingAccountResult.data) && existingAccountResult.data.length > 0
+      ? existingAccountResult.data[0]
+      : null;
+    const profileMatch = Array.isArray(existingProfileResult.data) && existingProfileResult.data.length > 0
+      ? existingProfileResult.data[0]
+      : null;
+    const accountMatchesCurrentAddress =
+      typeof accountMatch?.address === 'string' &&
+      accountMatch.address.toLowerCase() === address.toLowerCase();
+    const profileMatchesCurrentAddress =
+      typeof profileMatch?.address === 'string' &&
+      profileMatch.address.toLowerCase() === address.toLowerCase();
 
-    if (hasAccount || hasProfile) {
+    if ((accountMatch && !accountMatchesCurrentAddress) || (profileMatch && !profileMatchesCurrentAddress)) {
       return NextResponse.json(
         {
           error: 'Email is already registered',
-          inProfiles: hasProfile,
-          inConnectedAccounts: hasAccount
+          inProfiles: Boolean(profileMatch),
+          inConnectedAccounts: Boolean(accountMatch)
         },
         { status: 409 }
       );
     }
 
     // Save to Supabase
-    const { data, error } = await supabaseAdmin
-      .from('connected_accounts')
-      .insert([
-        {
-          email: normalizedEmail,
-          passkey: hashedPasskey,
-          address,
-          encrypted_private_key: encryptedPrivateKey,
-          encrypted_mnemonic: encryptedMnemonic,
-          encryption_salt: salt,
-          encryption_iv: iv,
-          encryption_version: version || '1.0.0',
-          wallet_label: walletLabel || 'BBOX Wallet',
-          bitcoin_address: bitcoinAddress || null,
-          rootstock_address: rootstockAddress || null,
-          liquid_address: liquidAddress || null,
-          created_at: new Date().toISOString(),
-        }
-      ])
-      .select();
+    const connectedAccountPayload = {
+      email: normalizedEmail,
+      passkey: hashedPasskey,
+      address,
+      encrypted_private_key: encryptedPrivateKey,
+      encrypted_mnemonic: encryptedMnemonic,
+      encryption_salt: salt,
+      encryption_iv: iv,
+      encryption_version: version || '1.0.0',
+      wallet_label: walletLabel || 'BBOX Wallet',
+      bitcoin_address: bitcoinAddress || null,
+      rootstock_address: rootstockAddress || null,
+      liquid_address: liquidAddress || null,
+    };
+
+    const { data, error } = accountMatchesCurrentAddress
+      ? await supabaseAdmin
+          .from('connected_accounts')
+          .update(connectedAccountPayload)
+          .ilike('email', normalizedEmail)
+          .select()
+      : await supabaseAdmin
+          .from('connected_accounts')
+          .insert([
+            {
+              ...connectedAccountPayload,
+              created_at: new Date().toISOString(),
+            }
+          ])
+          .select();
 
     if (error) {
       console.error('Supabase insert error:', error);

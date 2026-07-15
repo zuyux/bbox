@@ -796,7 +796,7 @@ export default function WalletPage() {
     const nextLiquidAddress = addressUpdates.liquidAddress || wallet.liquidAddress || liquidAddress || undefined;
 
     await saveReceiveAddressesToSupabase({
-      address: wallet.address || address,
+      address: address || wallet.address,
       ...(nextBitcoinAddress ? { bitcoinAddress: nextBitcoinAddress } : {}),
       ...(nextRootstockAddress ? { rootstockAddress: nextRootstockAddress } : {}),
       ...(nextLiquidAddress ? { liquidAddress: nextLiquidAddress } : {}),
@@ -870,7 +870,20 @@ export default function WalletPage() {
         body: JSON.stringify({ email: trimmedEmail }),
       });
       const duplicateResult = await duplicateResponse.json().catch(() => null);
-      if (duplicateResponse.ok && duplicateResult?.exists) {
+      const profileAddressMatchesCurrent =
+        typeof duplicateResult?.profileAddress === 'string' &&
+        address &&
+        duplicateResult.profileAddress.toLowerCase() === address.toLowerCase();
+      const accountAddressMatchesCurrent =
+        typeof duplicateResult?.accountAddress === 'string' &&
+        address &&
+        duplicateResult.accountAddress.toLowerCase() === address.toLowerCase();
+      const duplicateBelongsToAnotherAddress =
+        duplicateResult?.exists &&
+        !profileAddressMatchesCurrent &&
+        !accountAddressMatchesCurrent;
+
+      if (duplicateResponse.ok && duplicateBelongsToAnotherAddress) {
         throw new Error('Email is already registered.');
       }
 
@@ -892,14 +905,16 @@ export default function WalletPage() {
         rootstockAddress,
         liquidAddress,
         nostrPublicKey,
-        address: walletAddress,
+        address: address || walletAddress,
         label: `BBOX Wallet - ${trimmedEmail}`,
       };
 
       await createEncryptedWallet(walletData, password);
-      persistCachedWalletState(walletData.address, 'imported');
-      setAddress(walletData.address);
-      setWalletType('imported');
+      if (!address) {
+        persistCachedWalletState(walletData.address, 'imported');
+        setAddress(walletData.address);
+        setWalletType('imported');
+      }
 
       const encryptedSnapshot = getStoredEncryptedWallet();
       if (!encryptedSnapshot) {
@@ -956,7 +971,7 @@ export default function WalletPage() {
     } finally {
       setGeneratingAddresses(false);
     }
-  }, [createEncryptedWallet, currentNetwork, generateAddressLayer, persistGeneratedReceiveAddress, setAddress, setWalletType]);
+  }, [address, createEncryptedWallet, currentNetwork, generateAddressLayer, persistGeneratedReceiveAddress, setAddress, setWalletType]);
 
   const handlePasteRecipient = useCallback(async () => {
     if (sendLoading) {
