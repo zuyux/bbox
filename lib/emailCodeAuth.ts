@@ -1,9 +1,12 @@
 import crypto from 'crypto';
 
-const tokenSecret = process.env.EMAIL_TOKEN_SECRET || process.env.SUPABASE_SECRET_KEY;
+const tokenSecret =
+  process.env.EMAIL_TOKEN_SECRET ||
+  process.env.SUPABASE_SECRET_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!tokenSecret) {
-  throw new Error('EMAIL_TOKEN_SECRET or SUPABASE_SECRET_KEY must be set to use email code authentication.');
+  throw new Error('EMAIL_TOKEN_SECRET, SUPABASE_SECRET_KEY, or SUPABASE_SERVICE_ROLE_KEY must be set to use email code authentication.');
 }
 
 export const EMAIL_CODE_PURPOSE = 'create_account';

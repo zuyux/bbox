@@ -3,7 +3,7 @@ import { fetchWithRetry } from './externalApi';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!
-const supabaseServiceKey = process.env.SUPABASE_SECRET_KEY
+const supabaseServiceKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
 
 function supabaseFetch(input: string | Request | URL, init?: RequestInit) {
   return fetchWithRetry(input, init);
@@ -13,7 +13,7 @@ function supabaseFetch(input: string | Request | URL, init?: RequestInit) {
 if (typeof window === 'undefined') {
   console.log('Supabase Service Key:', supabaseServiceKey ? 'Available' : 'Missing')
   console.log('Environment check:', { 
-    hasSecret: !!process.env.SUPABASE_SECRET_KEY,
+    hasSecret: !!supabaseServiceKey,
     hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
     hasAnon: !!process.env.NEXT_PUBLIC_SUPABASE_KEY
   })

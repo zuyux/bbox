@@ -90,11 +90,19 @@ export async function POST(request: NextRequest) {
       expiresInMinutes: EMAIL_CODE_TTL_MINUTES,
     });
 
-    await sendEmail({
-      to: normalizedEmail,
-      subject: template.subject,
-      html: template.html,
-    });
+    try {
+      await sendEmail({
+        to: normalizedEmail,
+        subject: template.subject,
+        html: template.html,
+      });
+    } catch (emailError) {
+      console.error('Failed to deliver email verification code:', emailError);
+      return NextResponse.json(
+        { error: emailError instanceof Error ? emailError.message : 'Failed to deliver verification code' },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({
       success: true,

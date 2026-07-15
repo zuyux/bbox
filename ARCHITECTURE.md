@@ -172,7 +172,7 @@ The main environment-backed services are:
 - **GitHub OAuth:** repository/account linking routes.
 - **Resend:** email and verification flows.
 
-See `.env.example` for the expected variables. Server-only secrets such as `SUPABASE_SECRET_KEY`, `PINATA_JWT`, `BLOB_READ_WRITE_TOKEN`, `GITHUB_CLIENT_SECRET`, and `RESEND_API_KEY` must stay out of client code.
+See `.env.example` for the expected variables. Server-only secrets such as `SUPABASE_SECRET_KEY` / `SUPABASE_SERVICE_ROLE_KEY`, `PINATA_JWT`, `BLOB_READ_WRITE_TOKEN`, `GITHUB_CLIENT_SECRET`, and `RESEND_API_KEY` must stay out of client code.
 
 ## Conventions For Changes
 
