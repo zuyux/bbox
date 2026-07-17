@@ -49,13 +49,6 @@ import {
   type BarFeeEstimate,
 } from '@/lib/bar-inscription';
 
-// Extend Window interface for Stacks wallet
-declare global {
-  interface Window {
-    StacksProvider?: unknown;
-  }
-}
-
 interface AppFormData {
   name: string;
   description: string;

@@ -397,7 +397,6 @@ declare global {
   }
 
   interface Window {
-    StacksProvider?: unknown;
     LeatherProvider?: unknown;
   }
 }
@@ -416,6 +415,7 @@ import { fetchRecentTransactions } from "@/lib/fetchRecentTransactions";
 import Image from "next/image";
 import { getProfile } from "@/lib/profileApi";
 import { getOkxBitcoinAccounts, type OkxBitcoinAccount } from "@/lib/okxWallet";
+import { BitflowSwapPanel } from "@/features/swaps/components/BitflowSwapPanel";
 
 export default function WalletPage() {
   const address = useCurrentAddress() || "";
@@ -490,6 +490,7 @@ export default function WalletPage() {
   const [showReceive, setShowReceive] = useState(false);
   const [receiveAsset, setReceiveAsset] = useState<ReceiveAsset>('bitcoin');
   const [showSend, setShowSend] = useState(false);
+  const [showSwap, setShowSwap] = useState(false);
   const [sendTo, setSendTo] = useState("");
   const [sendAmount, setSendAmount] = useState("");
   const [sendPassword, setSendPassword] = useState("");
@@ -1779,6 +1780,17 @@ export default function WalletPage() {
         </div>
       )}
 
+      {!isNostrLightningAccount && !isBitcoinOnlyAccount && (
+        <button
+          type="button"
+          className="mb-8 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-transparent px-6 py-3 text-foreground transition-all duration-200 hover:bg-[#111]"
+          onClick={() => setShowSwap(true)}
+        >
+          <Image src="/swap.svg" alt="" width={18} height={18} aria-hidden="true" />
+          <span>Swap</span>
+        </button>
+      )}
+
       <div className="mt-16 w-full">
         <div className="flex items-center justify-between">
           {!isNostrLightningAccount && !isBitcoinOnlyAccount && !assetsLoading && (
@@ -1940,6 +1952,18 @@ export default function WalletPage() {
       </div>
 
       {/* Send Modal */}
+      {showSwap && (
+        <BitflowSwapPanel
+          address={address}
+          walletType={walletType}
+          network={currentNetwork}
+          onClose={() => setShowSwap(false)}
+          onComplete={() => {
+            window.setTimeout(refreshStacksBalance, 5_000);
+          }}
+        />
+      )}
+
       {showSend && (
         <div
           className="fixed inset-0 bg-[#111] backdrop-blur-sm flex items-center justify-center z-100 px-4 py-6"
