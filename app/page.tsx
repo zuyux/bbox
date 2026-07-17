@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { H1, Lead } from '@/components/ui/typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowRight, Blocks, Code2, Coins, Compass, Layers3, ShieldCheck, Sparkles, Store, Users } from 'lucide-react';
+import { ArrowRight, Blocks, ChevronDown, Code2, Coins, Compass, Layers3, ShieldCheck, Sparkles, Store, Users } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import type { BitcoinApp } from '@/lib/appsUtils';
 import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
@@ -74,6 +74,41 @@ const ecosystemPillars = [
     label: 'Open-source commons',
     detail: 'A neutral surface where users, contributors, communities, and DAOs can coordinate around high-integrity software.',
     icon: Users,
+  },
+];
+
+const faqItems = [
+  {
+    question: 'Is BBOX free to use?',
+    answer: 'Yes. Browsing apps, reading profiles, and exploring public metadata are free. Funding and app-specific services may involve separate payment flows set by each project.',
+  },
+  {
+    question: 'What kinds of apps are listed on BBOX?',
+    answer: 'BBOX focuses on open-source Bitcoin apps, privacy tools, safe AI projects, wallets, infrastructure, developer tools, and other high-integrity software in the sovereign technology ecosystem.',
+  },
+  {
+    question: 'How are app profiles verified?',
+    answer: 'Profiles surface source links, publisher details, metadata, reviews, and public project context so users can inspect a project before installing, funding, or recommending it.',
+  },
+  {
+    question: 'Can I submit my own app?',
+    answer: 'Yes. Builders can submit apps for review, add project metadata, and keep their profile useful for users, funders, and contributors.',
+  },
+  {
+    question: 'How does funding work?',
+    answer: 'BBOX is designed to make funding context easier to understand through public project details, milestones, and delivery signals before support moves to a project.',
+  },
+  {
+    question: 'Do I need a wallet to browse?',
+    answer: 'No wallet is required to explore listed apps. A wallet or account connection is only needed for actions tied to identity, publishing, funding, or account-specific features.',
+  },
+  {
+    question: 'Who is BBOX for?',
+    answer: 'BBOX is for users looking for trustworthy software, builders publishing open-source projects, funders supporting public goods, and communities coordinating around useful tools.',
+  },
+  {
+    question: 'Where can I learn more about the protocol?',
+    answer: 'The documentation explains the Bitcoin App Registry, app metadata, submissions, funding context, and how builders can participate in the open app ecosystem.',
   },
 ];
 
@@ -701,24 +736,58 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* FAQ Section */}
+        <section className="my-24" aria-labelledby="faq-heading">
+          <div className="mx-auto mb-12 max-w-4xl text-center">
+            <div className="mb-6 inline-flex items-center rounded-md border border-orange-500/25 bg-orange-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-orange-600 dark:text-orange-300">
+              FAQ
+            </div>
+            <h2 id="faq-heading" className="title mb-4 text-4xl font-bold md:text-5xl lg:text-6xl">
+              Frequently asked <span className="text-orange-500">questions</span>
+            </h2>
+            <p className="mx-auto mb-0 max-w-3xl text-base leading-7 text-muted-foreground md:text-lg">
+              Everything you need to know about BBOX. Can&apos;t find your answer? Start with the docs or explore the app registry.
+            </p>
+          </div>
+
+          <div className="mx-auto max-w-5xl space-y-3">
+            {faqItems.map(({ question, answer }) => (
+              <details
+                key={question}
+                className="group rounded-lg border border-border bg-card/80 shadow-sm transition hover:border-orange-500/40 open:border-orange-500/50 open:bg-card"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-foreground marker:hidden md:px-6 [&::-webkit-details-marker]:hidden">
+                  <span>{question}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180 group-open:text-orange-500" aria-hidden="true" />
+                </summary>
+                <div className="px-5 pb-5 pt-0 md:px-6">
+                  <p className="mb-0 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
+                    {answer}
+                  </p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
+
         {/* Call to Action */}
-        <div className="mt-8 overflow-hidden rounded-lg border border-border bg-background/10 text-foreground">
+        <div className="mt-8 overflow-hidden rounded-lg border border-orange-300/40 bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600 text-white shadow-xl shadow-orange-500/20">
           <div className="grid gap-8 p-8 md:grid-cols-[1fr_auto] md:items-center md:p-10">
             <div>
-              <p className="mb-3 text-sm uppercase tracking-[0.28em] text-orange-300">Explore the sovereign software commons</p>
+              <p className="mb-3 text-sm uppercase tracking-[0.28em] text-orange-100">Explore the sovereign software commons</p>
               <h3 className="title mb-4 text-4xl font-bold md:text-5xl">Find and support verified open-source software.</h3>
-              <p className="mb-0 max-w-2xl text-sm leading-6 text-foreground md:text-base">
+              <p className="mb-0 max-w-2xl text-sm leading-6 text-orange-50 md:text-base">
                 Use BBOX to move from scattered links to readable app profiles: metadata, source code, milestones, reviews, and funding context together.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
-              <Button size="lg" variant="outline" className="cursor-pointer" asChild>
+              <Button size="lg" variant="outline" className="cursor-pointer border-white/60 bg-white/10 text-white hover:bg-white hover:text-orange-600" asChild>
                 <Link href="/documentation">
                   Learn
                 </Link>
               </Button>
               {developerMode && (
-                <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer" onClick={handleStartBuilding}>
+                <Button size="lg" className="cursor-pointer bg-white text-orange-600 hover:bg-orange-50" onClick={handleStartBuilding}>
                   Build
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
