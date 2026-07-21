@@ -662,7 +662,7 @@ export default function HomePage() {
                                   width={112}
                                   height={112}
                                   loading="lazy"
-                                  onLoadingComplete={() => markImageLoaded(app.id)}
+                                  onLoad={() => markImageLoaded(app.id)}
                                   className={`object-cover w-full h-full transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                                 />
                               </div>
