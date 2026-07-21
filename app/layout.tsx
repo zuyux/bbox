@@ -13,6 +13,7 @@ import { I18nProvider } from '@/components/I18nProvider';
 import { headers } from 'next/headers';
 import { defaultLocale, isLocale } from '@/lib/i18n';
 import { messages } from '@/lib/messages';
+import { getSiteUrl } from '@/lib/site';
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -41,28 +42,59 @@ const lacquer = Lacquer({
   weight: ["400"],
 });
 
-export const metadata: Metadata = {
-  title: "BBOX - Universal Registry for Verified Software",
-  description: "Discover, evaluate, and fund verified open-source software",
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
-  },
-  manifest: '/site.webmanifest',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'BBOX',
-  },
-  formatDetection: {
-    telephone: false,
-    date: false,
-    address: false,
-    email: false,
-    url: false,
-  },
-};
+const socialLocales = { en: 'en_US', es: 'es_ES', pt: 'pt_BR' } as const;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const requestedLocale = requestHeaders.get('x-bbox-locale');
+  const locale = isLocale(requestedLocale) ? requestedLocale : defaultLocale;
+  const localizedPath = requestHeaders.get('x-bbox-pathname') || `/${locale}`;
+  const barePath = localizedPath.replace(/^\/(en|es|pt)(?=\/|$)/, '') || '/';
+  const pathFor = (language: 'en' | 'es' | 'pt') => barePath === '/' ? `/${language}` : `/${language}${barePath}`;
+  const seo = messages[locale].seo;
+  const siteUrl = getSiteUrl();
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
+    applicationName: 'BBOX',
+    alternates: {
+      canonical: localizedPath,
+      languages: {
+        'en-US': pathFor('en'),
+        'es-ES': pathFor('es'),
+        'pt-BR': pathFor('pt'),
+        'x-default': pathFor('en'),
+      },
+    },
+    openGraph: {
+      type: 'website',
+      siteName: 'BBOX',
+      title: seo.title,
+      description: seo.description,
+      url: localizedPath,
+      locale: socialLocales[locale],
+      alternateLocale: Object.values(socialLocales).filter((value) => value !== socialLocales[locale]),
+      images: [{ url: '/BBOX-BG.png', alt: 'BBOX' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seo.title,
+      description: seo.description,
+      images: ['/BBOX-BG.png'],
+    },
+    icons: {
+      icon: '/favicon.ico',
+      shortcut: '/favicon-16x16.png',
+      apple: '/apple-touch-icon.png',
+    },
+    manifest: '/site.webmanifest',
+    appleWebApp: { capable: true, statusBarStyle: 'default', title: 'BBOX' },
+    formatDetection: { telephone: false, date: false, address: false, email: false, url: false },
+  };
+}
 
 export default async function RootLayout({
   children,

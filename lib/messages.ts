@@ -1,6 +1,11 @@
 import type { Locale } from './i18n';
 
 const en = {
+  seo: {
+    title: 'BBOX — Open App Store for Verified Software',
+    description: 'Discover, evaluate, and fund verified open-source Bitcoin apps, privacy tools, safe AI projects, and sovereign software.',
+    keywords: ['open-source apps', 'Bitcoin apps', 'verified software', 'sovereign software', 'public goods funding'],
+  },
   common: { learn: 'Learn', build: 'Build', privacy: 'Privacy', terms: 'Terms', subscribe: 'Subscribe', sending: 'Sending', profile: 'Profile' },
   nav: { primary: 'Primary navigation', home: 'BBOX home', search: 'Search apps', searchPlaceholder: 'SEARCH APPS...', openSearch: 'Open search' },
   footer: { tagline: 'Our Open App Store' },
@@ -29,6 +34,11 @@ const en = {
 };
 
 const es: typeof en = {
+  seo: {
+    title: 'BBOX — Tienda abierta de software verificado',
+    description: 'Descubre, evalúa y financia aplicaciones Bitcoin de código abierto, herramientas de privacidad, proyectos de IA segura y software soberano.',
+    keywords: ['aplicaciones de código abierto', 'aplicaciones Bitcoin', 'software verificado', 'software soberano', 'financiamiento de bienes públicos'],
+  },
   common: { learn: 'Aprender', build: 'Crear', privacy: 'Privacidad', terms: 'Términos', subscribe: 'Suscribirse', sending: 'Enviando', profile: 'Perfil' },
   nav: { primary: 'Navegación principal', home: 'Inicio de BBOX', search: 'Buscar aplicaciones', searchPlaceholder: 'BUSCAR APLICACIONES...', openSearch: 'Abrir búsqueda' },
   footer: { tagline: 'Nuestra tienda abierta de aplicaciones' }, accessibility: { skip: 'Ir al contenido principal', main: 'Contenido principal' },
@@ -53,6 +63,11 @@ const es: typeof en = {
 };
 
 const pt: typeof en = {
+  seo: {
+    title: 'BBOX — Loja aberta de software verificado',
+    description: 'Descubra, avalie e financie aplicativos Bitcoin de código aberto, ferramentas de privacidade, projetos de IA segura e software soberano.',
+    keywords: ['aplicativos de código aberto', 'aplicativos Bitcoin', 'software verificado', 'software soberano', 'financiamento de bens públicos'],
+  },
   common: { learn: 'Aprender', build: 'Criar', privacy: 'Privacidade', terms: 'Termos', subscribe: 'Assinar', sending: 'Enviando', profile: 'Perfil' },
   nav: { primary: 'Navegação principal', home: 'Início da BBOX', search: 'Buscar aplicativos', searchPlaceholder: 'BUSCAR APLICATIVOS...', openSearch: 'Abrir busca' },
   footer: { tagline: 'Nossa loja aberta de aplicativos' }, accessibility: { skip: 'Ir para o conteúdo principal', main: 'Conteúdo principal' },

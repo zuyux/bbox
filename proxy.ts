@@ -19,6 +19,7 @@ export function proxy(request: NextRequest) {
     url.pathname = `/${pathname.split('/').slice(2).join('/')}` || '/';
     const headers = new Headers(request.headers);
     headers.set('x-bbox-locale', firstSegment);
+    headers.set('x-bbox-pathname', pathname);
     const response = NextResponse.rewrite(url, { request: { headers } });
     response.cookies.set('bbox-locale', firstSegment, { path: '/', maxAge: 31536000, sameSite: 'lax' });
     return response;
