@@ -4,12 +4,14 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import { useI18n } from './I18nProvider';
 
 const SearchModal = dynamic(() => import('./SearchModal').then((mod) => mod.SearchModal), {
   ssr: false,
 });
 
 export function NavbarSearch() {
+  const { messages } = useI18n();
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const showSearch = !pathname.startsWith('/settings') && !pathname.startsWith('/wallet');
@@ -27,12 +29,12 @@ export function NavbarSearch() {
         />
         <button
           type="button"
-          aria-label="Search apps"
+          aria-label={messages.nav.search}
           className="title-jersey-light w-full rounded-md border border-foreground/10 bg-background/50 py-2 pl-10 pr-4 text-left text-xs text-foreground/20 transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
           onClick={() => setSearchOpen(true)}
         >
-          <span className="hidden text-muted-foreground md:inline">SEARCH APPS...</span>
-          <span className="sr-only md:hidden">Open search</span>
+          <span className="hidden text-muted-foreground md:inline">{messages.nav.searchPlaceholder}</span>
+          <span className="sr-only md:hidden">{messages.nav.openSearch}</span>
         </button>
       </div>
       {searchOpen && <SearchModal open onClose={() => setSearchOpen(false)} />}

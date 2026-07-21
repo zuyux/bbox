@@ -1,6 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getPreferredLocale, isLocale } from './lib/i18n';
 
 export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const firstSegment = pathname.split('/')[1];
+  const isInternal = pathname.startsWith('/api/') || pathname.startsWith('/_next/') || pathname.includes('.');
+
+  if (!isInternal && !isLocale(firstSegment)) {
+    const cookieLocale = request.cookies.get('bbox-locale')?.value;
+    const locale = isLocale(cookieLocale) ? cookieLocale : getPreferredLocale(request.headers.get('accept-language'));
+    const url = request.nextUrl.clone();
+    url.pathname = pathname === '/' ? `/${locale}` : `/${locale}${pathname}`;
+    return NextResponse.redirect(url);
+  }
+
+  if (!isInternal && isLocale(firstSegment)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${pathname.split('/').slice(2).join('/')}` || '/';
+    const headers = new Headers(request.headers);
+    headers.set('x-bbox-locale', firstSegment);
+    const response = NextResponse.rewrite(url, { request: { headers } });
+    response.cookies.set('bbox-locale', firstSegment, { path: '/', maxAge: 31536000, sameSite: 'lax' });
+    return response;
+  }
+
   // Add CORS headers for every response
   const response = NextResponse.next();
 

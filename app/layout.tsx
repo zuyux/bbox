@@ -9,6 +9,10 @@ import WelcomeModal from '@/components/WelcomeModal';
 import { Toaster } from "@/components/ui/sonner"
 import AppLoadingProvider from "@/components/AppLoadingProvider";
 import GlobalErrorHandler from "@/components/GlobalErrorHandler";
+import { I18nProvider } from '@/components/I18nProvider';
+import { headers } from 'next/headers';
+import { defaultLocale, isLocale } from '@/lib/i18n';
+import { messages } from '@/lib/messages';
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -60,25 +64,28 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestedLocale = (await headers()).get('x-bbox-locale');
+  const locale = isLocale(requestedLocale) ? requestedLocale : defaultLocale;
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} ${jersey10.variable} ${lacquer.variable} antialiased`}>
+        <I18nProvider locale={locale} messages={messages[locale]}>
         <GlobalErrorHandler />
         <WalletProvider>
           <Providers>
             <AppLoadingProvider>
               <a href="#main-content" className="skip-link">
-                Skip to main content
+                {messages[locale].accessibility.skip}
               </a>
               <GetInButton />
               <Navbar />              
               <WelcomeModal />
-              <main id="main-content" tabIndex={-1} className="pb-28" aria-label="Main content">
+              <main id="main-content" tabIndex={-1} className="pb-28" aria-label={messages[locale].accessibility.main}>
                 {children}
               </main>
               <Footer />
@@ -86,6 +93,7 @@ export default function RootLayout({
           </Providers>
         </WalletProvider>
         <Toaster />
+        </I18nProvider>
       </body>
     </html>
   );

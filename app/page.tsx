@@ -16,6 +16,7 @@ import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
 import { getProfileDeveloperMode } from '@/lib/profileApi';
+import { useI18n } from '@/components/I18nProvider';
 
 const categoryIcons: Record<string, string> = {
   Wallet: '/icons/wallet.svg',
@@ -77,41 +78,6 @@ const ecosystemPillars = [
   },
 ];
 
-const faqItems = [
-  {
-    question: 'Is BBOX free to use?',
-    answer: 'Yes. Browsing apps, reading profiles, and exploring public metadata are free. Funding and app-specific services may involve separate payment flows set by each project.',
-  },
-  {
-    question: 'What kinds of apps are listed on BBOX?',
-    answer: 'BBOX focuses on open-source Bitcoin apps, privacy tools, safe AI projects, wallets, infrastructure, developer tools, and other high-integrity software in the sovereign technology ecosystem.',
-  },
-  {
-    question: 'How are app profiles verified?',
-    answer: 'Profiles surface source links, publisher details, metadata, reviews, and public project context so users can inspect a project before installing, funding, or recommending it.',
-  },
-  {
-    question: 'Can I submit my own app?',
-    answer: 'Yes. Builders can submit apps for review, add project metadata, and keep their profile useful for users, funders, and contributors.',
-  },
-  {
-    question: 'How does funding work?',
-    answer: 'BBOX is designed to make funding context easier to understand through public project details, milestones, and delivery signals before support moves to a project.',
-  },
-  {
-    question: 'Do I need a wallet to browse?',
-    answer: 'No wallet is required to explore listed apps. A wallet or account connection is only needed for actions tied to identity, publishing, funding, or account-specific features.',
-  },
-  {
-    question: 'Who is BBOX for?',
-    answer: 'BBOX is for users looking for trustworthy software, builders publishing open-source projects, funders supporting public goods, and communities coordinating around useful tools.',
-  },
-  {
-    question: 'Where can I learn more about the protocol?',
-    answer: 'The documentation explains the Bitcoin App Registry, app metadata, submissions, funding context, and how builders can participate in the open app ecosystem.',
-  },
-];
-
 const calculateCategories = (apps: BitcoinApp[]) => {
   const categoryCount = getCategoryStats(apps);
 
@@ -123,6 +89,8 @@ const calculateCategories = (apps: BitcoinApp[]) => {
 };
 
 export default function HomePage() {
+  const { messages } = useI18n();
+  const copy = messages.home;
   const router = useRouter();
   const [isDragging, setIsDragging] = useState(false);
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
@@ -484,23 +452,24 @@ export default function HomePage() {
           <div className="max-w-3xl">
             <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-orange-500/25 bg-orange-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-orange-600 dark:text-orange-300">
               <Blocks className="h-4 w-4" />
-              HUMANS SANDBOX
+              {copy.badge}
             </div>
             <H1 className="title mb-6 max-w-4xl text-left text-5xl leading-[0.95] md:text-7xl lg:text-8xl">
-              BBOX is the open App Store for everyone
+              {copy.title}
             </H1>
             <Lead className="mb-8 max-w-2xl text-left text-base text-muted-foreground md:text-xl">
-              Discover useful apps, compare trusted details, and support projects openly instead of relying on hidden gatekeepers.            </Lead>
+              {copy.lead}
+            </Lead>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600" asChild>
                 <Link href="/apps">
-                  Explore Apps
+                  {copy.exploreApps}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button> 
               <Button size="lg" variant="secondary" asChild>
                 <Link href="/funding">
-                  Apply for funding
+                  {copy.applyFunding}
                 </Link>
               </Button>
             </div>
@@ -511,24 +480,24 @@ export default function HomePage() {
             <div className="relative overflow-hidden rounded-lg border border-border bg-card/95 shadow-2xl shadow-black/10">
               <div className="flex items-center justify-between border-b border-border px-5">
                   <Sparkles className="h-5 w-5 text-orange-500" />
-                  <p className="font-mono text-xs pt-2">App Registry Protocol</p>
+                  <p className="font-mono text-xs pt-2">{copy.protocol}</p>
               </div>
               <div className="grid grid-cols-2 gap-px bg-border">
                 <div className="bg-card p-5">
                   <p className="title text-4xl text-orange-500">{appStats.totalApps}+</p>
-                  <p className="mb-0 text-sm text-muted-foreground">listed apps</p>
+                  <p className="mb-0 text-sm text-muted-foreground">{copy.listedApps}</p>
                 </div>
                 <div className="bg-card p-5">
                   <p className="title text-4xl text-orange-500">{categories.length || 13}</p>
-                  <p className="mb-0 text-sm text-muted-foreground">categories</p>
+                  <p className="mb-0 text-sm text-muted-foreground">{copy.categories}</p>
                 </div>
                 <div className="bg-card p-5">
                   <p className="title text-4xl text-orange-500">BAR</p>
-                  <p className="mb-0 text-sm text-muted-foreground">Bitcoin anchored</p>
+                  <p className="mb-0 text-sm text-muted-foreground">{copy.anchored}</p>
                 </div>
                 <div className="bg-card p-5">
                   <p className="title text-4xl text-orange-500">OSS</p>
-                  <p className="mb-0 text-sm text-muted-foreground">public goods</p>
+                  <p className="mb-0 text-sm text-muted-foreground">{copy.publicGoods}</p>
                 </div>
               </div>
               <div className="space-y-3 p-5">
@@ -556,18 +525,18 @@ export default function HomePage() {
 
         {appsLoading && (
           <div className="rounded-lg border border-border/50 bg-muted/10 p-5 text-center text-sm text-muted-foreground mb-8">
-            Loading apps from the public app database...
+            {copy.loading}
           </div>
         )}
 
         <section className="mb-20">
           <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.28em] text-orange-500">What BBOX does</p>
-              <h2 className="title text-3xl font-bold md:text-4xl">Discovery, coordination, and funding in one place.</h2>
+              <p className="text-sm uppercase tracking-[0.28em] text-orange-500">{copy.what}</p>
+              <h2 className="title text-3xl font-bold md:text-4xl">{copy.whatTitle}</h2>
             </div>
             <p className="mb-0 max-w-xl text-sm leading-6 text-muted-foreground">
-              BBOX maps high-integrity open-source software with app profiles, reviews, grants, and milestone accountability anchored by the Bitcoin App Registry.
+              {copy.whatLead}
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -587,10 +556,10 @@ export default function HomePage() {
         <div className="mb-12">
           <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.28em] text-orange-500">Explore the map</p>
-              <h2 className="title text-3xl font-bold">Browse by Category</h2>
+              <p className="text-sm uppercase tracking-[0.28em] text-orange-500">{copy.map}</p>
+              <h2 className="title text-3xl font-bold">{copy.browseCategory}</h2>
             </div>
-            <p className="mb-0 max-w-md text-sm text-muted-foreground">Drag the rail, pick a category, and jump straight into projects building useful sovereign software.</p>
+            <p className="mb-0 max-w-md text-sm text-muted-foreground">{copy.categoryLead}</p>
           </div>
           <div className="relative overflow-visible">
             <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent z-10" aria-hidden="true" />
@@ -605,7 +574,7 @@ export default function HomePage() {
                 ref={sliderTrackRef}
                 className="category-slider-track"
                 role="list"
-                aria-label="Open-source app categories"
+                aria-label={copy.categoriesLabel}
               >
                 {duplicatedCategories.map((category, index) => (
                   <Card
@@ -627,7 +596,7 @@ export default function HomePage() {
                         />
                       </div>
                       <h3 className="font-medium text-sm mb-1">{category.name}</h3>
-                      <p className="text-xs text-muted-foreground mb-0">{category.count} apps</p>
+                      <p className="text-xs text-muted-foreground mb-0">{category.count} {copy.apps}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -640,12 +609,12 @@ export default function HomePage() {
         <div className="my-12">
           <div className="flex items-center justify-between mb-6 gap-4">
             <div>
-              <h2 className="title text-2xl font-bold">Featured Apps</h2>
-              <p className="text-sm text-muted-foreground mt-1">Top-rated apps grouped by category for quick discovery.</p>
+              <h2 className="title text-2xl font-bold">{copy.featured}</h2>
+              <p className="text-sm text-muted-foreground mt-1">{copy.featuredLead}</p>
             </div>
             <Button variant="link" asChild>
               <Link href="/apps">
-                Browse all apps
+                {copy.browseAll}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -658,11 +627,11 @@ export default function HomePage() {
                   <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                     <div>
                       <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">{group.category}</p>
-                      <h3 className="text-lg font-semibold">Top {group.category} apps</h3>
+                      <h3 className="text-lg font-semibold">{copy.top} {group.category} {copy.apps}</h3>
                     </div>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href={`/apps?category=${encodeURIComponent(group.category)}`} className="inline-flex items-center gap-1">
-                        Explore more
+                        {copy.exploreMore}
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -716,22 +685,18 @@ export default function HomePage() {
 
         {/* Stats Section */}
         <div className="bg-card/85 rounded-lg border border-border p-8 mb-12 my-24 shadow-sm">
-          <div className="title grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="title grid grid-cols-2 md:grid-cols-3 gap-8 text-center">
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">{appStats.totalApps}+</div>
-              <div className="text-sm text-muted-foreground">Apps</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">1M+</div>
-              <div className="text-sm text-muted-foreground">Downloads</div>
+              <div className="text-sm text-muted-foreground">{copy.apps}</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">3</div>
-              <div className="text-sm text-muted-foreground">Submitted Projects</div>
+              <div className="text-sm text-muted-foreground">{copy.submitted}</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-orange-500 mb-2">10+</div>
-              <div className="text-sm text-muted-foreground">Contributors</div>
+              <div className="text-sm text-muted-foreground">{copy.contributors}</div>
             </div>
           </div>
         </div>
@@ -740,18 +705,18 @@ export default function HomePage() {
         <section className="my-24" aria-labelledby="faq-heading">
           <div className="mx-auto mb-12 max-w-4xl text-center">
             <div className="mb-6 inline-flex items-center rounded-md border border-orange-500/25 bg-orange-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-orange-600 dark:text-orange-300">
-              FAQ
+              {copy.faqBadge}
             </div>
             <h2 id="faq-heading" className="title mb-4 text-4xl font-bold md:text-5xl lg:text-6xl">
-              Frequently asked <span className="text-orange-500">questions</span>
+              {copy.faqTitle}
             </h2>
             <p className="mx-auto mb-0 max-w-3xl text-base leading-7 text-muted-foreground md:text-lg">
-              Everything you need to know about BBOX. Can&apos;t find your answer? Start with the docs or explore the app registry.
+              {copy.faqLead}
             </p>
           </div>
 
           <div className="mx-auto max-w-5xl space-y-3">
-            {faqItems.map(({ question, answer }) => (
+            {copy.faqItems.map(({ question, answer }) => (
               <details
                 key={question}
                 className="group rounded-lg border border-border bg-card/80 shadow-sm transition hover:border-orange-500/40 open:border-orange-500/50 open:bg-card"
@@ -774,21 +739,21 @@ export default function HomePage() {
         <div className="mt-8 overflow-hidden rounded-lg border border-orange-300/40 bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600 text-white shadow-xl shadow-orange-500/20">
           <div className="grid gap-8 p-8 md:grid-cols-[1fr_auto] md:items-center md:p-10">
             <div>
-              <p className="mb-3 text-sm uppercase tracking-[0.28em] text-orange-100">Explore the sovereign software commons</p>
-              <h3 className="title mb-4 text-4xl font-bold md:text-5xl">Find and support verified open-source software.</h3>
+              <p className="mb-3 text-sm uppercase tracking-[0.28em] text-orange-100">{copy.ctaEyebrow}</p>
+              <h3 className="title mb-4 text-4xl font-bold md:text-5xl">{copy.ctaTitle}</h3>
               <p className="mb-0 max-w-2xl text-sm leading-6 text-orange-50 md:text-base">
-                Use BBOX to move from scattered links to readable app profiles: metadata, source code, milestones, reviews, and funding context together.
+                {copy.ctaLead}
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
               <Button size="lg" variant="outline" className="cursor-pointer border-white/60 bg-white/10 text-white hover:bg-white hover:text-orange-600" asChild>
                 <Link href="/documentation">
-                  Learn
+                  {messages.common.learn}
                 </Link>
               </Button>
               {developerMode && (
                 <Button size="lg" className="cursor-pointer bg-white text-orange-600 hover:bg-orange-50" onClick={handleStartBuilding}>
-                  Build
+                  {messages.common.build}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               )}

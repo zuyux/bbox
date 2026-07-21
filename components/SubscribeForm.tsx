@@ -1,10 +1,12 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { useI18n } from './I18nProvider';
 
 type SubscribeState = 'idle' | 'submitting' | 'success' | 'error';
 
 export default function SubscribeForm() {
+  const { messages } = useI18n();
   const [email, setEmail] = useState('');
   const [trap, setTrap] = useState('');
   const [state, setState] = useState<SubscribeState>('idle');
@@ -77,7 +79,7 @@ export default function SubscribeForm() {
         disabled={state === 'submitting'}
         className="h-7 shrink-0 rounded bg-[#ff5e00] px-3 text-xs font-semibold text-white transition hover:bg-[#ff7a1a] focus:outline-none focus:ring-2 focus:ring-[#ff9a45] focus:ring-offset-1 focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {state === 'submitting' ? 'Sending' : 'Subscribe'}
+        {state === 'submitting' ? messages.common.sending : messages.common.subscribe}
       </button>
       <span
         className={`hidden max-w-28 truncate text-xs md:inline ${state === 'error' ? 'text-red-300' : 'text-[#ffb37a]'}`}
