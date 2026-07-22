@@ -11,6 +11,10 @@ export interface BitcoinApp {
   link: string;
   githubUrl: string;
   imgCID: string;
+  platforms: string[];
+  documentationUrl: string;
+  publisherName: string;
+  publisherEmail: string;
 }
 
 export type SupabaseAppRow = Record<string, unknown>;
@@ -28,6 +32,10 @@ export const normalizeAppRow = (row: SupabaseAppRow): BitcoinApp => ({
   link: String(row.link ?? ''),
   githubUrl: String(row.github_url ?? row.githubUrl ?? row.repository ?? row.repo ?? ''),
   imgCID: typeof row.imgcid === 'string' ? row.imgcid : String(row.imgCID ?? ''),
+  platforms: Array.isArray(row.platforms) ? row.platforms.map(String) : [],
+  documentationUrl: String(row.documentation_url ?? row.documentationUrl ?? ''),
+  publisherName: String(row.publisher_name ?? row.publisherName ?? ''),
+  publisherEmail: String(row.publisher_email ?? row.publisherEmail ?? ''),
 });
 
 export const allApps: BitcoinApp[] = [];

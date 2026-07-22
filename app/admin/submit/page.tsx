@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useWallet } from '@/components/WalletProvider';
@@ -25,11 +26,15 @@ const CATEGORY_OPTIONS = [
   'Explorer',
   'Identity',
   'Social',
+  'Nostr',
+  'AI',
   'Developer',
   'Creator',
   'Gaming',
   'Other',
 ];
+
+const PLATFORM_OPTIONS = ['Desktop', 'Android', 'iOS', 'Browser', 'Extension'] as const;
 
 const initialFormState = {
   name: '',
@@ -42,6 +47,7 @@ const initialFormState = {
   publisher_email: '',
   tags: '',
   icon_cid: '',
+  platforms: [] as string[],
 };
 
 export default function AdminSubmitPage() {
@@ -80,6 +86,19 @@ export default function AdminSubmitPage() {
       setIconPreviewUrl('');
     }
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePlatformChange = (platform: string, checked: boolean) => {
+    setSignatureStatus('idle');
+    setStatus('idle');
+    setStatusMessage('');
+    setErrors([]);
+    setFormData(prev => ({
+      ...prev,
+      platforms: checked
+        ? [...prev.platforms, platform]
+        : prev.platforms.filter(option => option !== platform),
+    }));
   };
 
   const handleIconUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,6 +194,7 @@ export default function AdminSubmitPage() {
         publisher_email: formData.publisher_email,
         tags: tagList,
         icon_cid: formData.icon_cid,
+        platforms: formData.platforms,
       },
     });
   };
@@ -232,6 +252,7 @@ export default function AdminSubmitPage() {
           publisher_email: formData.publisher_email.trim(),
           publisher_address: currentAddress,
           tags: tagList,
+          platforms: formData.platforms,
           signature: submissionSignature.signature,
           signature_payload: submissionSignature.signedPayload,
           signature_wallet_type: submissionSignature.walletType,
@@ -362,6 +383,22 @@ export default function AdminSubmitPage() {
                   rows={5}
                 />
               </div>
+
+              <fieldset className="space-y-2">
+                <legend className="text-sm font-medium">Platforms</legend>
+                <div className="flex flex-wrap gap-4">
+                  {PLATFORM_OPTIONS.map(platform => (
+                    <label key={platform} className="flex items-center gap-2 text-sm">
+                      <Checkbox
+                        checked={formData.platforms.includes(platform)}
+                        onCheckedChange={checked => handlePlatformChange(platform, checked === true)}
+                      />
+                      {platform}
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">Select every platform the app supports.</p>
+              </fieldset>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>

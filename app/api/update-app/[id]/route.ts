@@ -16,6 +16,10 @@ type AdminEditPayload = {
     githubUrl?: unknown;
     imgCID?: unknown;
     tags?: unknown;
+    platforms?: unknown;
+    documentationUrl?: unknown;
+    publisherName?: unknown;
+    publisherEmail?: unknown;
   };
 };
 
@@ -72,6 +76,10 @@ const verifyAdminSignature = ({
   const payloadApp = parsedPayload.app ?? {};
   const payloadTags = normalizeTags(payloadApp.tags);
   const updateTags = Array.isArray(requestedUpdates.tags) ? requestedUpdates.tags.map(String) : [];
+  const payloadPlatforms = normalizeTags(payloadApp.platforms);
+  const updatePlatforms = Array.isArray(requestedUpdates.platforms)
+    ? requestedUpdates.platforms.map(String)
+    : [];
 
   if (
     parsedPayload.action !== 'bbox_admin_app_edit' ||
@@ -83,7 +91,11 @@ const verifyAdminSignature = ({
     String(payloadApp.link ?? '').trim() !== requestedUpdates.link ||
     String(payloadApp.githubUrl ?? '').trim() !== String(requestedUpdates.github_url ?? '') ||
     String(payloadApp.imgCID ?? '').trim() !== requestedUpdates.imgcid ||
-    !arraysEqual(payloadTags, updateTags)
+    String(payloadApp.documentationUrl ?? '').trim() !== requestedUpdates.documentation_url ||
+    String(payloadApp.publisherName ?? '').trim() !== requestedUpdates.publisher_name ||
+    String(payloadApp.publisherEmail ?? '').trim() !== requestedUpdates.publisher_email ||
+    !arraysEqual(payloadTags, updateTags) ||
+    !arraysEqual(payloadPlatforms, updatePlatforms)
   ) {
     return { valid: false, error: 'Signed payload does not match app details', status: 401 };
   }
@@ -147,9 +159,16 @@ export async function PATCH(
   if (typeof body.link === 'string') updates.link = body.link.trim();
   if (typeof body.github_url === 'string') updates.github_url = body.github_url.trim();
   if (typeof body.imgcid === 'string') updates.imgcid = body.imgcid.trim();
+  if (typeof body.documentation_url === 'string') updates.documentation_url = body.documentation_url.trim();
+  if (typeof body.publisher_name === 'string') updates.publisher_name = body.publisher_name.trim();
+  if (typeof body.publisher_email === 'string') updates.publisher_email = body.publisher_email.trim();
 
   if (typeof body.tags === 'string' || Array.isArray(body.tags)) {
     updates.tags = normalizeTags(body.tags);
+  }
+
+  if (Array.isArray(body.platforms)) {
+    updates.platforms = normalizeTags(body.platforms);
   }
 
   if (Object.keys(updates).length === 0) {

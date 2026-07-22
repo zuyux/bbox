@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import IPFSImage from '@/components/IPFSImage';
 import ReviewModal from '@/components/ReviewModal';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
@@ -28,6 +30,24 @@ interface AppDetailClientProps {
   app: BitcoinApp;
   relatedApps: BitcoinApp[];
 }
+
+const CATEGORY_OPTIONS = [
+  'Wallet',
+  'Lightning',
+  'DeFi',
+  'Infrastructure',
+  'Explorer',
+  'Identity',
+  'Social',
+  'Nostr',
+  'AI',
+  'Developer',
+  'Creator',
+  'Gaming',
+  'Other',
+];
+
+const PLATFORM_OPTIONS = ['Desktop', 'Android', 'iOS', 'Browser', 'Extension'];
 
 export default function AppDetailClient({ app, relatedApps }: AppDetailClientProps) {
   const currentAddress = useCurrentAddress();
@@ -55,6 +75,10 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
     githubUrl: app.githubUrl,
     imgCID: app.imgCID,
     tags: app.tags.join(', '),
+    platforms: app.platforms,
+    documentationUrl: app.documentationUrl,
+    publisherName: app.publisherName,
+    publisherEmail: app.publisherEmail,
   });
 
   const displayApp = appState;
@@ -81,6 +105,17 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
     setClaimData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const updatePlatform = (platform: string, checked: boolean) => {
+    setEditStatus('idle');
+    setEditMessage('');
+    setEditData((prev) => ({
+      ...prev,
+      platforms: checked
+        ? [...prev.platforms, platform]
+        : prev.platforms.filter((option) => option !== platform),
+    }));
+  };
+
   const closeOwnershipModal = () => {
     setShowOwnershipModal(false);
     setClaimStatus('idle');
@@ -101,6 +136,10 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
         githubUrl: editData.githubUrl,
         imgCID: editData.imgCID,
         tags: editData.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+        platforms: editData.platforms,
+        documentationUrl: editData.documentationUrl,
+        publisherName: editData.publisherName,
+        publisherEmail: editData.publisherEmail,
       },
     });
 
@@ -139,6 +178,10 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
           github_url: editData.githubUrl.trim(),
           imgcid: editData.imgCID.trim(),
           tags: editData.tags,
+          platforms: editData.platforms,
+          documentation_url: editData.documentationUrl.trim(),
+          publisher_name: editData.publisherName.trim(),
+          publisher_email: editData.publisherEmail.trim(),
           publisher_address: currentAddress,
           signature: signatureResult.signature,
           signature_payload: signatureResult.signedPayload,
@@ -161,6 +204,10 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
         githubUrl: result.app.github_url ?? prev.githubUrl,
         imgCID: result.app.imgcid ?? prev.imgCID,
         tags: Array.isArray(result.app.tags) ? result.app.tags.map(String) : prev.tags,
+        platforms: Array.isArray(result.app.platforms) ? result.app.platforms.map(String) : prev.platforms,
+        documentationUrl: result.app.documentation_url ?? prev.documentationUrl,
+        publisherName: result.app.publisher_name ?? prev.publisherName,
+        publisherEmail: result.app.publisher_email ?? prev.publisherEmail,
       }));
       setEditStatus('success');
       setEditMessage('App details updated successfully.');
@@ -296,6 +343,11 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                 {tag}
               </Badge>
             ))}
+            {displayApp.platforms.map((platform) => (
+              <Badge key={`platform-${platform}`} variant="secondary" className="text-xs">
+                {platform}
+              </Badge>
+            ))}
           </div>
         </div>
 
@@ -336,6 +388,12 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
               <div>
                 <span className="text-muted-foreground text-xs">Rating</span>
                 <div className="font-medium">{displayRating} / 5.0 ({reviewCountLabel})</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground text-xs">Platforms</span>
+                <div className="font-medium">
+                  {displayApp.platforms.length > 0 ? displayApp.platforms.join(', ') : 'Not specified'}
+                </div>
               </div>
               <div>
                 <span className="text-muted-foreground text-xs">Verified</span>
@@ -477,11 +535,19 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                   </div>
                   <div>
                     <Label htmlFor="edit-category">Category</Label>
-                    <Input
-                      id="edit-category"
+                    <Select
                       value={editData.category}
-                      onChange={(event) => updateField('category', event.target.value)}
-                    />
+                      onValueChange={(value) => updateField('category', value)}
+                    >
+                      <SelectTrigger id="edit-category" className="w-full">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORY_OPTIONS.map((category) => (
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div>
@@ -513,6 +579,34 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                   </div>
                 </div>
                 <div>
+                  <Label htmlFor="edit-documentation-url">Documentation URL</Label>
+                  <Input
+                    id="edit-documentation-url"
+                    value={editData.documentationUrl}
+                    onChange={(event) => updateField('documentationUrl', event.target.value)}
+                    placeholder="https://docs.example.com"
+                  />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label htmlFor="edit-publisher-name">Publisher Name</Label>
+                    <Input
+                      id="edit-publisher-name"
+                      value={editData.publisherName}
+                      onChange={(event) => updateField('publisherName', event.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-publisher-email">Publisher Email</Label>
+                    <Input
+                      id="edit-publisher-email"
+                      type="email"
+                      value={editData.publisherEmail}
+                      onChange={(event) => updateField('publisherEmail', event.target.value)}
+                    />
+                  </div>
+                </div>
+                <div>
                   <Label htmlFor="edit-imgcid">Image CID</Label>
                   <Input
                     id="edit-imgcid"
@@ -532,6 +626,20 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                     Separate tags with commas.
                   </p>
                 </div>
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-medium">Platforms</legend>
+                  <div className="flex flex-wrap gap-4">
+                    {PLATFORM_OPTIONS.map((platform) => (
+                      <label key={platform} className="flex items-center gap-2 text-sm">
+                        <Checkbox
+                          checked={editData.platforms.includes(platform)}
+                          onCheckedChange={(checked) => updatePlatform(platform, checked === true)}
+                        />
+                        {platform}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
                 <div className="flex flex-col gap-2">
                   <Button type="submit" disabled={editStatus === 'signing' || editStatus === 'submitting'}>
                     {editStatus === 'signing'

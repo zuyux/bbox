@@ -59,6 +59,12 @@ export async function POST(request: NextRequest) {
       link: body.website_url || '',
       github_url: githubUrl,
       imgcid: body.icon_cid || '',
+      platforms: Array.isArray(body.platforms)
+        ? body.platforms.map(String).map((platform: string) => platform.trim()).filter(Boolean)
+        : [],
+      documentation_url: typeof body.documentation_url === 'string' ? body.documentation_url.trim() : '',
+      publisher_name: typeof body.publisher_name === 'string' ? body.publisher_name.trim() : '',
+      publisher_email: typeof body.publisher_email === 'string' ? body.publisher_email.trim() : '',
     };
 
     if (metadataCid) appData.metadata_cid = metadataCid;
