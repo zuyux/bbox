@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
 import { assertVerifiedEmailToken, VerifiedEmailTokenError } from '@/lib/emailCodeAuth';
 import crypto from 'crypto';
+import { getHashedIp } from '@/lib/visitorIdentity';
 
 export async function POST(request: NextRequest) {
   try {
@@ -130,6 +131,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save to Supabase
+    const hashedIp = getHashedIp(request);
     const connectedAccountPayload = {
       email: normalizedEmail,
       passkey: hashedPasskey,
@@ -143,6 +145,7 @@ export async function POST(request: NextRequest) {
       bitcoin_address: bitcoinAddress || null,
       rootstock_address: rootstockAddress || null,
       liquid_address: liquidAddress || null,
+      hashed_ip: hashedIp,
     };
 
     const { data, error } = accountMatchesCurrentAddress
@@ -193,7 +196,8 @@ export async function POST(request: NextRequest) {
             rootstock_address: rootstockAddress || null,
             liquid_address: liquidAddress || null,
             updated_at: now,
-            last_active: now
+            last_active: now,
+            hashed_ip: hashedIp,
           })
           .eq('id', existingProfileByAddress[0].id);
       } else {
@@ -210,6 +214,7 @@ export async function POST(request: NextRequest) {
               created_at: now,
               updated_at: now,
               last_active: now,
+              hashed_ip: hashedIp,
             }
           ]);
       }
@@ -217,6 +222,12 @@ export async function POST(request: NextRequest) {
       console.warn('Profile sync warning:', profileError);
       // Do not fail account creation if profile sync fails
     }
+
+    const { error: interestLinkError } = await supabaseAdmin
+      .from('visitor_interests')
+      .update({ user_address: address, updated_at: new Date().toISOString() })
+      .eq('hashed_ip', hashedIp);
+    if (interestLinkError) console.warn('Interest link warning:', interestLinkError);
 
     return NextResponse.json({
       success: true,

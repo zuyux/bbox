@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 
 import { decryptPortableEncryptedWallet, type PortableEncryptedWalletData } from '@/lib/encryptedStorage';
 import { supabaseAdmin } from '@/lib/supabaseClient';
+import { linkVisitorToAddress } from '@/lib/visitorIdentity';
 
 interface ConnectedAccountRecord {
   email: string;
@@ -113,6 +114,12 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid email or password' },
         { status: 401 }
       );
+    }
+
+    try {
+      await linkVisitorToAddress(request, data.address);
+    } catch (linkError) {
+      console.warn('Unable to link visitor interests during sign in:', linkError);
     }
 
     return NextResponse.json({

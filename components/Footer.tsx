@@ -9,7 +9,7 @@ import { useI18n } from './I18nProvider';
 export default function Footer() {
   const { messages } = useI18n();
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black/80 py-2 text-xs text-white backdrop-blur-md">
+    <footer data-site-footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black/80 py-2 text-xs text-white backdrop-blur-md">
       <div className="mx-auto h-full px-3 sm:px-4">
         <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
           <Link href="/about" className='flex items-center gap-1'>

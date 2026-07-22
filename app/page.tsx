@@ -20,6 +20,7 @@ import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
 import { getProfileDeveloperMode } from '@/lib/profileApi';
+import { InterestBar } from '@/components/InterestBar';
 const categoryIcons: Record<string, string> = {
   Wallet: '/icons/wallet.svg',
   Lightning: '/icons/lightning.svg',
@@ -99,6 +100,8 @@ export default function HomePage() {
   const [showGetInModal, setShowGetInModal] = useState(false);
   const [developerMode, setDeveloperMode] = useState(false);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
+  const appDiscoveryRef = useRef<HTMLDivElement | null>(null);
+  const [showInterestBar, setShowInterestBar] = useState(false);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastTimestampRef = useRef<number | null>(null);
   const pointerStateRef = useRef({ pointerId: null as number | null, startX: 0, startPosition: 0, hasCapture: false });
@@ -186,6 +189,16 @@ export default function HomePage() {
       });
     }
   }, []);
+
+  useEffect(() => {
+    const target = appDiscoveryRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setShowInterestBar(true);
+    }, { threshold: 0.15 });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [appsLoading]);
 
   useEffect(() => {
     applyWrappedPosition(positionRef.current);
@@ -423,6 +436,11 @@ export default function HomePage() {
   }, []);
 
   const categories = useMemo(() => calculateCategories(apps), [apps]);
+  const popularInterestCategories = useMemo(() => categories
+    .slice()
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    .slice(0, 10)
+    .map((category) => category.name), [categories]);
   const duplicatedCategories = useMemo(() => [...categories, ...categories], [categories]);
   const appStats = useMemo(() => getAppStats(apps), [apps]);
   const featuredAppsByCategory = useMemo(() =>
@@ -555,7 +573,7 @@ export default function HomePage() {
         </section>
 
         {/* Categories */}
-        <div className="mb-12">
+        <div ref={appDiscoveryRef} className="mb-12">
           <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.28em] text-orange-500">{copy.map}</p>
@@ -764,6 +782,7 @@ export default function HomePage() {
         </div>
       </div>
       {showGetInModal && <GetInModal onClose={handleGetInModalClose} />}
+      <InterestBar categories={popularInterestCategories} visible={showInterestBar} />
     </div>
   );
 }
