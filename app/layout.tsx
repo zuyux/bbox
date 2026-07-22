@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { GetInButton } from "@/components/GetIn";
 import Footer from "@/components/Footer";
 import { Providers } from '@/components/ui/provider';
+import { ThemeProvider } from '@/components/theme-provider';
 import { WalletProvider } from '@/components/WalletProvider';
 import WelcomeModal from '@/components/WelcomeModal';
 import { Toaster } from "@/components/ui/sonner"
@@ -112,6 +113,12 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} ${jersey10.variable} ${lacquer.variable} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
         <I18nProvider locale={locale} messages={messages[locale]}>
         <GlobalErrorHandler />
         <WalletProvider>
@@ -132,6 +139,7 @@ export default async function RootLayout({
         </WalletProvider>
         <Toaster />
         </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

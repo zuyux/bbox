@@ -149,9 +149,6 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
 
       setEmailCodeSent(true);
       setEmailCodeMessage('Verification code sent. Check your email.');
-      if (result.debugCode) {
-        setEmailCodeMessage(`Verification code sent. Dev code: ${result.debugCode}`);
-      }
     } catch (requestError) {
       setEmailCodeError(requestError instanceof Error ? requestError.message : 'Failed to send verification code');
     } finally {

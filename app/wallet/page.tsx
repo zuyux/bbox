@@ -94,7 +94,7 @@ const SEND_ASSETS: Array<{
   },
   {
     id: 'sbtc',
-    label: 'Stacks BTC',
+    label: 'Stacks Network',
     networkLabel: 'Stacks',
     unit: 'sBTC',
     placeholder: 'SP3FBR2K...',
@@ -103,7 +103,7 @@ const SEND_ASSETS: Array<{
   },
   {
     id: 'rootstock',
-    label: 'Rootstock BTC',
+    label: 'Rootstock Network',
     networkLabel: 'Rootstock',
     unit: 'RBTC',
     placeholder: '0x...',
@@ -112,7 +112,7 @@ const SEND_ASSETS: Array<{
   },
   {
     id: 'liquid',
-    label: 'Liquid BTC',
+    label: 'Liquid Network',
     networkLabel: 'Liquid',
     unit: 'L-BTC',
     placeholder: 'ex1...',

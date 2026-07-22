@@ -47,7 +47,7 @@ const es: typeof en = {
   },
   common: { learn: 'Aprender', build: 'Crear', privacy: 'Privacidad', terms: 'Términos', subscribe: 'Suscribirse', sending: 'Enviando', profile: 'Perfil' },
   nav: { primary: 'Navegación principal', home: 'Inicio de BBOX', search: 'Buscar aplicaciones', searchPlaceholder: 'BUSCAR APLICACIONES...', openSearch: 'Abrir búsqueda' },
-  footer: { tagline: 'Nuestra tienda abierta de aplicaciones' }, accessibility: { skip: 'Ir al contenido principal', main: 'Contenido principal' },
+  footer: { tagline: 'Nuestra tienda de aplicaciones' }, accessibility: { skip: 'Ir al contenido principal', main: 'Contenido principal' },
   home: {
     badge: 'ESPACIO PARA HUMANOS', title: 'BBOX es la tienda de aplicaciones de código abierto', lead: 'Descubre aplicaciones útiles, compara información confiable y apoya proyectos abiertamente, sin depender de intermediarios ocultos.',
     exploreApps: 'Explorar aplicaciones', applyFunding: 'Solicitar financiamiento', protocol: 'Protocolo de registro de aplicaciones', listedApps: 'aplicaciones registradas', categories: 'categorías', anchored: 'Anclado en Bitcoin', publicGoods: 'bienes públicos', loading: 'Cargando aplicaciones desde la base de datos pública...',

@@ -107,9 +107,9 @@ export function InterestBar({ categories, visible, onInterestsChange }: Interest
         {selected.length > 0 && (
           <Link
             href="/recommendations"
-            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md bg-green-500 px-3 py-2 text-xs font-semibold text-black/90 transition hover:bg-green-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md bg-orange-500 px-3 py-2 text-xs font-semibold text-white/90 transition hover:bg-green-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
           >
-            See recommendations
+            Launch
             <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
         )}

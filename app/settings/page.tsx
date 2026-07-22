@@ -448,7 +448,7 @@ export default function SettingsPage() {
       }
 
       setEmailCodeSent(true);
-      setEmailCodeMessage(result.debugCode ? `Verification code sent. Dev code: ${result.debugCode}` : 'Verification code sent. Check your email.');
+      setEmailCodeMessage('Verification code sent. Check your email.');
     } catch (err) {
       setEmailCodeError(err instanceof Error ? err.message : 'Failed to send verification code');
     } finally {

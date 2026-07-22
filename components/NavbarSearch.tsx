@@ -17,7 +17,7 @@ export function NavbarSearch() {
   const showSearch = !pathname.startsWith('/settings') && !pathname.startsWith('/wallet');
 
   if (!showSearch) {
-    return <div className="my-5 h-9" aria-hidden="true" />;
+    return null;
   }
 
   return (

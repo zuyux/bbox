@@ -687,3 +687,64 @@ span {
     -ms-overflow-style: none;
   }
 }
+
+@keyframes free-samourai-shine {
+  0% {
+    transform: translateX(-180%) skewX(-22deg);
+  }
+  45%,
+  100% {
+    transform: translateX(280%) skewX(-22deg);
+  }
+}
+
+.free-samourai-label {
+  position: relative;
+  display: inline-flex;
+  height: 1.8rem;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  background: #ff0025;
+  padding: 0 0.75rem;
+  margin-right:.5rem;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgb(255 0 37 / 28%);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.free-samourai-label::after {
+  position: absolute;
+  inset: -40% auto -40% -35%;
+  width: 35%;
+  content: "";
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 20%),
+    transparent
+  );
+  animation: free-samourai-shine 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.free-samourai-label:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgb(255 0 37 / 42%);
+}
+
+.free-samourai-label:focus-visible {
+  outline: 2px solid #ff6565;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .free-samourai-label::after {
+    animation: none;
+  }
+}

@@ -15,6 +15,18 @@ interface GetInButtonProps {
   [key: string]: unknown;
 }
 
+const FreeSamouraiLabel = () => (
+  <a
+    href="https://freesamourai.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="free-samourai-label"
+    aria-label="#FREESAMOURAI"
+  >
+    #FREESAMOURAI
+  </a>
+);
+
 export const GetInButton = (buttonProps: GetInButtonProps) => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showGetInModal, setShowGetInModal] = useState(false);
@@ -89,7 +101,8 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
   return (
     <>
   {(isSessionLoggedIn || isWalletConnected || isEncryptedAuthenticated) ? (
-        <div className='fixed top-5 right-5 md:right-5 z-101'>
+        <div className='fixed top-5 right-5 md:right-5 z-[101] flex items-center gap-2'>
+          <FreeSamouraiLabel />
           <button
             type="button"
             className="w-9 h-9 border-1 border-[#555] bg-gradient-to-br from-muted to-muted-foreground/50 rounded-full overflow-hidden cursor-pointer select-none transition-all duration-200 flex items-center justify-center"
@@ -128,7 +141,8 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
           {showUserModal && <UserModal onClose={() => setShowUserModal(false)} />}
         </div>
       ) : (
-        <div className='fixed top-5 right-5 md:right-5 z-100'>
+        <div className='fixed top-5 right-5 md:right-5 z-[100] flex items-center gap-2'>
+          <FreeSamouraiLabel />
           <Button
             onClick={() => setShowGetInModal(true)}
             className="title rounded-md px-1 md:px-3 py-3 md:py-2 text-md md:text-md bg-background/50 border-border border-[1px] hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-200 text-foreground cursor-pointer select-none"

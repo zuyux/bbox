@@ -107,7 +107,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Verification code sent',
-      ...(process.env.NODE_ENV !== 'production' ? { debugCode: code } : {}),
     });
   } catch (error) {
     console.error('Email code request failed:', error);
