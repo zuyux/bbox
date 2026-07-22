@@ -16,6 +16,12 @@ const en = {
     exploreApps: 'Explore Apps', applyFunding: 'Apply for funding', protocol: 'App Registry Protocol', listedApps: 'listed apps', categories: 'categories', anchored: 'Bitcoin anchored', publicGoods: 'public goods',
     loading: 'Loading apps from the public app database...', what: 'What BBOX does', whatTitle: 'Discovery, coordination, and funding in one place.',
     whatLead: 'BBOX maps high-integrity open-source software with app profiles, reviews, grants, and milestone accountability anchored by the Bitcoin App Registry.',
+    ecosystemPillars: [
+      { label: 'Universal registry', detail: 'Publisher-controlled metadata for open-source apps across Bitcoin, other chains, and independent off-chain software.' },
+      { label: 'App profiles', detail: 'Readable listings with media, reviews, source links, and the details users need before trying something new.' },
+      { label: 'Funding layer', detail: 'Milestones and funding context make grants, research, and public-goods support easier to inspect before money moves.' },
+      { label: 'Open-source commons', detail: 'A neutral surface where users, contributors, communities, and DAOs can coordinate around high-integrity software.' },
+    ],
     map: 'Explore the map', browseCategory: 'Browse by Category', categoryLead: 'Drag the rail, pick a category, and jump straight into projects building useful sovereign software.', categoriesLabel: 'Open-source app categories', apps: 'apps',
     featured: 'Featured Apps', featuredLead: 'Top-rated apps grouped by category for quick discovery.', browseAll: 'Browse all apps', top: 'Top', exploreMore: 'Explore more', submitted: 'Submitted Projects', contributors: 'Contributors',
     faqBadge: 'Helpful answers', faqTitle: 'Frequently asked questions', faqLead: "Everything you need to know about BBOX. Can't find your answer? Start with the docs or explore the app registry.",
@@ -46,6 +52,12 @@ const es: typeof en = {
     badge: 'ESPACIO PARA HUMANOS', title: 'BBOX es la tienda de aplicaciones de código abierto', lead: 'Descubre aplicaciones útiles, compara información confiable y apoya proyectos abiertamente, sin depender de intermediarios ocultos.',
     exploreApps: 'Explorar aplicaciones', applyFunding: 'Solicitar financiamiento', protocol: 'Protocolo de registro de aplicaciones', listedApps: 'aplicaciones registradas', categories: 'categorías', anchored: 'Anclado en Bitcoin', publicGoods: 'bienes públicos', loading: 'Cargando aplicaciones desde la base de datos pública...',
     what: 'Qué hace BBOX', whatTitle: 'Descubrimiento, coordinación y financiamiento en un solo lugar.', whatLead: 'BBOX organiza software de código abierto de alta integridad con perfiles, reseñas, subvenciones e hitos verificables anclados por el Bitcoin App Registry.',
+    ecosystemPillars: [
+      { label: 'Registro universal', detail: 'Metadatos controlados por los editores para aplicaciones de código abierto en Bitcoin, otras cadenas y software independiente fuera de la cadena.' },
+      { label: 'Perfiles de aplicaciones', detail: 'Fichas claras con contenido multimedia, reseñas, enlaces al código fuente y la información necesaria antes de probar algo nuevo.' },
+      { label: 'Capa de financiamiento', detail: 'Los hitos y el contexto de financiamiento facilitan evaluar subvenciones, investigación y apoyo a bienes públicos antes de transferir fondos.' },
+      { label: 'Bienes comunes de código abierto', detail: 'Un espacio neutral donde usuarios, colaboradores, comunidades y DAO pueden coordinarse en torno a software de alta integridad.' },
+    ],
     map: 'Explora el mapa', browseCategory: 'Explorar por categoría', categoryLead: 'Arrastra la lista, elige una categoría y descubre proyectos que crean software soberano útil.', categoriesLabel: 'Categorías de aplicaciones de código abierto', apps: 'aplicaciones', featured: 'Aplicaciones destacadas', featuredLead: 'Aplicaciones mejor valoradas por categoría para descubrirlas rápidamente.', browseAll: 'Ver todas', top: 'Mejores aplicaciones de', exploreMore: 'Explorar más', submitted: 'Proyectos enviados', contributors: 'Colaboradores',
     faqBadge: 'Respuestas útiles', faqTitle: 'Preguntas frecuentes', faqLead: 'Todo lo que necesitas saber sobre BBOX. ¿No encuentras tu respuesta? Consulta la documentación o explora el registro.',
     faqItems: [
@@ -75,6 +87,12 @@ const pt: typeof en = {
     badge: 'ESPAÇO PARA HUMANOS', title: 'BBOX é a loja aberta de aplicativos para todos', lead: 'Descubra aplicativos úteis, compare informações confiáveis e apoie projetos abertamente, sem depender de intermediários ocultos.',
     exploreApps: 'Explorar aplicativos', applyFunding: 'Solicitar financiamento', protocol: 'Protocolo de registro de aplicativos', listedApps: 'aplicativos listados', categories: 'categorias', anchored: 'Ancorado no Bitcoin', publicGoods: 'bens públicos', loading: 'Carregando aplicativos do banco de dados público...',
     what: 'O que a BBOX faz', whatTitle: 'Descoberta, coordenação e financiamento em um só lugar.', whatLead: 'A BBOX organiza software de código aberto de alta integridade com perfis, avaliações, subsídios e marcos verificáveis ancorados pelo Bitcoin App Registry.',
+    ecosystemPillars: [
+      { label: 'Registro universal', detail: 'Metadados controlados pelos editores para aplicativos de código aberto no Bitcoin, em outras redes e em software independente fora da blockchain.' },
+      { label: 'Perfis de aplicativos', detail: 'Listagens claras com mídia, avaliações, links para o código-fonte e os detalhes necessários antes de experimentar algo novo.' },
+      { label: 'Camada de financiamento', detail: 'Marcos e contexto de financiamento facilitam a análise de subsídios, pesquisas e apoio a bens públicos antes da transferência de recursos.' },
+      { label: 'Bens comuns de código aberto', detail: 'Um espaço neutro onde usuários, colaboradores, comunidades e DAOs podem se coordenar em torno de software de alta integridade.' },
+    ],
     map: 'Explore o mapa', browseCategory: 'Explorar por categoria', categoryLead: 'Arraste a lista, escolha uma categoria e encontre projetos que criam software soberano útil.', categoriesLabel: 'Categorias de aplicativos de código aberto', apps: 'aplicativos', featured: 'Aplicativos em destaque', featuredLead: 'Aplicativos mais bem avaliados por categoria para descoberta rápida.', browseAll: 'Ver todos', top: 'Melhores aplicativos de', exploreMore: 'Explorar mais', submitted: 'Projetos enviados', contributors: 'Colaboradores',
     faqBadge: 'Respostas úteis', faqTitle: 'Perguntas frequentes', faqLead: 'Tudo o que você precisa saber sobre a BBOX. Não encontrou sua resposta? Consulte a documentação ou explore o registro.',
     faqItems: [

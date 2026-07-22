@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 type InterestBarProps = {
   categories: string[];
   visible: boolean;
+  onInterestsChange?: (interests: string[]) => void;
 };
 
-export function InterestBar({ categories, visible }: InterestBarProps) {
+export function InterestBar({ categories, visible, onInterestsChange }: InterestBarProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [status, setStatus] = useState<'loading' | 'idle' | 'saving' | 'saved' | 'error'>('loading');
   const [footerHeight, setFooterHeight] = useState(48);
@@ -37,12 +40,13 @@ export function InterestBar({ categories, visible }: InterestBarProps) {
           const savedTags = Array.isArray(payload.tags) ? payload.tags : [];
           selectedRef.current = savedTags;
           setSelected(savedTags);
+          onInterestsChange?.(savedTags);
           setStatus('idle');
         }
       })
       .catch(() => !cancelled && setStatus('error'));
     return () => { cancelled = true; };
-  }, [visible]);
+  }, [visible, onInterestsChange]);
 
   if (!visible || categories.length === 0) return null;
 
@@ -55,6 +59,7 @@ export function InterestBar({ categories, visible }: InterestBarProps) {
 
     selectedRef.current = next;
     setSelected(next);
+    onInterestsChange?.(next);
     setStatus('saving');
     saveQueueRef.current = saveQueueRef.current
       .catch(() => undefined)
@@ -99,6 +104,15 @@ export function InterestBar({ categories, visible }: InterestBarProps) {
             );
           })}
         </div>
+        {selected.length > 0 && (
+          <Link
+            href="/recommendations"
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md bg-green-500 px-3 py-2 text-xs font-semibold text-black/90 transition hover:bg-green-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
+          >
+            See recommendations
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        )}
       </div>
     </aside>
   );

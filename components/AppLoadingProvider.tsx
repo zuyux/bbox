@@ -101,10 +101,8 @@ export function AppLoadingProvider({
 
   return (
     <AppLoadingContext.Provider value={contextValue}>
-      {!isAppLoaded && (
-        <AppLoader isLoading={isLoading || !isAppLoaded} />
-      )}
-      {isAppLoaded && children}
+      <AppLoader isLoading={isLoading || !isAppLoaded} />
+      {children}
     </AppLoadingContext.Provider>
   );
 }

@@ -21,6 +21,7 @@ import { getIPFSUrl } from '@/lib/pinataUpload';
 import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
 import { getProfileDeveloperMode } from '@/lib/profileApi';
 import { InterestBar } from '@/components/InterestBar';
+import AppLoader from '@/components/AppLoader';
 const categoryIcons: Record<string, string> = {
   Wallet: '/icons/wallet.svg',
   Lightning: '/icons/lightning.svg',
@@ -58,28 +59,7 @@ const bboxHighlights = [
   },
 ];
 
-const ecosystemPillars = [
-  {
-    label: 'Universal registry',
-    detail: 'Publisher-controlled metadata for open-source apps across Bitcoin, other chains, and independent off-chain software.',
-    icon: Store,
-  },
-  {
-    label: 'App profiles',
-    detail: 'Readable listings with media, reviews, source links, and the details users need before trying something new.',
-    icon: Code2,
-  },
-  {
-    label: 'Funding layer',
-    detail: 'Milestones and funding context make grants, research, and public-goods support easier to inspect before money moves.',
-    icon: Layers3,
-  },
-  {
-    label: 'Open-source commons',
-    detail: 'A neutral surface where users, contributors, communities, and DAOs can coordinate around high-integrity software.',
-    icon: Users,
-  },
-];
+const ecosystemPillarIcons = [Store, Code2, Layers3, Users];
 
 const calculateCategories = (apps: BitcoinApp[]) => {
   const categoryCount = getCategoryStats(apps);
@@ -114,6 +94,10 @@ export default function HomePage() {
   const [apps, setApps] = useState<BitcoinApp[]>([]);
   const [appsLoading, setAppsLoading] = useState(true);
   const [appsError, setAppsError] = useState<string | null>(null);
+  const [visitorInterests, setVisitorInterests] = useState<string[]>([]);
+  const handleInterestsChange = useCallback((interests: string[]) => {
+    setVisitorInterests(interests);
+  }, []);
   const markImageLoaded = useCallback((appId: string) => {
     setLoadedImages(prev => {
       if (prev[appId]) {
@@ -435,6 +419,20 @@ export default function HomePage() {
     fetchApps();
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/interests', { cache: 'no-store' })
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) throw new Error(result?.error || 'Unable to load interests');
+        if (!cancelled) setVisitorInterests(Array.isArray(result.tags) ? result.tags : []);
+      })
+      .catch((error) => console.warn('Unable to load personalized recommendations:', error));
+
+    return () => { cancelled = true; };
+  }, []);
+
   const categories = useMemo(() => calculateCategories(apps), [apps]);
   const popularInterestCategories = useMemo(() => categories
     .slice()
@@ -463,6 +461,19 @@ export default function HomePage() {
       .slice(0, 5),
     [apps]
   );
+  const recommendedApps = useMemo(() => {
+    const normalizedInterests = new Set(visitorInterests.map((interest) => interest.toLowerCase()));
+
+    return apps
+      .filter((app) => normalizedInterests.has(app.category.toLowerCase()))
+      .slice()
+      .sort((a, b) => Number(b.verified) - Number(a.verified) || b.rating - a.rating || b.reviewCount - a.reviewCount)
+      .slice(0, 6);
+  }, [apps, visitorInterests]);
+
+  if (appsLoading) {
+    return <AppLoader isLoading />;
+  }
 
   return (
     <div className="bg-background l-dotted-grid-background min-h-screen">
@@ -543,12 +554,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {appsLoading && (
-          <div className="rounded-lg border border-border/50 bg-muted/10 p-5 text-center text-sm text-muted-foreground mb-8">
-            {copy.loading}
-          </div>
-        )}
-
         <section className="mb-20">
           <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
@@ -560,7 +565,10 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {ecosystemPillars.map(({ label, detail, icon: Icon }) => (
+            {copy.ecosystemPillars.map(({ label, detail }, index) => {
+              const Icon = ecosystemPillarIcons[index];
+
+              return (
               <article key={label} className="rounded-lg border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-orange-500/50 hover:shadow-lg">
                 <span className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-md bg-foreground text-background">
                   <Icon className="h-5 w-5" />
@@ -568,7 +576,8 @@ export default function HomePage() {
                 <h3 className="mb-2 text-base font-semibold">{label}</h3>
                 <p className="mb-0 text-sm leading-6 text-muted-foreground">{detail}</p>
               </article>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -624,6 +633,63 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {visitorInterests.length > 0 && (
+          <section className="my-12" aria-labelledby="recommended-apps-heading">
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="mb-1 text-sm uppercase tracking-[0.28em] text-orange-500">Picked for you</p>
+                <h2 id="recommended-apps-heading" className="title text-3xl font-bold">Recommended apps</h2>
+                <p className="mb-0 mt-2 text-sm text-muted-foreground">Based on {visitorInterests.join(', ')}</p>
+              </div>
+              <Button variant="link" asChild>
+                <Link href="/recommendations">
+                  See all recommendations
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+
+            {recommendedApps.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                {recommendedApps.map((app) => {
+                  const isLoaded = loadedImages[app.id];
+                  const imageSrc = app.imgCID ? getIPFSUrl(app.imgCID) : '/bbox.png';
+
+                  return (
+                    <Link
+                      key={`recommended-${app.id}`}
+                      href={`/apps/${app.id}`}
+                      className="group rounded-lg border border-border bg-card p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-orange-500/50 hover:shadow-lg"
+                    >
+                      <div className="relative mx-auto mb-3 h-20 w-20 overflow-hidden rounded-lg bg-muted/10">
+                        {!isLoaded && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-orange-500" aria-hidden="true" />
+                          </div>
+                        )}
+                        <Image
+                          src={imageSrc}
+                          alt={`${app.name} logo`}
+                          width={80}
+                          height={80}
+                          onLoad={() => markImageLoaded(app.id)}
+                          className={`h-full w-full object-cover transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                        />
+                      </div>
+                      <h3 className="truncate text-sm font-semibold group-hover:text-orange-500">{app.name}</h3>
+                      <p className="mb-0 mt-1 truncate text-xs text-muted-foreground">{app.category}</p>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : !appsLoading && (
+              <div className="rounded-lg border border-border bg-card/70 p-6 text-sm text-muted-foreground">
+                No matching apps are available for these interests yet.
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Featured Apps */}
         <div className="my-12">
@@ -782,7 +848,7 @@ export default function HomePage() {
         </div>
       </div>
       {showGetInModal && <GetInModal onClose={handleGetInModalClose} />}
-      <InterestBar categories={popularInterestCategories} visible={showInterestBar} />
+      <InterestBar categories={popularInterestCategories} visible={showInterestBar} onInterestsChange={handleInterestsChange} />
     </div>
   );
 }
