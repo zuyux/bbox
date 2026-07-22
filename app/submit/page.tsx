@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -401,13 +404,13 @@ export default function PublishPage() {
     e.preventDefault();
 
     if (APP_SUBMISSIONS_UNDER_CONSTRUCTION) {
-      setErrorMessage('App submissions are under construction. Please check back soon.');
+      setErrorMessage("App submissions are under construction. Please check back soon.");
       setSubmitStatus('error');
       return;
     }
     
     if (!currentAddress) {
-      setErrorMessage('Please connect your wallet to publish an app');
+      setErrorMessage("Please connect your wallet to publish an app");
       setSubmitStatus('error');
       return;
     }
@@ -664,12 +667,12 @@ export default function PublishPage() {
         <div className="container mx-auto px-4 pt-28 pb-12">
           <Card className="mx-auto max-w-xl border-border bg-card">
             <CardHeader>
-              <CardTitle>Developer Mode is off</CardTitle>
+              <CardTitle><LocalizedText>Developer Mode is off</LocalizedText></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-muted-foreground">
-              <p>Publishing tools are hidden for the everyday app store experience. Turn on Developer Mode in Settings when you want to submit a project.</p>
+              <p><LocalizedText>Publishing tools are hidden for the everyday app store experience. Turn on Developer Mode in Settings when you want to submit a project.</LocalizedText></p>
               <Button asChild className="w-full bg-orange-500 text-white hover:bg-orange-600">
-                <Link href="/settings#developer-mode">Open Settings</Link>
+                <Link href="/settings#developer-mode"><LocalizedText>Open Settings</LocalizedText></Link>
               </Button>
             </CardContent>
           </Card>
@@ -693,10 +696,10 @@ export default function PublishPage() {
           {/* Header */}
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="title text-3xl font-bold mb-2">Submit Your R&amp;D Project</h1>
+              <h1 className="title text-3xl font-bold mb-2"><LocalizedText>Submit Your R&amp;D Project</LocalizedText></h1>
               <p className="text-muted-foreground">
-                Submit an application or focused research project to the BBOX registry. Open-source, privacy, cybersecurity, OSINT, Bitcoin, developer, safe AI, and off-chain public-good work are welcome.
-              </p>
+                <LocalizedText>Submit an application or focused research project to the BBOX registry. Open-source, privacy, cybersecurity, OSINT, Bitcoin, developer, safe AI, and off-chain public-good work are welcome.
+              </LocalizedText></p>
             </div>
             <Button
               asChild
@@ -705,109 +708,109 @@ export default function PublishPage() {
             >
               <Link href="/submit/review" className="flex items-center gap-2">
                 <ArrowRight className="h-4 w-4" />
-                Review submissions
-              </Link>
+                <LocalizedText>Review submissions
+              </LocalizedText></Link>
             </Button>
           </div>
 
           {/* Status Messages */}
-          {submitStatus === 'metadata' && (
+          {submitStatus === "metadata" && (
             <Card className="mb-6 border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-5 h-5 text-purple-600 animate-spin" />
                   <span className="text-purple-900 dark:text-purple-100">
-                    Uploading your metadata to IPFS...
-                  </span>
+                    <LocalizedText>Uploading your metadata to IPFS...
+                  </LocalizedText></span>
                 </div>
                 <p className="text-xs text-purple-800 dark:text-purple-200 mt-2 ml-7">
-                  This pins your app details before the on-chain submission
-                </p>
+                  <LocalizedText>This pins your app details before the on-chain submission
+                </LocalizedText></p>
               </CardContent>
             </Card>
           )}
 
-          {submitStatus === 'contract' && (
+          {submitStatus === "contract" && (
             <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-900/40 dark:bg-orange-950/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
                   <span className="text-orange-900 dark:text-orange-100">
-                    Confirm the on-chain listing fee in your wallet
-                  </span>
+                    <LocalizedText>Confirm the on-chain listing fee in your wallet
+                  </LocalizedText></span>
                 </div>
                 <p className="text-xs text-orange-800 dark:text-orange-200 mt-2 ml-7">
-                  Pay {listingFeeDisplay} in sBTC plus STX gas to submit on-chain
-                  {isFallbackListingFee && ' (estimate)'}
+                  <LocalizedText>Pay </LocalizedText>{listingFeeDisplay} <LocalizedText>in sBTC plus STX gas to submit on-chain
+                  </LocalizedText>{isFallbackListingFee && " (estimate)"}
                 </p>
               </CardContent>
             </Card>
           )}
 
-          {submitStatus === 'bar' && (
+          {submitStatus === "bar" && (
             <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-900/40 dark:bg-orange-950/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
                   <span className="text-orange-900 dark:text-orange-100">
-                    Confirm the BAR inscription in your Bitcoin wallet
-                  </span>
+                    <LocalizedText>Confirm the BAR inscription in your Bitcoin wallet
+                  </LocalizedText></span>
                 </div>
                 <p className="text-xs text-orange-800 dark:text-orange-200 mt-2 ml-7">
-                  The wallet will inscribe a brc-app JSON record to Bitcoin L1 and handle miner fees.
-                </p>
+                  <LocalizedText>The wallet will inscribe a brc-app JSON record to Bitcoin L1 and handle miner fees.
+                </LocalizedText></p>
                 {barFeeEstimate && (
                   <p className="text-[11px] text-orange-800 dark:text-orange-200 mt-2 ml-7">
-                    Estimate: {barFeeEstimate.estimatedTotalSats.toLocaleString()} sats at {barFeeEstimate.feeRate} sat/vB
-                  </p>
+                    <LocalizedText>Estimate: </LocalizedText>{barFeeEstimate.estimatedTotalSats.toLocaleString()} <LocalizedText>sats at </LocalizedText>{barFeeEstimate.feeRate} <LocalizedText>sat/vB
+                  </LocalizedText></p>
                 )}
               </CardContent>
             </Card>
           )}
 
-          {submitStatus === 'uploading' && (
+          {submitStatus === "uploading" && (
             <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
                   <span className="text-blue-800 dark:text-blue-200">
-                    Finalizing your submission...
-                  </span>
+                    <LocalizedText>Finalizing your submission...
+                  </LocalizedText></span>
                 </div>
                 <p className="text-xs text-blue-700 dark:text-blue-300 mt-2 ml-7">
-                  Saving metadata and transaction details to the database
-                </p>
+                  <LocalizedText>Saving metadata and transaction details to the database
+                </LocalizedText></p>
                 {metadataCid && (
                   <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-2 ml-7 break-all">
-                    Metadata CID: <span className="font-mono">{metadataCid}</span>
+                    <LocalizedText>Metadata CID: </LocalizedText><span className="font-mono">{metadataCid}</span>
                   </p>
                 )}
                 {contractTxId && (
                   <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1 ml-7 break-all">
-                    Contract TX: <span className="font-mono">{contractTxId}</span>
+                    <LocalizedText>Contract TX: </LocalizedText><span className="font-mono">{contractTxId}</span>
                   </p>
                 )}
                 {barTxId && (
                   <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1 ml-7 break-all">
-                    BAR TX: <span className="font-mono">{barTxId}</span>
+                    <LocalizedText>BAR TX: </LocalizedText><span className="font-mono">{barTxId}</span>
                   </p>
                 )}
               </CardContent>
             </Card>
           )}
 
-          {submitStatus === 'email' && (
+          {submitStatus === "email" && (
             <Card className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
                   <span className="text-amber-900 dark:text-amber-100">
-                    Sending confirmation emails...
-                  </span>
+                    <LocalizedText>Sending confirmation emails...
+                  </LocalizedText></span>
                 </div>
                 <p className="text-xs text-amber-800 dark:text-amber-200 mt-2 ml-7">
-                  You&apos;ll receive a confirmation shortly
-                </p>
+                  <LocalizedText>You&apos;ll receive a confirmation shortly
+                </LocalizedText></p>
               </CardContent>
             </Card>
           )}
@@ -818,30 +821,30 @@ export default function PublishPage() {
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600" />
                   <span className="text-green-800 dark:text-green-200 font-semibold">
-                    App submitted successfully!
-                  </span>
+                    <LocalizedText>App submitted successfully!
+                  </LocalizedText></span>
                 </div>
                 <p className="text-sm text-green-700 dark:text-green-300 mt-2 ml-7">
-                  Redirecting to success page...
-                </p>
+                  <LocalizedText>Redirecting to success page...
+                </LocalizedText></p>
                 {contractTxId && (
                   <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-7 break-all">
-                    Contract TX: <span className="font-mono">{contractTxId}</span>
+                    <LocalizedText>Contract TX: </LocalizedText><span className="font-mono">{contractTxId}</span>
                   </p>
                 )}
                 {metadataCid && (
                   <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-7 break-all">
-                    Metadata CID: <span className="font-mono">{metadataCid}</span>
+                    <LocalizedText>Metadata CID: </LocalizedText><span className="font-mono">{metadataCid}</span>
                   </p>
                 )}
                 {barTxId && (
                   <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-7 break-all">
-                    BAR TX: <span className="font-mono">{barTxId}</span>
+                    <LocalizedText>BAR TX: </LocalizedText><span className="font-mono">{barTxId}</span>
                   </p>
                 )}
                 {barInscriptionId && (
                   <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-7 break-all">
-                    BAR Inscription: <span className="font-mono">{barInscriptionId}</span>
+                    <LocalizedText>BAR Inscription: </LocalizedText><span className="font-mono">{barInscriptionId}</span>
                   </p>
                 )}
               </CardContent>
@@ -859,7 +862,7 @@ export default function PublishPage() {
                     </span>
                     {errorMessage.includes('wallet') && errorMessage.includes('install') && (
                       <div className="mt-2 text-sm text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 p-3 rounded">
-                        <p className="font-semibold mb-2">💼 Install a Stacks Wallet:</p>
+                        <p className="font-semibold mb-2"><LocalizedText>💼 Install a Stacks Wallet:</LocalizedText></p>
                         <div className="space-y-2 text-xs">
                           <div>
                             <a 
@@ -868,9 +871,9 @@ export default function PublishPage() {
                               rel="noopener noreferrer"
                               className="underline hover:text-red-900 dark:hover:text-red-100 font-semibold"
                             >
-                              → Leather Wallet
-                            </a>
-                            <span className="ml-2">(Recommended)</span>
+                              <LocalizedText>→ Leather Wallet
+                            </LocalizedText></a>
+                            <span className="ml-2"><LocalizedText>(Recommended)</LocalizedText></span>
                           </div>
                           <div>
                             <a 
@@ -879,20 +882,20 @@ export default function PublishPage() {
                               rel="noopener noreferrer"
                               className="underline hover:text-red-900 dark:hover:text-red-100 font-semibold"
                             >
-                              → Xverse Wallet
-                            </a>
+                              <LocalizedText>→ Xverse Wallet
+                            </LocalizedText></a>
                           </div>
-                          <p className="mt-2 italic">After installing, refresh this page and connect your wallet.</p>
+                          <p className="mt-2 italic"><LocalizedText>After installing, refresh this page and connect your wallet.</LocalizedText></p>
                         </div>
                       </div>
                     )}
                     {errorMessage.includes('Contract not') && (
                       <div className="mt-2 text-sm text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 p-3 rounded">
-                        <p className="font-semibold mb-2">📋 To deploy the contract:</p>
+                        <p className="font-semibold mb-2"><LocalizedText>📋 To deploy the contract:</LocalizedText></p>
                         <ol className="list-decimal list-inside space-y-1 text-xs">
-                          <li>Deploy bbox.clar to your Stacks testnet/mainnet</li>
-                          <li>Update the contract address in <code className="bg-red-200 dark:bg-red-800 px-1 rounded">lib/bbox-contract.ts</code></li>
-                          <li>Restart your development server</li>
+                          <li><LocalizedText>Deploy bbox.clar to your Stacks testnet/mainnet</LocalizedText></li>
+                          <li><LocalizedText>Update the contract address in </LocalizedText><code className="bg-red-200 dark:bg-red-800 px-1 rounded">lib/bbox-contract.ts</code></li>
+                          <li><LocalizedText>Restart your development server</LocalizedText></li>
                         </ol>
                       </div>
                     )}
@@ -916,22 +919,22 @@ export default function PublishPage() {
             {/* Basic Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
+                <CardTitle><LocalizedText>Basic Information</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">App Name *</Label>
+                    <Label htmlFor="name"><LocalizedText>App Name *</LocalizedText></Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="Sovereign Notes"
+                      placeholder={"Sovereign Notes"}
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="version">Version</Label>
+                    <Label htmlFor="version"><LocalizedText>Version</LocalizedText></Label>
                     <Input
                       id="version"
                       value={formData.version}
@@ -943,31 +946,31 @@ export default function PublishPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <Label htmlFor="description">Description *</Label>
+                    <Label htmlFor="description"><LocalizedText>Description *</LocalizedText></Label>
                     <span className={`text-xs ${formData.description.length < 50 ? 'text-red-500' : 'text-muted-foreground'}`}>
-                      {formData.description.length} / 50 min
-                    </span>
+                      {formData.description.length} <LocalizedText>/ 50 min
+                    </LocalizedText></span>
                   </div>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    placeholder="An open-source privacy tool, developer utility, safe AI app, or chain-integrated product with verifiable source code..."
+                    placeholder={"An open-source privacy tool, developer utility, safe AI app, or chain-integrated product with verifiable source code..."}
                     rows={4}
                     required
                   />
                   {formData.description.length > 0 && formData.description.length < 50 && (
                     <p className="text-xs text-red-500 mt-1">
-                      Description must be at least 50 characters
-                    </p>
+                      <LocalizedText>Description must be at least 50 characters
+                    </LocalizedText></p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="category">Category *</Label>
+                  <Label htmlFor="category"><LocalizedText>Category *</LocalizedText></Label>
                   <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={"Select category"} />
                     </SelectTrigger>
                     <SelectContent>
                       {CATEGORIES.map(category => (
@@ -980,13 +983,13 @@ export default function PublishPage() {
                 </div>
 
                 <div>
-                  <Label>Tags</Label>
+                  <Label><LocalizedText>Tags</LocalizedText></Label>
                   <div className="flex gap-2 mb-2">
                     <Input
                       value={newTag}
                       onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="Add a tag..."
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                      placeholder={"Add a tag..."}
+                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                     />
                     <Button type="button" onClick={addTag} size="sm">
                       <Plus className="w-4 h-4" />
@@ -1014,10 +1017,10 @@ export default function PublishPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="app_icon">App Icon</Label>
+                  <Label htmlFor="app_icon"><LocalizedText>App Icon</LocalizedText></Label>
                   <p className="text-xs text-muted-foreground mb-2">
-                    Upload a square image (PNG, JPG, GIF, or WebP) under 10MB to host on IPFS.
-                  </p>
+                    <LocalizedText>Upload a square image (PNG, JPG, GIF, or WebP) under 10MB to host on IPFS.
+                  </LocalizedText></p>
                   <div className="flex flex-col sm:flex-row gap-4 items-start">
                     <div className="relative flex h-20 w-20 items-center justify-center rounded-lg border border-dashed bg-muted">
                       {formData.icon_cid ? (
@@ -1041,23 +1044,23 @@ export default function PublishPage() {
                         type="file"
                         accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
                         onChange={handleIconUpload}
-                        disabled={iconUploadStatus === 'uploading' || isSubmitting}
+                        disabled={iconUploadStatus === "uploading" || isSubmitting}
                         className='cursor-pointer'
                       />
-                      {iconUploadStatus === 'uploading' && (
+                      {iconUploadStatus === "uploading" && (
                         <p className="text-xs text-muted-foreground flex items-center gap-2">
                           <Loader2 className="w-3 h-3 animate-spin" />
-                          Uploading to IPFS...
-                        </p>
+                          <LocalizedText>Uploading to IPFS...
+                        </LocalizedText></p>
                       )}
                       {iconUploadStatus === 'success' && formData.icon_cid && (
                         <p className="text-xs text-green-600">
-                          Icon uploaded • CID:
-                          <span className="font-mono break-all ml-1">{formData.icon_cid}</span>
+                          <LocalizedText>Icon uploaded • CID:
+                          </LocalizedText><span className="font-mono break-all ml-1">{formData.icon_cid}</span>
                         </p>
                       )}
                       {iconUploadStatus === 'error' && iconUploadError && (
-                        <p className="text-xs text-red-500">Upload failed: {iconUploadError}</p>
+                        <p className="text-xs text-red-500"><LocalizedText>Upload failed: </LocalizedText>{iconUploadError}</p>
                       )}
                     </div>
                   </div>
@@ -1068,11 +1071,11 @@ export default function PublishPage() {
             {/* Links and Resources */}
             <Card>
               <CardHeader>
-                <CardTitle>Links and Resources</CardTitle>
+                <CardTitle><LocalizedText>Links and Resources</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="website_url">Website URL</Label>
+                  <Label htmlFor="website_url"><LocalizedText>Website URL</LocalizedText></Label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -1080,14 +1083,14 @@ export default function PublishPage() {
                       type="url"
                       value={formData.website_url}
                       onChange={(e) => handleInputChange('website_url', e.target.value)}
-                      placeholder="https://your-app.com"
+                      placeholder={"https://your-app.com"}
                       className='pl-10'
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="github_url">GitHub Repository</Label>
+                  <Label htmlFor="github_url"><LocalizedText>GitHub Repository</LocalizedText></Label>
                   <div className="relative">
                     <Github className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -1095,14 +1098,14 @@ export default function PublishPage() {
                       type="url"
                       value={formData.github_url}
                       onChange={(e) => handleInputChange('github_url', e.target.value)}
-                      placeholder="https://github.com/username/repo"
+                      placeholder={"https://github.com/username/repo"}
                       className='pl-10'
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="documentation_url">Documentation URL</Label>
+                  <Label htmlFor="documentation_url"><LocalizedText>Documentation URL</LocalizedText></Label>
                   <div className="relative">
                     <ExternalLink className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -1110,7 +1113,7 @@ export default function PublishPage() {
                       type="url"
                       value={formData.documentation_url}
                       onChange={(e) => handleInputChange('documentation_url', e.target.value)}
-                      placeholder="https://docs.your-app.com"
+                      placeholder={"https://docs.your-app.com"}
                       className='pl-10'
                     />
                   </div>
@@ -1121,11 +1124,11 @@ export default function PublishPage() {
             {/* Platform and Network Support */}
             <Card>
               <CardHeader>
-                <CardTitle>Platform and Network Support</CardTitle>
+                <CardTitle><LocalizedText>Platform and Network Support</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Supported Platforms</Label>
+                  <Label><LocalizedText>Supported Platforms</LocalizedText></Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
                     {PLATFORMS.map(platform => (
                       <div key={platform} className="flex items-center space-x-2">
@@ -1144,7 +1147,7 @@ export default function PublishPage() {
                 </div>
 
                 <div>
-                  <Label>Supported Networks</Label>
+                  <Label><LocalizedText>Supported Networks</LocalizedText></Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
                     {NETWORKS.map(network => (
                       <div key={network} className="flex items-center space-x-2">
@@ -1163,10 +1166,10 @@ export default function PublishPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="license">License</Label>
+                  <Label htmlFor="license"><LocalizedText>License</LocalizedText></Label>
                   <Select value={formData.license} onValueChange={(value) => handleInputChange('license', value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select license" />
+                      <SelectValue placeholder={"Select license"} />
                     </SelectTrigger>
                     <SelectContent>
                       {LICENSES.map(license => (
@@ -1183,27 +1186,27 @@ export default function PublishPage() {
             {/* Monetization */}
             <Card>
               <CardHeader>
-                <CardTitle>Monetization</CardTitle>
+                <CardTitle><LocalizedText>Monetization</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="pricing_model">Pricing Model</Label>
+                  <Label htmlFor="pricing_model"><LocalizedText>Pricing Model</LocalizedText></Label>
                   <Select value={formData.pricing_model} onValueChange={(value) => handleInputChange('pricing_model', value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select pricing model" />
+                      <SelectValue placeholder={"Select pricing model"} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="free">Free</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
-                      <SelectItem value="freemium">Freemium</SelectItem>
-                      <SelectItem value="donation">Donation-based</SelectItem>
+                      <SelectItem value="free"><LocalizedText>Free</LocalizedText></SelectItem>
+                      <SelectItem value="paid"><LocalizedText>Paid</LocalizedText></SelectItem>
+                      <SelectItem value="freemium"><LocalizedText>Freemium</LocalizedText></SelectItem>
+                      <SelectItem value="donation"><LocalizedText>Donation-based</LocalizedText></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                {formData.pricing_model === 'paid' && (
+                {formData.pricing_model === "paid" && (
                   <div>
-                    <Label htmlFor="price_usd">Price (USD)</Label>
+                    <Label htmlFor="price_usd"><LocalizedText>Price (USD)</LocalizedText></Label>
                     <Input
                       id="price_usd"
                       type="number"
@@ -1225,13 +1228,13 @@ export default function PublishPage() {
                   />
                   <Label htmlFor="accepts_lightning" className="flex items-center gap-2">
                     <Zap className="w-4 h-4" />
-                    Accepts Lightning Network payments
-                  </Label>
+                    <LocalizedText>Accepts Lightning Network payments
+                  </LocalizedText></Label>
                 </div>
 
                 {formData.accepts_lightning && (
                   <div>
-                    <Label htmlFor="lightning_address">Lightning Address</Label>
+                    <Label htmlFor="lightning_address"><LocalizedText>Lightning Address</LocalizedText></Label>
                     <Input
                       id="lightning_address"
                       value={formData.lightning_address}
@@ -1246,40 +1249,40 @@ export default function PublishPage() {
             {/* Publisher Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Publisher Information</CardTitle>
+                <CardTitle><LocalizedText>Publisher Information</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="publisher_name">Your Name / Organization</Label>
+                    <Label htmlFor="publisher_name"><LocalizedText>Your Name / Organization</LocalizedText></Label>
                     <Input
                       id="publisher_name"
                       value={formData.publisher_name}
                       onChange={(e) => handleInputChange('publisher_name', e.target.value)}
-                      placeholder="Your Name or Company"
+                      placeholder={"Your Name or Company"}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="publisher_email">Contact Email</Label>
+                    <Label htmlFor="publisher_email"><LocalizedText>Contact Email</LocalizedText></Label>
                     <Input
                       id="publisher_email"
                       type="email"
                       value={formData.publisher_email}
                       onChange={(e) => handleInputChange('publisher_email', e.target.value)}
-                      placeholder="contact@yourapp.com"
+                      placeholder={"contact@yourapp.com"}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label>Connected Wallet Address</Label>
+                  <Label><LocalizedText>Connected Wallet Address</LocalizedText></Label>
                   <Input
                     value={currentAddress}
                     disabled
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    This address will be used to verify ownership of the app.
-                  </p>
+                    <LocalizedText>This address will be used to verify ownership of the app.
+                  </LocalizedText></p>
                 </div>
               </CardContent>
             </Card>
@@ -1287,7 +1290,7 @@ export default function PublishPage() {
             {/* Privacy and Legal */}
             <Card>
               <CardHeader>
-                <CardTitle>Privacy and Legal</CardTitle>
+                <CardTitle><LocalizedText>Privacy and Legal</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-2">
@@ -1298,40 +1301,40 @@ export default function PublishPage() {
                     className="cursor-pointer bg-foreground/50"
                   />
                   <Label htmlFor="open_source">
-                    This is an open-source project
-                  </Label>
+                    <LocalizedText>This is an open-source project
+                  </LocalizedText></Label>
                 </div>
 
                 <div>
-                  <Label htmlFor="data_collection_summary">Data Collection Summary</Label>
+                  <Label htmlFor="data_collection_summary"><LocalizedText>Data Collection Summary</LocalizedText></Label>
                   <Textarea
                     id="data_collection_summary"
                     value={formData.data_collection_summary}
                     onChange={(e) => handleInputChange('data_collection_summary', e.target.value)}
-                    placeholder="Describe what data your app collects and how it's used..."
+                    placeholder={"Describe what data your app collects and how it's used..."}
                     rows={3}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="privacy_policy_url">Privacy Policy URL</Label>
+                    <Label htmlFor="privacy_policy_url"><LocalizedText>Privacy Policy URL</LocalizedText></Label>
                     <Input
                       id="privacy_policy_url"
                       type="url"
                       value={formData.privacy_policy_url}
                       onChange={(e) => handleInputChange('privacy_policy_url', e.target.value)}
-                      placeholder="https://yourapp.com/privacy"
+                      placeholder={"https://yourapp.com/privacy"}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="terms_of_service_url">Terms of Service URL</Label>
+                    <Label htmlFor="terms_of_service_url"><LocalizedText>Terms of Service URL</LocalizedText></Label>
                     <Input
                       id="terms_of_service_url"
                       type="url"
                       value={formData.terms_of_service_url}
                       onChange={(e) => handleInputChange('terms_of_service_url', e.target.value)}
-                      placeholder="https://yourapp.com/terms"
+                      placeholder={"https://yourapp.com/terms"}
                     />
                   </div>
                 </div>
@@ -1341,7 +1344,7 @@ export default function PublishPage() {
             {/* On-chain Submission */}
             <Card>
               <CardHeader>
-                <CardTitle>On-chain Submission</CardTitle>
+                <CardTitle><LocalizedText>On-chain Submission</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -1357,19 +1360,19 @@ export default function PublishPage() {
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <Label htmlFor="publish-to-bar" className="font-semibold">
-                            Bitcoin L1 BAR inscription
-                          </Label>
+                            <LocalizedText>Bitcoin L1 BAR inscription
+                          </LocalizedText></Label>
                           <Badge variant="secondary" className="text-[10px] uppercase tracking-normal">
-                            Under construction
-                          </Badge>
+                            <LocalizedText>Under construction
+                          </LocalizedText></Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Inscribes a brc-app JSON record with your app metadata onto Bitcoin Layer 1 through Ordinals.
+                          <LocalizedText>Inscribes a brc-app JSON record with your app metadata onto Bitcoin Layer 1 through Ordinals.
                           The publisher owner is a Taproot address, updates create new inscriptions, and miner fees are paid in BTC.
-                        </p>
+                        </LocalizedText></p>
                         <p className="text-xs text-amber-700 dark:text-amber-300">
-                          This path is visible for review but disabled until the BAR inscription relay and fee funding flow are ready.
-                        </p>
+                          <LocalizedText>This path is visible for review but disabled until the BAR inscription relay and fee funding flow are ready.
+                        </LocalizedText></p>
                       </div>
                     </div>
 
@@ -1377,19 +1380,19 @@ export default function PublishPage() {
                       <div className="space-y-3 pl-7">
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <div>
-                            <Label htmlFor="bar-signing-method">Signing Method</Label>
+                            <Label htmlFor="bar-signing-method"><LocalizedText>Signing Method</LocalizedText></Label>
                             <Select value={barSigningMethod} onValueChange={(value) => setBarSigningMethod(value as BarSigningMethod)}>
                               <SelectTrigger id="bar-signing-method">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="extension">Extension wallet</SelectItem>
-                                <SelectItem value="passkey">Passkey relay</SelectItem>
+                                <SelectItem value="extension"><LocalizedText>Extension wallet</LocalizedText></SelectItem>
+                                <SelectItem value="passkey"><LocalizedText>Passkey relay</LocalizedText></SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                           <div>
-                            <Label htmlFor="bar-fee-rate">Fee Rate (sat/vB)</Label>
+                            <Label htmlFor="bar-fee-rate"><LocalizedText>Fee Rate (sat/vB)</LocalizedText></Label>
                             <Input
                               id="bar-fee-rate"
                               type="number"
@@ -1401,7 +1404,7 @@ export default function PublishPage() {
                           </div>
                         </div>
                         <div>
-                          <Label htmlFor="bar-service-fee">Optional App Fee (sats)</Label>
+                          <Label htmlFor="bar-service-fee"><LocalizedText>Optional App Fee (sats)</LocalizedText></Label>
                           <Input
                             id="bar-service-fee"
                             type="number"
@@ -1412,15 +1415,15 @@ export default function PublishPage() {
                           />
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Estimated BAR payload: {barPreviewEstimate.payloadBytes} bytes, about{' '}
-                          {barPreviewEstimate.estimatedTotalSats.toLocaleString()} sats total at{' '}
-                          {barPreviewEstimate.feeRate} sat/vB.
-                        </p>
-                        {barSigningMethod === 'passkey' && (
+                          <LocalizedText>Estimated BAR payload: </LocalizedText>{barPreviewEstimate.payloadBytes} <LocalizedText>bytes, about</LocalizedText>{' '}
+                          {barPreviewEstimate.estimatedTotalSats.toLocaleString()} <LocalizedText>sats total at</LocalizedText>{' '}
+                          {barPreviewEstimate.feeRate} <LocalizedText>sat/vB.
+                        </LocalizedText></p>
+                        {barSigningMethod === "passkey" && (
                           <p className="text-xs text-amber-700 dark:text-amber-300">
-                            Passkey signing authorizes a server-side inscription relay. Configure BAR_INSCRIPTION_ENDPOINT
+                            <LocalizedText>Passkey signing authorizes a server-side inscription relay. Configure BAR_INSCRIPTION_ENDPOINT
                             for this path; extension wallets can inscribe directly.
-                          </p>
+                          </LocalizedText></p>
                         )}
                       </div>
                     )}
@@ -1436,17 +1439,17 @@ export default function PublishPage() {
                       />
                       <div className="space-y-1">
                         <Label htmlFor="publish-to-clarity" className="font-semibold">
-                          Clarity contract on Stacks
-                        </Label>
+                          <LocalizedText>Clarity contract on Stacks
+                        </LocalizedText></Label>
                         <p className="text-xs text-muted-foreground">
-                          Calls the BBOX registry contract on Stacks with the IPFS metadata CID. The contract keeps compact
+                          <LocalizedText>Calls the BBOX registry contract on Stacks with the IPFS metadata CID. The contract keeps compact
                           app state, charges the listing fee in sBTC, and uses STX for transaction gas.
-                        </p>
+                        </LocalizedText></p>
                       </div>
                     </div>
                     {publishToClarity && (
                       <p className="pl-7 text-xs text-muted-foreground">
-                        Listing fee: {listingFeeDisplay}{isFallbackListingFee ? ' estimate' : ''}. Network: {network || 'loading'}.
+                        <LocalizedText>Listing fee: </LocalizedText>{listingFeeDisplay}{isFallbackListingFee ? " estimate" : ''}<LocalizedText>. Network: </LocalizedText>{network || "loading"}.
                       </p>
                     )}
                   </div>
@@ -1458,42 +1461,42 @@ export default function PublishPage() {
             <div className="rounded-lg border border-dashed p-4 space-y-2">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <Shield className="h-4 w-4 text-muted-foreground" />
-                Submission Signature
-              </div>
+                <LocalizedText>Submission Signature
+              </LocalizedText></div>
               <p className="text-xs text-muted-foreground">
-                Sign a short message with your connected wallet before publishing. This verifies that the submission
-                originated from {currentAddress ? 'your wallet address.' : 'a verified wallet once connected.'}
+                <LocalizedText>Sign a short message with your connected wallet before publishing. This verifies that the submission
+                originated from </LocalizedText>{currentAddress ? "your wallet address." : "a verified wallet once connected."}
               </p>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={handleSignSubmission}
-                  disabled={!currentAddress || signatureStatus === 'signing' || isSubmitting}
+                  disabled={!currentAddress || signatureStatus === "signing" || isSubmitting}
                   className="w-full sm:w-auto cursor-pointer"
                 >
-                  {signatureStatus === 'signing' ? (
+                  {signatureStatus === "signing" ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Requesting signature...
-                    </>
-                  ) : signatureStatus === 'signed' ? (
-                    'Re-sign submission'
+                      <LocalizedText>Requesting signature...
+                    </LocalizedText></>
+                  ) : signatureStatus === "signed" ? (
+                    "Re-sign submission"
                   ) : (
-                    'Sign submission'
+                    "Sign submission"
                   )}
                 </Button>
                 <div className="text-xs flex-1">
-                  {signatureStatus === 'signed' && signatureResult ? (
+                  {signatureStatus === "signed" && signatureResult ? (
                     <p className="text-green-600">
-                      Signed with {signatureResult.walletType} • {signatureResult.signature.slice(0, 10)}…
+                      <LocalizedText>Signed with </LocalizedText>{signatureResult.walletType} • {signatureResult.signature.slice(0, 10)}…
                     </p>
                   ) : signatureStatus === 'error' && signatureError ? (
                     <p className="text-red-500">{signatureError}</p>
-                  ) : signatureStatus === 'signing' ? (
-                    <p className="text-muted-foreground">Awaiting wallet confirmation…</p>
+                  ) : signatureStatus === "signing" ? (
+                    <p className="text-muted-foreground"><LocalizedText>Awaiting wallet confirmation…</LocalizedText></p>
                   ) : (
-                    <p className="text-muted-foreground">Status: Not signed</p>
+                    <p className="text-muted-foreground"><LocalizedText>Status: Not signed</LocalizedText></p>
                   )}
                 </div>
               </div>
@@ -1508,37 +1511,37 @@ export default function PublishPage() {
                   APP_SUBMISSIONS_UNDER_CONSTRUCTION ||
                   isSubmitting ||
                   !currentAddress ||
-                  iconUploadStatus === 'uploading' ||
-                  signatureStatus === 'signing'
+                  iconUploadStatus === "uploading" ||
+                  signatureStatus === "signing"
                 }
               >
                 {APP_SUBMISSIONS_UNDER_CONSTRUCTION ? (
                   <>
                     <AlertCircle className="w-4 h-4 mr-2" />
-                    Under Construction
-                  </>
+                    <LocalizedText>Under Construction
+                  </LocalizedText></>
                 ) : isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {submitStatus === 'metadata' && 'Uploading metadata...'}
-                    {submitStatus === 'bar' && 'Inscribing BAR...'}
-                    {submitStatus === 'contract' && 'Awaiting wallet...'}
-                    {submitStatus === 'uploading' && 'Submitting...'}
-                    {submitStatus === 'email' && 'Sending emails...'}
-                    {submitStatus === 'success' && 'Success!'}
-                    {(submitStatus === 'idle' || submitStatus === 'error') && 'Publishing...'}
+                    {submitStatus === "metadata" && "Uploading metadata..."}
+                    {submitStatus === "bar" && "Inscribing BAR..."}
+                    {submitStatus === "contract" && "Awaiting wallet..."}
+                    {submitStatus === "uploading" && "Submitting..."}
+                    {submitStatus === "email" && "Sending emails..."}
+                    {submitStatus === 'success' && "Success!"}
+                    {(submitStatus === 'idle' || submitStatus === 'error') && "Publishing..."}
                   </>
                 ) : (
                   <>
                     <Coins className="w-4 h-4 mr-2" />
-                    Submit Project for Review
-                  </>
+                    <LocalizedText>Submit Project for Review
+                  </LocalizedText></>
                 )}
               </Button>
               {APP_SUBMISSIONS_UNDER_CONSTRUCTION && (
                 <p className="text-center text-xs text-amber-700 dark:text-amber-300">
-                  App submissions are temporarily disabled while the on-chain publishing flow is being finished.
-                </p>
+                  <LocalizedText>App submissions are temporarily disabled while the on-chain publishing flow is being finished.
+                </LocalizedText></p>
               )}
             </div>
 
@@ -1550,11 +1553,11 @@ export default function PublishPage() {
                   <Info className="w-5 h-5 text-yellow-600" />
                   <div>
                     <span className="text-yellow-800 dark:text-yellow-200 font-semibold">
-                      Testing Mode: {network.charAt(0).toUpperCase() + network.slice(1)}
+                      <LocalizedText>Testing Mode: </LocalizedText>{network.charAt(0).toUpperCase() + network.slice(1)}
                     </span>
                     <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                      You&apos;re submitting to the test network. This won&apos;t appear on mainnet.
-                    </p>
+                      <LocalizedText>You&apos;re submitting to the test network. This won&apos;t appear on mainnet.
+                    </LocalizedText></p>
                   </div>
                 </div>
               </CardContent>

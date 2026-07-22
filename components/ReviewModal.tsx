@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, Star as StarIcon, X } from 'lucide-react';
 import { CardContent, CardTitle } from '@/components/ui/card';
@@ -97,7 +100,7 @@ export default function ReviewModal({ open, appId, appName, onRatingChange, onCl
     if (!open) return;
     if (!reviewAppId) {
       setComments([]);
-      setError('Review details are unavailable for this demo app.');
+      setError("Review details are unavailable for this demo app.");
       setLoading(false);
       return;
     }
@@ -206,14 +209,14 @@ export default function ReviewModal({ open, appId, appName, onRatingChange, onCl
       <div ref={modalRef} className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-border bg-background shadow-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-border/70 p-5">
           <div>
-            <CardTitle className="text-lg">Reviews for {appName}</CardTitle>
-            <p className="text-sm text-muted-foreground">See the latest signed review notes for this app.</p>
+            <CardTitle className="text-lg"><LocalizedText>Reviews for </LocalizedText>{appName}</CardTitle>
+            <p className="text-sm text-muted-foreground"><LocalizedText>See the latest signed review notes for this app.</LocalizedText></p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full p-2 text-muted-foreground transition hover:bg-muted/70 hover:text-foreground"
-            aria-label="Close reviews"
+            aria-label={"Close reviews"}
           >
             <X className="h-5 w-5" />
           </button>
@@ -223,8 +226,8 @@ export default function ReviewModal({ open, appId, appName, onRatingChange, onCl
           <div className="rounded-3xl border border-border/70 bg-muted/50 p-5 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="review-rating" className="text-sm font-semibold">
-                Your rating
-              </Label>
+                <LocalizedText>Your rating
+              </LocalizedText></Label>
               <div className="flex items-center gap-2" id="review-rating">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -241,13 +244,13 @@ export default function ReviewModal({ open, appId, appName, onRatingChange, onCl
             </div>
             <div className="space-y-2">
               <Label htmlFor="review-text" className="text-sm font-semibold">
-                Your review
-              </Label>
+                <LocalizedText>Your review
+              </LocalizedText></Label>
               <Textarea
                 id="review-text"
                 value={reviewText}
                 onChange={(event) => setReviewText(event.target.value)}
-                placeholder="Share your experience with this app..."
+                placeholder={"Share your experience with this app..."}
                 rows={4}
               />
             </div>
@@ -260,28 +263,28 @@ export default function ReviewModal({ open, appId, appName, onRatingChange, onCl
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-muted-foreground">
-                Reviews are signed with your connected wallet to verify authenticity.
-              </p>
+                <LocalizedText>Reviews are signed with your connected wallet to verify authenticity.
+              </LocalizedText></p>
               <Button onClick={handleSubmit} disabled={submitting}>
-                {submitting ? 'Submitting review…' : 'Sign & submit review'}
+                {submitting ? "Submitting review…" : "Sign & submit review"}
               </Button>
             </div>
           </div>
 
           {loading ? (
             <div className="flex items-center justify-center py-24 text-muted-foreground">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading reviews…
-            </div>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> <LocalizedText>Loading reviews…
+            </LocalizedText></div>
           ) : error ? (
             <div className="rounded-xl border border-red-700/70 bg-transparent p-4 text-sm text-red-700">
               {error}
             </div>
           ) : comments.length === 0 ? (
             <div className="rounded-xl border border-dashed border-muted p-6 text-sm text-muted-foreground text-center space-y-3">
-              <p>No reviews have been published for this app yet.</p>
+              <p><LocalizedText>No reviews have been published for this app yet.</LocalizedText></p>
               <p className="text-xs text-muted-foreground/80">
-                Leave the first signed review using the form above.
-              </p>
+                <LocalizedText>Leave the first signed review using the form above.
+              </LocalizedText></p>
             </div>
           ) : (
             <div className="space-y-4">

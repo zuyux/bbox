@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,16 +36,16 @@ export default function SubmitSuccessPage() {
 
               {/* Heading */}
               <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                Submission Successful!
-              </h1>
+                <LocalizedText>Submission Successful!
+              </LocalizedText></h1>
               
               <p className="text-xl text-muted-foreground mb-6">
-                Your app has been submitted to BBOX for review
-              </p>
+                <LocalizedText>Your app has been submitted to BBOX for review
+              </LocalizedText></p>
 
               {explorerUrl && (
                 <div className="w-full mb-8 inline-flex flex-col items-center gap-3 rounded-lg border border-green-200 bg-white/80 px-6 py-4 text-center shadow-sm dark:border-green-900/40 dark:bg-green-950/30">
-                  <p className="text-sm text-muted-foreground">View your on-chain submission</p>
+                  <p className="text-sm text-muted-foreground"><LocalizedText>View your on-chain submission</LocalizedText></p>
                   <Button asChild variant="outline" className="w-full cursor-pointer">
                     <a href={explorerUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2">
                       <ExternalLink className="w-4 h-4" />
@@ -56,7 +59,7 @@ export default function SubmitSuccessPage() {
               <div className="bg-white dark:bg-gray-900 rounded-lg p-8 mb-8 text-left shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5 text-green-600" />
-                  <h2 className="text-2xl font-bold">What happens next?</h2>
+                  <h2 className="text-2xl font-bold"><LocalizedText>What happens next?</LocalizedText></h2>
                 </div>
                 
                 <div className="space-y-4">
@@ -65,10 +68,10 @@ export default function SubmitSuccessPage() {
                       1
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-1">Review Process</h3>
+                      <h3 className="font-semibold mb-1"><LocalizedText>Review Process</LocalizedText></h3>
                       <p className="text-sm text-muted-foreground">
-                        Our team will review your app submission within 24-48 hours. We&apos;ll verify all links, metadata, and ensure it meets our guidelines.
-                      </p>
+                        <LocalizedText>Our team will review your app submission within 24-48 hours. We&apos;ll verify all links, metadata, and ensure it meets our guidelines.
+                      </LocalizedText></p>
                     </div>
                   </div>
 
@@ -77,10 +80,10 @@ export default function SubmitSuccessPage() {
                       2
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-1">Email Notification</h3>
+                      <h3 className="font-semibold mb-1"><LocalizedText>Email Notification</LocalizedText></h3>
                       <p className="text-sm text-muted-foreground">
-                        You&apos;ll receive an email confirmation shortly, followed by another email once your app is approved or if any changes are needed.
-                      </p>
+                        <LocalizedText>You&apos;ll receive an email confirmation shortly, followed by another email once your app is approved or if any changes are needed.
+                      </LocalizedText></p>
                     </div>
                   </div>
 
@@ -89,10 +92,10 @@ export default function SubmitSuccessPage() {
                       3
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-1">Go Live!</h3>
+                      <h3 className="font-semibold mb-1"><LocalizedText>Go Live!</LocalizedText></h3>
                       <p className="text-sm text-muted-foreground">
-                        Once approved, your app will be live on BBOX and discoverable by the sovereign software community. You can update it anytime from your dashboard.
-                      </p>
+                        <LocalizedText>Once approved, your app will be live on BBOX and discoverable by the sovereign software community. You can update it anytime from your dashboard.
+                      </LocalizedText></p>
                     </div>
                   </div>
                 </div>
@@ -102,24 +105,24 @@ export default function SubmitSuccessPage() {
               <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-6 mb-8 text-left">
                 <h3 className="font-bold text-orange-900 dark:text-orange-200 mb-3 flex items-center gap-2">
                   <span>💡</span>
-                  <span>Pro Tips While You Wait</span>
+                  <span><LocalizedText>Pro Tips While You Wait</LocalizedText></span>
                 </h3>
                 <ul className="space-y-2 text-sm text-orange-800 dark:text-orange-300">
                   <li className="flex gap-2">
                     <span className="text-orange-500">•</span>
-                    <span>Make sure your website and documentation are up to date</span>
+                    <span><LocalizedText>Make sure your website and documentation are up to date</LocalizedText></span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-orange-500">•</span>
-                    <span>Prepare screenshots and promotional materials</span>
+                    <span><LocalizedText>Prepare screenshots and promotional materials</LocalizedText></span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-orange-500">•</span>
-                    <span>Join our community to connect with other open-source builders</span>
+                    <span><LocalizedText>Join our community to connect with other open-source builders</LocalizedText></span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-orange-500">•</span>
-                    <span>Consider preparing a launch announcement for social media</span>
+                    <span><LocalizedText>Consider preparing a launch announcement for social media</LocalizedText></span>
                   </li>
                 </ul>
               </div>
@@ -132,24 +135,24 @@ export default function SubmitSuccessPage() {
                   className="cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                 >
                   <Home className="w-5 h-5 mr-2" />
-                  Browse Apps
-                </Button>
+                  <LocalizedText>Browse Apps
+                </LocalizedText></Button>
                 <Button
                   onClick={() => router.push('/submit/review')}
                   size="lg"
                   className="cursor-pointer bg-foreground text-background hover:bg-foreground/90"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Review Submissions
-                </Button>
+                  <LocalizedText>Review Submissions
+                </LocalizedText></Button>
                 <Button
                   onClick={() => router.push('/')}
                   size="lg"
                   variant="outline"
                 >
                   <ArrowRight className="cursor-pointer w-5 h-5 mr-2" />
-                  Back to Home
-                </Button>
+                  <LocalizedText>Back to Home
+                </LocalizedText></Button>
               </div>
 
             </CardContent>
@@ -161,23 +164,23 @@ export default function SubmitSuccessPage() {
               <CardContent className="p-6">
                 <h3 className="font-bold mb-2 flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" />
-                  View Documentation
-                </h3>
+                  <LocalizedText>View Documentation
+                </LocalizedText></h3>
                 <p className="text-sm text-muted-foreground">
-                  Learn more about BBOX features and how to optimize your app listing
-                </p>
+                  <LocalizedText>Learn more about BBOX features and how to optimize your app listing
+                </LocalizedText></p>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = 'mailto:fabohax@gmail.com'}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = "mailto:fabohax@gmail.com"}>
               <CardContent className="p-6">
                 <h3 className="font-bold mb-2 flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" />
-                  Need Help?
-                </h3>
+                  <LocalizedText>Need Help?
+                </LocalizedText></h3>
                 <p className="text-sm text-muted-foreground">
-                  Contact us at fabohax@gmail.com for any questions or support
-                </p>
+                  <LocalizedText>Contact us at fabohax@gmail.com for any questions or support
+                </LocalizedText></p>
               </CardContent>
             </Card>
           </div>

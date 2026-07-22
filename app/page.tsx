@@ -1,5 +1,9 @@
 'use client';
 
+import { useI18n } from '@/components/I18nProvider';
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -16,8 +20,6 @@ import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
 import { getProfileDeveloperMode } from '@/lib/profileApi';
-import { useI18n } from '@/components/I18nProvider';
-
 const categoryIcons: Record<string, string> = {
   Wallet: '/icons/wallet.svg',
   Lightning: '/icons/lightning.svg',
@@ -492,11 +494,11 @@ export default function HomePage() {
                   <p className="mb-0 text-sm text-muted-foreground">{copy.categories}</p>
                 </div>
                 <div className="bg-card p-5">
-                  <p className="title text-4xl text-orange-500">BAR</p>
+                  <p className="title text-4xl text-orange-500"><LocalizedText>BAR</LocalizedText></p>
                   <p className="mb-0 text-sm text-muted-foreground">{copy.anchored}</p>
                 </div>
                 <div className="bg-card p-5">
-                  <p className="title text-4xl text-orange-500">OSS</p>
+                  <p className="title text-4xl text-orange-500"><LocalizedText>OSS</LocalizedText></p>
                   <p className="mb-0 text-sm text-muted-foreground">{copy.publicGoods}</p>
                 </div>
               </div>
@@ -565,7 +567,7 @@ export default function HomePage() {
             <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent z-10" aria-hidden="true" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent z-10" aria-hidden="true" />
             <div
-              className={`category-slider-mask${isDragging ? ' category-slider-mask--dragging' : ''}`}
+              className={`category-slider-mask${isDragging ? " category-slider-mask--dragging" : ''}`}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onClickCapture={handleClickCapture}
@@ -663,7 +665,7 @@ export default function HomePage() {
                                   height={112}
                                   loading="lazy"
                                   onLoad={() => markImageLoaded(app.id)}
-                                  className={`object-cover w-full h-full transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                  className={`object-cover w-full h-full transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}
                                 />
                               </div>
                               <p className="text-sm font-medium text-foreground truncate mb-0">{app.name}</p>                            </Link>

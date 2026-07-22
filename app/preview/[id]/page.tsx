@@ -1,3 +1,5 @@
+
+import { LocalizedText } from "@/components/LocalizedText";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -92,15 +94,15 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
           <Button variant="ghost" asChild className="w-fit px-0 text-muted-foreground hover:text-foreground">
             <Link href="/submit/review" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back to submissions
-            </Link>
+              <LocalizedText>Back to submissions
+            </LocalizedText></Link>
           </Button>
           {app.website_url && (
             <Button asChild variant="outline" className="cursor-pointer">
               <a href={app.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-2">
                 <Globe className="h-4 w-4" />
-                Open live site
-              </a>
+                <LocalizedText>Open live site
+              </LocalizedText></a>
             </Button>
           )}
         </div>
@@ -131,8 +133,8 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground text-right">
-                <p>Submitted &nbsp; {formatDate(app.created_at)}</p>
-                <p>Updated &nbsp; {formatDate(app.updated_at)}</p>
+                <p><LocalizedText>Submitted &nbsp; </LocalizedText>{formatDate(app.created_at)}</p>
+                <p><LocalizedText>Updated &nbsp; </LocalizedText>{formatDate(app.updated_at)}</p>
                 <p>V. {textOrDash(app.version)}</p>
               </div>
             </div>
@@ -140,10 +142,10 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
           <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{textOrDash(app.category)}</Badge>
-              {app.open_source && <Badge variant="outline">Open source</Badge>}
-              {app.accepts_lightning && <Badge variant="outline">Lightning enabled</Badge>}
-              {app.verified && <Badge variant="outline">Verified</Badge>}
-              {app.featured && <Badge variant="outline">Featured</Badge>}
+              {app.open_source && <Badge variant="outline"><LocalizedText>Open source</LocalizedText></Badge>}
+              {app.accepts_lightning && <Badge variant="outline"><LocalizedText>Lightning enabled</LocalizedText></Badge>}
+              {app.verified && <Badge variant="outline"><LocalizedText>Verified</LocalizedText></Badge>}
+              {app.featured && <Badge variant="outline"><LocalizedText>Featured</LocalizedText></Badge>}
             </div>
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -156,25 +158,25 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
             )}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Pricing</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Pricing</LocalizedText></p>
                 <p className="text-lg font-semibold">
                   {app.pricing_model === "free" || app.price_usd === 0
                     ? "Free"
                     : `$${app.price_usd?.toLocaleString()}`}
                 </p>
                 {app.pricing_model !== "free" && (
-                  <p className="text-sm text-muted-foreground">Model: {textOrDash(app.pricing_model)}</p>
+                  <p className="text-sm text-muted-foreground"><LocalizedText>Model: </LocalizedText>{textOrDash(app.pricing_model)}</p>
                 )}
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Lightning</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Lightning</LocalizedText></p>
                 {app.accepts_lightning ? (
                   <p className="flex items-center gap-2 text-foreground">
                     <Zap className="h-4 w-4 text-amber-500" />
                     {textOrDash(app.lightning_address)}
                   </p>
                 ) : (
-                  <p className="text-muted-foreground">No Lightning payments yet</p>
+                  <p className="text-muted-foreground"><LocalizedText>No Lightning payments yet</LocalizedText></p>
                 )}
               </div>
             </div>
@@ -183,17 +185,17 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-xl">Product Surface</CardTitle>
-            <p className="text-sm text-muted-foreground">Networks, platforms, and public links to verify</p>
+            <CardTitle className="text-xl"><LocalizedText>Product Surface</LocalizedText></CardTitle>
+            <p className="text-sm text-muted-foreground"><LocalizedText>Networks, platforms, and public links to verify</LocalizedText></p>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Platforms</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Platforms</LocalizedText></p>
                 <p className="text-sm text-foreground">{platforms.length ? platforms.join(", ") : "—"}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Networks</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Networks</LocalizedText></p>
                 <p className="text-sm text-foreground">{networks.length ? networks.join(", ") : "—"}</p>
               </div>
             </div>
@@ -203,40 +205,40 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
                 <Button asChild variant="outline" size="sm" className="cursor-pointer">
                   <a href={app.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-2">
                     <Globe className="h-4 w-4" />
-                    Website
-                  </a>
+                    <LocalizedText>Website
+                  </LocalizedText></a>
                 </Button>
               )}
               {app.github_url && (
                 <Button asChild variant="outline" size="sm" className="cursor-pointer">
                   <a href={app.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-2">
                     <Github className="h-4 w-4" />
-                    GitHub
-                  </a>
+                    <LocalizedText>GitHub
+                  </LocalizedText></a>
                 </Button>
               )}
               {app.documentation_url && (
                 <Button asChild variant="outline" size="sm" className="cursor-pointer">
                   <a href={app.documentation_url} target="_blank" rel="noreferrer" className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Docs
-                  </a>
+                    <LocalizedText>Docs
+                  </LocalizedText></a>
                 </Button>
               )}
               {app.privacy_policy_url && (
                 <Button asChild variant="outline" size="sm" className="cursor-pointer">
                   <a href={app.privacy_policy_url} target="_blank" rel="noreferrer" className="flex items-center gap-2">
                     <ExternalLink className="h-4 w-4" />
-                    Privacy
-                  </a>
+                    <LocalizedText>Privacy
+                  </LocalizedText></a>
                 </Button>
               )}
               {app.terms_of_service_url && (
                 <Button asChild variant="outline" size="sm" className="cursor-pointer">
                   <a href={app.terms_of_service_url} target="_blank" rel="noreferrer" className="flex items-center gap-2">
                     <ExternalLink className="h-4 w-4" />
-                    Terms
-                  </a>
+                    <LocalizedText>Terms
+                  </LocalizedText></a>
                 </Button>
               )}
             </div>
@@ -245,18 +247,18 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-xl">Publisher & Review Trail</CardTitle>
-            <p className="text-sm text-muted-foreground">Contact data and timestamps for audit trail</p>
+            <CardTitle className="text-xl"><LocalizedText>Publisher & Review Trail</LocalizedText></CardTitle>
+            <p className="text-sm text-muted-foreground"><LocalizedText>Contact data and timestamps for audit trail</LocalizedText></p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Publisher</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Publisher</LocalizedText></p>
                 <p className="text-lg font-semibold">{textOrDash(app.publisher_name)}</p>
                 <p className="text-sm text-muted-foreground break-all">{textOrDash(app.publisher_address)}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Contact</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Contact</LocalizedText></p>
                 <p className="flex items-center gap-2 text-sm">
                   <Mail className="h-4 w-4" />
                   <a href={`mailto:${app.publisher_email}`} className="text-primary hover:underline">
@@ -269,9 +271,9 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
             <div className="rounded-xl border border-dashed border-border/60 p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold">Support this app</p>
+                  <p className="text-sm font-semibold"><LocalizedText>Support this app</LocalizedText></p>
                   <p className="text-xs text-muted-foreground">
-                    Send sBTC directly to support {app.publisher_name || app.name}.
+                    <LocalizedText>Send sBTC directly to support </LocalizedText>{app.publisher_name || app.name}.
                   </p>
                 </div>
                 <FundPublisherButton
@@ -284,16 +286,16 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
 
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Status</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Status</LocalizedText></p>
                 <p className="font-semibold">{status.label}</p>
                 <p className="text-sm text-muted-foreground">{status.helper}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Created</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Created</LocalizedText></p>
                 <p>{formatDate(app.created_at)}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1">Updated</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Updated</LocalizedText></p>
                 <p>{formatDate(app.updated_at)}</p>
               </div>
             </div>
@@ -302,12 +304,12 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Data & Compliance Notes</CardTitle>
-            <p className="text-sm text-muted-foreground">Everything the submitter disclosed for reviewers</p>
+            <CardTitle className="text-xl"><LocalizedText>Data & Compliance Notes</LocalizedText></CardTitle>
+            <p className="text-sm text-muted-foreground"><LocalizedText>Everything the submitter disclosed for reviewers</LocalizedText></p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-xl border bg-muted/40 p-4">
-              <p className="text-sm text-muted-foreground mb-1">Data collection summary</p>
+              <p className="text-sm text-muted-foreground mb-1"><LocalizedText>Data collection summary</LocalizedText></p>
               <p className="text-sm text-foreground whitespace-pre-wrap">{textOrDash(app.data_collection_summary)}</p>
             </div>
           </CardContent>

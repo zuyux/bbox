@@ -1,4 +1,7 @@
 'use client'
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Settings, LogOut, User } from 'lucide-react';
@@ -212,7 +215,7 @@ export default function UserModal({ onClose }: UserModalProps) {
               type="button"
               className="w-9 h-9 bg-gradient-to-br from-[#111] to-[#333] border-[1px] border-[#555] rounded-full overflow-hidden cursor-pointer select-none flex items-center justify-center"
               onClick={onClose}
-              aria-label="Profile"
+              aria-label={"Profile"}
             >
               {profile?.avatar_cid ? (
                 <SafariOptimizedImage
@@ -251,7 +254,7 @@ export default function UserModal({ onClose }: UserModalProps) {
                 <LoaderCircle className="animate-spin text-black dark:text-white inline-block align-middle" size={32} />
               ) : (
                 <>
-                  {formatBalance(sbtcBalance)} <span className="text-lg">SATS</span>
+                  {formatBalance(sbtcBalance)} <span className="text-lg"><LocalizedText>SATS</LocalizedText></span>
                 </>
               )}
             </button>
@@ -260,8 +263,8 @@ export default function UserModal({ onClose }: UserModalProps) {
               className="text-base text-gray-500 dark:text-white/50 text-right hover:underline cursor-pointer select-none"
               style={{ background: "none", border: "none", padding: 0, margin: 0 }}
             >
-              Balance
-            </button>
+              <LocalizedText>Balance
+            </LocalizedText></button>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 w-full mb-2 font-sans text-base">
@@ -270,15 +273,15 @@ export default function UserModal({ onClose }: UserModalProps) {
             className="flex flex-col items-center justify-center bg-white/5 backdrop-blur-sm rounded-xl py-4 text-sm text-gray-900 dark:text-white hover:bg-white/7 border border-white/10 cursor-pointer select-none"
           >
             <Settings className="mb-2" size={20} />
-            Settings
-          </button>
+            <LocalizedText>Settings
+          </LocalizedText></button>
           <button
             className="flex flex-col items-center justify-center bg-white/5 backdrop-blur-sm rounded-xl py-4 text-gray-900 dark:text-white text-sm hover:bg-white/7 border border-white/10 cursor-pointer select-none"
             onClick={handleSignOut}
           >
             <LogOut className="text-gray-900 dark:text-white mb-2" size={20} />
-            Disconnect
-          </button>
+            <LocalizedText>Disconnect
+          </LocalizedText></button>
         </div>
       </div>
     </div>

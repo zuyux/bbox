@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -246,11 +249,11 @@ export default function FundingDashboardPage() {
 
   const handleApprove = async (app: FundingApp) => {
     if (!isAdmin) {
-      setError('Only the contract admin can approve apps on-chain');
+      setError("Only the contract admin can approve apps on-chain");
       return;
     }
     if (app.contractAppId === null) {
-      setError('This submission is not yet linked to an on-chain app ID');
+      setError("This submission is not yet linked to an on-chain app ID");
       return;
     }
     setApprovingId(app.contractAppId);
@@ -268,11 +271,11 @@ export default function FundingDashboardPage() {
 
   const handleVote = async (app: FundingApp) => {
     if (!currentAddress) {
-      setError('Connect your wallet to vote');
+      setError("Connect your wallet to vote");
       return;
     }
     if (app.contractAppId === null) {
-      setError('Voting is only available once the submission is on-chain');
+      setError("Voting is only available once the submission is on-chain");
       return;
     }
     setVotingId(app.contractAppId);
@@ -289,17 +292,17 @@ export default function FundingDashboardPage() {
 
   const handleDonate = async (app: FundingApp) => {
     if (!currentAddress) {
-      setError('Connect your wallet to fund apps');
+      setError("Connect your wallet to fund apps");
       return;
     }
     const rawAmount = donationInputs[app.id]?.trim();
     if (!rawAmount || !/^\d+$/.test(rawAmount)) {
-      setError('Enter a valid sBTC amount in satoshis');
+      setError("Enter a valid sBTC amount in satoshis");
       return;
     }
     const amount = BigInt(rawAmount);
     if (amount <= 0) {
-      setError('Donation amount must be greater than zero');
+      setError("Donation amount must be greater than zero");
       return;
     }
     setDonatingId(app.id);
@@ -333,7 +336,7 @@ export default function FundingDashboardPage() {
     const isApproving = contractReady && approvingId === app.contractAppId;
 
     return (
-      <Card key={`${app.id}-${app.contractAppId ?? 'offchain'}`} className="border-border/70">
+      <Card key={`${app.id}-${app.contractAppId ?? "offchain"}`} className="border-border/70">
       <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <CardTitle className="text-2xl font-semibold flex items-center gap-3">
@@ -341,13 +344,13 @@ export default function FundingDashboardPage() {
             <Badge variant="secondary" className="capitalize">{category}</Badge>
             <Badge variant="outline" className="capitalize">{app.status}</Badge>
             {app.featured && (
-              <Badge variant="default" className="bg-purple-600 text-white">Featured</Badge>
+              <Badge variant="default" className="bg-purple-600 text-white"><LocalizedText>Featured</LocalizedText></Badge>
             )}
           </CardTitle>
           <p className="text-muted-foreground mt-2 max-w-3xl">{description}</p>
         </div>
         <div className="text-sm text-muted-foreground text-right">
-          <p>Publisher: {publisherName}</p>
+          <p><LocalizedText>Publisher: </LocalizedText>{publisherName}</p>
           <p className="break-words">{app.publisherAddress}</p>
           <p>{formatTimestamp(app.updatedAt)}</p>
         </div>
@@ -355,19 +358,19 @@ export default function FundingDashboardPage() {
       <CardContent className="space-y-5">
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Contact</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1"><LocalizedText>Contact</LocalizedText></p>
             <p className="text-sm break-words">{publisherEmail}</p>
             {websiteUrl && (
               <p className="text-sm text-primary flex items-center gap-1">
                 <ExternalLink className="h-3 w-3" />
                 <a href={websiteUrl} target="_blank" rel="noreferrer" className="hover:underline">
-                  Visit Website
-                </a>
+                  <LocalizedText>Visit Website
+                </LocalizedText></a>
               </p>
             )}
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Metadata</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1"><LocalizedText>Metadata</LocalizedText></p>
             <div className="flex flex-wrap gap-2">
               {tags.slice(0, 6).map((tag) => (
                 <Badge key={tag} variant="outline" className="capitalize">{tag}</Badge>
@@ -379,13 +382,13 @@ export default function FundingDashboardPage() {
         <div className="rounded-lg border p-4 space-y-4">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Coins className="h-4 w-4 text-orange-500" />
-            Community Funding
-          </div>
+            <LocalizedText>Community Funding
+          </LocalizedText></div>
           <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
             <div className="space-y-2">
               <label className="text-xs uppercase tracking-[0.2em] text-foreground">
-                Amount
-              </label>
+                <LocalizedText>Amount
+              </LocalizedText></label>
               <Input
                 type="number"
                 min="0"
@@ -397,18 +400,18 @@ export default function FundingDashboardPage() {
                 className="bg-background text-foreground placeholder:text-muted-foreground"
               />
               <p className="text-xs text-muted-foreground">
-                ≈ {satsToBTC(BigInt(donationInputs[app.id] || '0'))} sBTC
-              </p>
+                ≈ {satsToBTC(BigInt(donationInputs[app.id] || '0'))} <LocalizedText>sBTC
+              </LocalizedText></p>
               <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                Note (optional)
-              </label>
+                <LocalizedText>Note (optional)
+              </LocalizedText></label>
               <Textarea
                 rows={2}
                 value={donationNotes[app.id] ?? ''}
                 onChange={(event) =>
                   setDonationNotes((prev) => ({ ...prev, [app.id]: event.target.value }))
                 }
-                placeholder="Optional memo included with your transfer"
+                placeholder={"Optional memo included with your transfer"}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -420,13 +423,13 @@ export default function FundingDashboardPage() {
                 {donatingId === app.id ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Awaiting wallet…
-                  </>
+                    <LocalizedText>Awaiting wallet…
+                  </LocalizedText></>
                 ) : (
                   <>
                     <Send className="h-4 w-4 mr-2" />
-                    Donate
-                  </>
+                    <LocalizedText>Donate
+                  </LocalizedText></>
                 )}
               </Button>
               <Button
@@ -438,13 +441,13 @@ export default function FundingDashboardPage() {
                 {isVoting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Waiting on wallet…
-                  </>
+                    <LocalizedText>Waiting on wallet…
+                  </LocalizedText></>
                 ) : (
                   <>
                     <ThumbsUp className="h-4 w-4 mr-2" />
-                    Upvote on-chain
-                  </>
+                    <LocalizedText>Upvote on-chain
+                  </LocalizedText></>
                 )}
               </Button>
             </div>
@@ -455,8 +458,8 @@ export default function FundingDashboardPage() {
           <div className="rounded-lg border p-4 space-y-3 bg-muted/40">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              Admin Controls
-            </div>
+              <LocalizedText>Admin Controls
+            </LocalizedText></div>
             <Button
               onClick={() => handleApprove(app)}
               disabled={!contractReady || isApproving}
@@ -465,22 +468,22 @@ export default function FundingDashboardPage() {
               {isApproving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Confirm in wallet…
-                </>
+                  <LocalizedText>Confirm in wallet…
+                </LocalizedText></>
               ) : (
                 <>
                   <ArrowUpRight className="h-4 w-4 mr-2" />
-                  Approve on-chain
-                </>
+                  <LocalizedText>Approve on-chain
+                </LocalizedText></>
               )}
             </Button>
             <p className="text-xs text-muted-foreground">
-              Only the contract admin ({adminAddress ?? 'unknown'}) can successfully approve apps on-chain.
-            </p>
+              <LocalizedText>Only the contract admin (</LocalizedText>{adminAddress ?? "unknown"}<LocalizedText>) can successfully approve apps on-chain.
+            </LocalizedText></p>
             <p className="text-xs text-muted-foreground">
               {contractReady
                 ? `On-chain App ID: #${app.contractAppId}`
-                : 'Waiting for bbox-v2 transaction to confirm'}
+                : "Waiting for bbox-v2 transaction to confirm"}
             </p>
           </div>
         )}
@@ -496,25 +499,25 @@ export default function FundingDashboardPage() {
           <div className="max-w-3xl">
             <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-orange-500/25 bg-orange-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-600 dark:text-orange-300">
               <Coins className="h-4 w-4" />
-              R&amp;D Project Funding
-            </div>
+              <LocalizedText>R&amp;D Project Funding
+            </LocalizedText></div>
             <h1 className="title mb-5 text-4xl font-bold leading-tight md:text-6xl">
-              Submit research and open-source projects for community funding.
-            </h1>
+              <LocalizedText>Submit research and open-source projects for community funding.
+            </LocalizedText></h1>
             <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-              BBOX helps researchers and developers present useful work to funders before they reach the submission form. Projects can be applications or specific research related to open-source software, privacy, cybersecurity, OSINT, Bitcoin, independent infrastructure, or adjacent public-good technology.
-            </p>
+              <LocalizedText>BBOX helps researchers and developers present useful work to funders before they reach the submission form. Projects can be applications or specific research related to open-source software, privacy, cybersecurity, OSINT, Bitcoin, independent infrastructure, or adjacent public-good technology.
+            </LocalizedText></p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer">
                 <Link href="/submit" className="flex items-center gap-2">
-                  Submit your project
-                  <ArrowUpRight className="h-4 w-4" />
+                  <LocalizedText>Submit your project
+                  </LocalizedText><ArrowUpRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="cursor-pointer">
                 <Link href="#funding-board" className="flex items-center gap-2">
-                  View funding board
-                  <Search className="h-4 w-4" />
+                  <LocalizedText>View funding board
+                  </LocalizedText><Search className="h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -524,8 +527,8 @@ export default function FundingDashboardPage() {
             <div className="mb-5 flex items-center gap-3">
               <FileText className="h-5 w-5 text-orange-500" />
               <div>
-                <p className="font-semibold">What to prepare</p>
-                <p className="mb-0 text-sm text-muted-foreground">A clear, fundable project brief.</p>
+                <p className="font-semibold"><LocalizedText>What to prepare</LocalizedText></p>
+                <p className="mb-0 text-sm text-muted-foreground"><LocalizedText>A clear, fundable project brief.</LocalizedText></p>
               </div>
             </div>
             <ol className="mb-0 space-y-4">
@@ -563,18 +566,18 @@ export default function FundingDashboardPage() {
         <section id="funding-board" className="space-y-6 scroll-mt-24">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-2">Funding Desk</p>
-              <h2 className="text-3xl font-bold">Support open-source R&amp;D</h2>
+              <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-2"><LocalizedText>Funding Desk</LocalizedText></p>
+              <h2 className="text-3xl font-bold"><LocalizedText>Support open-source R&amp;D</LocalizedText></h2>
               <p className="text-muted-foreground max-w-2xl">
-                Support promising verified software and research directly with sBTC, and upvote useful projects on-chain.
-              </p>
+                <LocalizedText>Support promising verified software and research directly with sBTC, and upvote useful projects on-chain.
+              </LocalizedText></p>
             </div>
             {developerMode && (
               <Button asChild className="bg-foreground hover:bg-foreground cursor-pointer">
                 <Link href="/submit" className="flex items-center gap-2">
                   <ArrowUpRight className="h-4 w-4" />
-                  Submit new project
-                </Link>
+                  <LocalizedText>Submit new project
+                </LocalizedText></Link>
               </Button>
             )}
           </div>
@@ -582,31 +585,31 @@ export default function FundingDashboardPage() {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total projects</CardTitle>
+              <CardTitle className="text-sm text-muted-foreground"><LocalizedText>Total projects</LocalizedText></CardTitle>
               <p className="text-3xl font-bold">{stats.total}</p>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1">
-                Pending approvals
-              </CardTitle>
+                <LocalizedText>Pending approvals
+              </LocalizedText></CardTitle>
               <p className="text-3xl font-bold text-amber-600">{stats.pending}</p>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1">
-                Published projects
-              </CardTitle>
+                <LocalizedText>Published projects
+              </LocalizedText></CardTitle>
               <p className="text-3xl font-bold text-emerald-600">{stats.published}</p>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1">
-                Featured
-              </CardTitle>
+                <LocalizedText>Featured
+              </LocalizedText></CardTitle>
               <p className="text-3xl font-bold text-purple-600">{stats.featured}</p>
             </CardHeader>
           </Card>
@@ -617,9 +620,9 @@ export default function FundingDashboardPage() {
             <CardContent className="p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="font-semibold text-red-700 dark:text-red-200">{error}</p>
-                <p className="text-sm text-red-600 dark:text-red-300">Try refreshing or checking your wallet connection.</p>
+                <p className="text-sm text-red-600 dark:text-red-300"><LocalizedText>Try refreshing or checking your wallet connection.</LocalizedText></p>
               </div>
-              <Button variant="outline" onClick={fetchApps} className="cursor-pointer">Reload</Button>
+              <Button variant="outline" onClick={fetchApps} className="cursor-pointer"><LocalizedText>Reload</LocalizedText></Button>
             </CardContent>
           </Card>
         )}
@@ -627,15 +630,15 @@ export default function FundingDashboardPage() {
         {loading && !apps.length ? (
           <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin mb-4" />
-            <p>Loading funding data…</p>
+            <p><LocalizedText>Loading funding data…</LocalizedText></p>
           </div>
         ) : (
           <div className="space-y-6">
             {featuredApps.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                  Featured Projects
-                </div>
+                  <LocalizedText>Featured Projects
+                </LocalizedText></div>
                 {featuredApps.map((app) => renderAppCard(app))}
               </div>
             )}
@@ -643,8 +646,8 @@ export default function FundingDashboardPage() {
             {fundableApps.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                  Published Projects
-                </div>
+                  <LocalizedText>Published Projects
+                </LocalizedText></div>
                 {fundableApps.map((app) => renderAppCard(app))}
               </div>
             )}
@@ -652,12 +655,12 @@ export default function FundingDashboardPage() {
             {pendingApps.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                  Pending On-Chain Submissions
-                </div>
+                  <LocalizedText>Pending On-Chain Submissions
+                </LocalizedText></div>
                 {!isAdmin && (
                   <p className="text-xs text-muted-foreground">
-                    These projects are still pending review. Admin-only controls appear when connected with the bbox-v2 admin wallet.
-                  </p>
+                    <LocalizedText>These projects are still pending review. Admin-only controls appear when connected with the bbox-v2 admin wallet.
+                  </LocalizedText></p>
                 )}
                 {pendingApps.map((app) => renderAppCard(app, true))}
               </div>
@@ -666,7 +669,7 @@ export default function FundingDashboardPage() {
             {featuredApps.length === 0 && fundableApps.length === 0 && pendingApps.length === 0 && (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  <p>No published projects on-chain yet. Check back after the next approval cycle.</p>
+                  <p><LocalizedText>No published projects on-chain yet. Check back after the next approval cycle.</LocalizedText></p>
                 </CardContent>
               </Card>
             )}

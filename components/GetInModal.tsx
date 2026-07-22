@@ -1,3 +1,5 @@
+
+import { LocalizedText } from "@/components/LocalizedText";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from 'next/link';
@@ -27,8 +29,8 @@ import {
 
 export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const { address, setAddress, setWalletType } = useWallet();
-  const { 
-    isWalletEncrypted, 
+  const {
+    isWalletEncrypted,
     isAuthenticated: isEncryptedAuthenticated,
     isSessionLocked,
     createEncryptedWallet,
@@ -340,7 +342,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
           setCreateWalletError('Failed to capture encrypted wallet snapshot. Please try again.');
           return;
         }
-        
+
         // Save to Supabase if email provided
         if (trimmedEmail) {
           try {
@@ -353,7 +355,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
               body: JSON.stringify({
                 email: trimmedEmail,
                 verifiedEmailToken,
-                passkey: stxPrivateKey, 
+                passkey: stxPrivateKey,
                 passphrase: password,
                 address,
 	                encryptedWallet: {
@@ -369,9 +371,9 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 	                }
 	              }),
             });
-            
+
             const result = await response.json();
-            
+
             if (!response.ok) {
               if (response.status === 409) {
                 setCreateWalletError(result.error || 'Email is already registered.');
@@ -406,7 +408,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
             console.warn('Error sending confirmation email:', mailError);
           }
         }
-        
+
         // Redirect to welcome page with email
         const emailParam = trimmedEmail ? `?email=${encodeURIComponent(trimmedEmail)}` : '';
         router.push(`/welcome${emailParam}`);
@@ -447,7 +449,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 border-[1px] flex items-center justify-center z-[100] select-none"
       onClick={(e) => {
         // Close modal when clicking on the overlay (background)
@@ -470,25 +472,25 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="justify-start bg-none border-none text-muted-foreground text-sm cursor-pointer" aria-label="Help" type="button">
+                <button className="justify-start bg-none border-none text-muted-foreground text-sm cursor-pointer" aria-label={"Help"} type="button">
                   <CircleHelp className="h-[18px]"/>
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="bg-background text-foreground max-w-xs text-sm z-100">
                                   <div>
-                    Connect or create your account using your wallet or email.<br />
+                    <LocalizedText>Connect or create your account using your wallet or email.</LocalizedText><br />
                     <span className="text-foreground underline">
-                      <a href="mailto:fabohax@gmail.com">Need help? Contact us</a>
+                      <a href="mailto:fabohax@gmail.com"><LocalizedText>Need help? Contact us</LocalizedText></a>
                     </span>
                   </div>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <div className="title text-center font-semibold text-lg text-foreground tracking-wider flex items-center justify-center select-none">
-            
+
           </div>
           <div className="flex items-center justify-end">
-            <button onClick={onClose} className="bg-none border-none text-muted-foreground text-xl cursor-pointer" aria-label="Close" type="button">
+            <button onClick={onClose} className="bg-none border-none text-muted-foreground text-xl cursor-pointer" aria-label={"Close"} type="button">
               <X className="h-[18px]"/>
             </button>
           </div>
@@ -501,17 +503,17 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
             <div className="space-y-4">
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {encryptedWalletMode === 'create' ? 'Secure Your Wallet' : 
-                   isSessionLocked ? 'Unlock Your Wallet' : 'Access Your Wallet'}
+                  {encryptedWalletMode === 'create' ? "Secure Your Wallet" :
+                   isSessionLocked ? "Unlock Your Wallet" : "Access Your Wallet"}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {encryptedWalletMode === 'create' 
-                    ? 'Create an account with password'
-                    : 'Enter your password to unlock your encrypted wallet'
+                  {encryptedWalletMode === 'create'
+                    ? "Create an account with password"
+                    : "Enter your password to unlock your encrypted wallet"
                   }
                 </p>
               </div>
-              
+
               <PasswordInput
                 mode={encryptedWalletMode}
                 onSubmit={handleEncryptedWalletSubmit}
@@ -525,7 +527,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 <div className="flex flex-col gap-2 mt-4">
                   <Button
                     onClick={() => {
-                      if (typeof window !== 'undefined') {
+                      if (typeof window !== "undefined") {
                         localStorage.removeItem('bbox_session');
                         localStorage.removeItem('bbox_session_config');
                         localStorage.removeItem('bbox_session_locked');
@@ -540,8 +542,8 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                     className="w-full h-10 rounded-[7px] bg-transparent text-muted-foreground text-sm border border-border cursor-pointer flex items-center px-4 hover:bg-secondary hover:text-destructive mt-2"
                     type="button"
                   >
-                    Clear All Sessions
-                  </Button>
+                    <LocalizedText>Clear All Sessions
+                  </LocalizedText></Button>
                 </div>
               )}
             </div>
@@ -554,27 +556,27 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                     key={option.id}
                     type="button"
                     onClick={() => {
-                      if (option.id === 'xverse') {
+                      if (option.id === "xverse") {
                         handleXverseConnect();
                         return;
                       }
-                      if (option.id === 'leather') {
+                      if (option.id === "leather") {
                         handleLeatherConnect();
                         return;
                       }
-                      if (option.id === 'alby') {
+                      if (option.id === "alby") {
                         handleAlbyConnect();
                         return;
                       }
-                      if (option.id === 'nostria') {
+                      if (option.id === "nostria") {
                         handleNostriaConnect();
                         return;
                       }
-                      if (option.id === 'okx') {
+                      if (option.id === "okx") {
                         handleOkxConnect();
                         return;
                       }
-                      if (option.id === 'walletconnect') {
+                      if (option.id === "walletconnect") {
                         handleWalletConnect();
                         return;
                       }
@@ -607,8 +609,8 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                         rel="noopener noreferrer"
                         className="underline text-current hover:text-accent-primary"
                       >
-                        Install Wallet
-                      </a>
+                        <LocalizedText>Install Wallet
+                      </LocalizedText></a>
                     </div>
                   )}
                 </div>
@@ -631,7 +633,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                     className="mr-3"
                     unoptimized
                   />
-                  <span className="text-center flex-1">Email Signing</span>
+                  <span className="text-center flex-1"><LocalizedText>Email Signing</LocalizedText></span>
                 </Button>
               </div>
 
@@ -644,9 +646,9 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 >
                   <Shield className="dark:invert text-background w-[18px] h-[18px] mx-[5px]"/>
                   <span className="text-center flex-1 text-white">
-                    {isWalletEncrypted && walletInfo 
-                      ? `Unlock ${formatStxAddress(walletInfo.address)}` 
-                      : 'Create Account'}
+                    {isWalletEncrypted && walletInfo
+                      ? `Unlock ${formatStxAddress(walletInfo.address)}`
+                      : "Create Account"}
                   </span>
                 </Button>
               </div>
@@ -667,7 +669,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         )}
         {/* Terms */}
         <div className="w-full rounded-b-2xl text-center text-xs text-foreground tracking-wider p-6 px-8">
-          By connecting, you agree to our <Link href="/terms-of-service" className="hover:text-accent-primary hover:underline">Terms of Service</Link> and <Link href="/privacy-policy" className="hover:text-accent-primary hover:underline">Privacy Policy</Link>
+          <LocalizedText>By connecting, you agree to our </LocalizedText><Link href="/terms-of-service" className="hover:text-accent-primary hover:underline"><LocalizedText>Terms of Service</LocalizedText></Link> <LocalizedText>and </LocalizedText><Link href="/privacy-policy" className="hover:text-accent-primary hover:underline"><LocalizedText>Privacy Policy</LocalizedText></Link>
         </div>
       </div>
     </div>

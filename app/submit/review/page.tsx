@@ -1,5 +1,8 @@
 "use client";
 
+
+
+import { LocalizedText } from "@/components/LocalizedText";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -192,20 +195,20 @@ export default function SubmittedAppsPage() {
       <div className="container mx-auto px-4 pt-20 pb-12 max-w-6xl">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-2">Review Desk</p>
-            <h1 className="text-3xl font-bold">Submitted Apps</h1>
-            <p className="text-muted-foreground">Monitor every submission, track its review phase, and jump into a focused preview.</p>
+            <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-2"><LocalizedText>Review Desk</LocalizedText></p>
+            <h1 className="text-3xl font-bold"><LocalizedText>Submitted Apps</LocalizedText></h1>
+            <p className="text-muted-foreground"><LocalizedText>Monitor every submission, track its review phase, and jump into a focused preview.</LocalizedText></p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={fetchApps} disabled={loading} className="cursor-pointer">
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
-              Refresh
-            </Button>
+              <LocalizedText>Refresh
+            </LocalizedText></Button>
             <Button asChild className="bg-foreground hover:bg-foreground cursor-pointer">
               <Link href="/submit" className="flex items-center gap-2">
                 <ArrowRight className="h-4 w-4" />
-                New Submission
-              </Link>
+                <LocalizedText>New Submission
+              </LocalizedText></Link>
             </Button>
           </div>
         </div>
@@ -213,31 +216,31 @@ export default function SubmittedAppsPage() {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total submissions</CardTitle>
+              <CardTitle className="text-sm text-muted-foreground"><LocalizedText>Total submissions</LocalizedText></CardTitle>
               <p className="text-3xl font-bold">{stats.total}</p>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1">
-                <Triangle className="h-4 w-4 text-amber-500" /> Pending
-              </CardTitle>
+                <Triangle className="h-4 w-4 text-amber-500" /> <LocalizedText>Pending
+              </LocalizedText></CardTitle>
               <p className="text-3xl font-bold text-amber-600">{stats.pending}</p>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1">
-                <CheckCircle className="h-4 w-4 text-emerald-500" /> Approved
-              </CardTitle>
+                <CheckCircle className="h-4 w-4 text-emerald-500" /> <LocalizedText>Approved
+              </LocalizedText></CardTitle>
               <p className="text-3xl font-bold text-emerald-600">{stats.approved}</p>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground flex items-center gap-1">
-                <Shield className="h-4 w-4 text-red-500" /> Needs changes
-              </CardTitle>
+                <Shield className="h-4 w-4 text-red-500" /> <LocalizedText>Needs changes
+              </LocalizedText></CardTitle>
               <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
             </CardHeader>
           </Card>
@@ -247,7 +250,7 @@ export default function SubmittedAppsPage() {
           <CardContent className="p-4 flex flex-col gap-4 md:flex-row md:items-center">
             <div className="flex-1 w-full">
               <Input
-                placeholder="Search by app, publisher, address, or tag"
+                placeholder={"Search by app, publisher, address, or tag"}
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 className="bg-background text-foreground h-11"
@@ -256,7 +259,7 @@ export default function SubmittedAppsPage() {
             <div className="w-full md:w-64">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="h-11 cursor-pointer">
-                  <SelectValue placeholder="Filter by status" />
+                  <SelectValue placeholder={"Filter by status"} />
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((option) => (
@@ -274,10 +277,10 @@ export default function SubmittedAppsPage() {
           <Card className="mb-4 border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/20">
             <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-semibold text-red-700 dark:text-red-200">Unable to load submissions</p>
+                <p className="font-semibold text-red-700 dark:text-red-200"><LocalizedText>Unable to load submissions</LocalizedText></p>
                 <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
               </div>
-              <Button onClick={fetchApps} variant="outline" className="cursor-pointer">Retry</Button>
+              <Button onClick={fetchApps} variant="outline" className="cursor-pointer"><LocalizedText>Retry</LocalizedText></Button>
             </CardContent>
           </Card>
         )}
@@ -285,18 +288,18 @@ export default function SubmittedAppsPage() {
         {loading && !apps.length ? (
           <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin mb-4" />
-            <p>Fetching submissions…</p>
+            <p><LocalizedText>Fetching submissions…</LocalizedText></p>
           </div>
         ) : filteredApps.length === 0 ? (
           <div className="text-center py-24">
             <Zap className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
-            <h3 className="text-lg font-semibold mb-2">No submissions match your filters</h3>
+            <h3 className="text-lg font-semibold mb-2"><LocalizedText>No submissions match your filters</LocalizedText></h3>
             <p className="text-muted-foreground mb-4">
-              Adjust the search term or status filter to see other apps.
-            </p>
+              <LocalizedText>Adjust the search term or status filter to see other apps.
+            </LocalizedText></p>
             <Button variant="outline" onClick={() => { setSearch(""); setStatusFilter("all"); }} className="cursor-pointer">
-              Reset filters
-            </Button>
+              <LocalizedText>Reset filters
+            </LocalizedText></Button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -323,56 +326,56 @@ export default function SubmittedAppsPage() {
                       {getStatusBadge(app.status)}
                       <Badge variant="secondary">{app.category}</Badge>
                       {app.open_source && (
-                        <Badge variant="outline" className="text-green-600 border-green-200 dark:border-green-900 dark:text-green-300">Open Source</Badge>
+                        <Badge variant="outline" className="text-green-600 border-green-200 dark:border-green-900 dark:text-green-300"><LocalizedText>Open Source</LocalizedText></Badge>
                       )}
                       {app.accepts_lightning && (
                         <Badge variant="outline" className="text-amber-600 border-amber-200 dark:border-amber-900 dark:text-amber-300">
-                          Lightning-ready
-                        </Badge>
+                          <LocalizedText>Lightning-ready
+                        </LocalizedText></Badge>
                       )}
                       {app.verified && (
                         <Badge variant="outline" className="text-sky-600 border-sky-200 dark:border-sky-900 dark:text-sky-300">
-                          Verified
-                        </Badge>
+                          <LocalizedText>Verified
+                        </LocalizedText></Badge>
                       )}
                     </div>
                   </div>
                   <div className="text-sm text-right text-muted-foreground">
-                    <p>Submitted {formatDate(app.created_at)}</p>
-                    <p>Version {app.version}</p>
+                    <p><LocalizedText>Submitted </LocalizedText>{formatDate(app.created_at)}</p>
+                    <p><LocalizedText>Version </LocalizedText>{app.version}</p>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Publisher</p>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1"><LocalizedText>Publisher</LocalizedText></p>
                       <p className="font-medium">{app.publisher_name || "—"}</p>
                       <p className="text-sm text-muted-foreground break-words">{app.publisher_email}</p>
                       <p className="text-sm text-muted-foreground break-all">{app.publisher_address}</p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Review notes</p>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1"><LocalizedText>Review notes</LocalizedText></p>
                       <p className="text-sm text-muted-foreground">
                         {statusLabels[app.status]?.description || "Status updated"}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">Last update {formatDate(app.updated_at)}</p>
+                      <p className="text-xs text-muted-foreground mt-1"><LocalizedText>Last update </LocalizedText>{formatDate(app.updated_at)}</p>
                     </div>
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-3">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Pricing</p>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1"><LocalizedText>Pricing</LocalizedText></p>
                       <p className="font-medium">{formatPrice(app.price_usd, app.pricing_model)}</p>
                       {app.pricing_model !== "free" && (
-                        <p className="text-sm text-muted-foreground">Model: {app.pricing_model}</p>
+                        <p className="text-sm text-muted-foreground"><LocalizedText>Model: </LocalizedText>{app.pricing_model}</p>
                       )}
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Platforms</p>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1"><LocalizedText>Platforms</LocalizedText></p>
                       <p className="text-sm text-muted-foreground">{app.platforms?.join(", ") || "—"}</p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">Networks</p>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1"><LocalizedText>Networks</LocalizedText></p>
                       <p className="text-sm text-muted-foreground">{app.supported_networks?.join(", ") || "—"}</p>
                     </div>
                   </div>
@@ -388,25 +391,25 @@ export default function SubmittedAppsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="text-sm text-muted-foreground">
                       {app.lightning_address && (
-                        <p>⚡ Lightning address: <span className="text-foreground font-medium">{app.lightning_address}</span></p>
+                        <p><LocalizedText>⚡ Lightning address: </LocalizedText><span className="text-foreground font-medium">{app.lightning_address}</span></p>
                       )}
                       {app.website_url && (
-                        <p>🔗 Website: <a href={app.website_url} className="text-primary hover:underline" target="_blank" rel="noreferrer">{app.website_url}</a></p>
+                        <p><LocalizedText>🔗 Website: </LocalizedText><a href={app.website_url} className="text-primary hover:underline" target="_blank" rel="noreferrer">{app.website_url}</a></p>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Button asChild variant="outline" className="cursor-pointer">
                         <Link href={`/preview/${app.id}`} className="flex items-center gap-2">
                           <Eye className="h-4 w-4" />
-                          Preview / Review
-                        </Link>
+                          <LocalizedText>Preview / Review
+                        </LocalizedText></Link>
                       </Button>
                       {app.website_url && (
                         <Button asChild variant="ghost" className="cursor-pointer">
                           <a href={app.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-2">
                             <ExternalLink className="h-4 w-4" />
-                            Live site
-                          </a>
+                            <LocalizedText>Live site
+                          </LocalizedText></a>
                         </Button>
                       )}
                     </div>

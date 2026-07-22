@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from "@/components/LocalizedText";
 import { useState, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
@@ -344,11 +347,11 @@ export default function SettingsPage() {
         throw new Error('Clipboard unavailable');
       }
       setCopiedNostrKey(true);
-      toast.success('Nostr public key copied');
+      toast.success("Nostr public key copied");
       setTimeout(() => setCopiedNostrKey(false), 2500);
     } catch (err) {
       console.error('Failed to copy Nostr public key:', err);
-      toast.error('Failed to copy Nostr public key');
+      toast.error("Failed to copy Nostr public key");
     }
   };
 
@@ -386,7 +389,7 @@ export default function SettingsPage() {
       });
       setShowRecoveryKeys(true);
       setRecoveryPassword('');
-      toast.success('Keys revealed locally');
+      toast.success("Keys revealed locally");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to reveal keys';
       toast.error(errorMessage);
@@ -562,7 +565,7 @@ export default function SettingsPage() {
       setEmailCodeMessage('');
       setEmailCodeError('');
       setSuccess('Profile saved successfully!');
-      toast.success('Profile updated!');
+      toast.success("Profile updated!");
 
       // Return to the app store after saving account details.
       setTimeout(() => {
@@ -638,7 +641,7 @@ export default function SettingsPage() {
       });
 
       setWalletLinkStatus('Wallet proof linked successfully!');
-      toast.success('Wallet linked to Nostr key');
+      toast.success("Wallet linked to Nostr key");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to link wallet proof';
       setWalletLinkError(errorMessage);
@@ -695,7 +698,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-[#111] px-4 py-24">
       <div className="max-w-4xl mx-auto p-0 rounded-2xl text-foreground">
-      <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
+      <h1 className="text-3xl font-bold mb-8"><LocalizedText>Profile Settings</LocalizedText></h1>
       
       <Tabs defaultValue="profile" className="w-full">
         <TabsList
@@ -705,35 +708,35 @@ export default function SettingsPage() {
             value="profile"
             className="cursor-pointer font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:border data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
           >
-            Profile
-          </TabsTrigger>
+            <LocalizedText>Profile
+          </LocalizedText></TabsTrigger>
           <TabsTrigger
             value="social"
             className="cursor-pointer bg-accent-background text-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
           >
-            Social
-          </TabsTrigger>
+            <LocalizedText>Social
+          </LocalizedText></TabsTrigger>
           {developerMode && (
             <TabsTrigger
               value="professional"
               className="cursor-pointer bg-accent-background text-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
             >
-              Professional
-            </TabsTrigger>
+              <LocalizedText>Professional
+            </LocalizedText></TabsTrigger>
           )}
           <TabsTrigger
             value="privacy"
             className="cursor-pointer bg-accent-background text-foreground font-medium border-none focus:outline-none focus:ring-1 focus:ring-[#333] data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-colors"
           >
-            Privacy
-          </TabsTrigger>
+            <LocalizedText>Privacy
+          </LocalizedText></TabsTrigger>
         </TabsList>
 
         <form onSubmit={handleSave}>
           <TabsContent value="profile" className="space-y-6 mt-6">
             <Card className="bg-accent-background border-none">
               <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
+                <CardTitle><LocalizedText>Basic Information</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {error && <div className="text-red-600 dark:text-red-400 text-sm bg-red-100 dark:bg-red-900/20 p-3 rounded">{error}</div>}
@@ -741,26 +744,26 @@ export default function SettingsPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block mb-2 text-sm font-medium">Username</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>Username</LocalizedText></label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={username}
                       onChange={e => setUsername(e.target.value)}
-                      placeholder="your_username"
+                      placeholder={"your_username"}
                       pattern="^[a-zA-Z0-9_]{3,50}$"
-                      title="3-50 characters, letters, numbers, and underscores only"
+                      title={"3-50 characters, letters, numbers, and underscores only"}
                     />
                   </div>
                   
                   <div>
-                    <label className="block mb-2 text-sm font-medium">Email</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>Email</LocalizedText></label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="email"
                       value={email}
                       onChange={e => resetEmailVerification(e.target.value)}
-                      placeholder="you@example.com"
+                      placeholder={"you@example.com"}
                     />
                     {emailRequiresVerification && (
                       <div className="mt-2 space-y-2">
@@ -771,7 +774,7 @@ export default function SettingsPage() {
                             disabled={emailCodeLoading || !address}
                             className="h-9 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                           >
-                            {emailCodeSent ? 'Resend Code' : 'Send Code'}
+                            {emailCodeSent ? "Resend Code" : "Send Code"}
                           </Button>
                           {emailCodeSent && (
                             <>
@@ -795,8 +798,8 @@ export default function SettingsPage() {
                                 disabled={emailCodeLoading || emailCode.length !== 6 || Boolean(emailCodeToken)}
                                 className="h-9 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                               >
-                                Verify
-                              </Button>
+                                <LocalizedText>Verify
+                              </LocalizedText></Button>
                             </>
                           )}
                         </div>
@@ -810,57 +813,57 @@ export default function SettingsPage() {
                   </div>
 
                   <div id="lightning-address" className="scroll-mt-24">
-                    <label htmlFor="profile-lightning-address" className="block mb-2 text-sm font-medium">Lightning Address</label>
+                    <label htmlFor="profile-lightning-address" className="block mb-2 text-sm font-medium"><LocalizedText>Lightning Address</LocalizedText></label>
                     <input
                       id="profile-lightning-address"
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="email"
                       value={lightningAddress}
                       onChange={e => setLightningAddress(e.target.value)}
-                      placeholder="you@getalby.com"
+                      placeholder={"you@getalby.com"}
                       autoComplete="off"
                       spellCheck={false}
                     />
                     <p className="mt-2 text-xs text-muted-foreground">
                       {isNostriaWallet
-                        ? 'Add a Lightning address so people can pay this Nostria account.'
-                        : 'Add a Lightning address so people can send sats to this profile.'}
+                        ? "Add a Lightning address so people can pay this Nostria account."
+                        : "Add a Lightning address so people can send sats to this profile."}
                     </p>
                   </div>
                   
                   <div>
-                    <label className="block mb-2 text-sm font-medium">Display Name</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>Display Name</LocalizedText></label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={displayName}
                       onChange={e => setDisplayName(e.target.value)}
-                      placeholder="Your display name"
+                      placeholder={"Your display name"}
                       maxLength={100}
                     />
                   </div>
                   
                   <div>
-                    <label className="block mb-2 text-sm font-medium">Location</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>Location</LocalizedText></label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={location}
                       onChange={e => setLocation(e.target.value)}
-                      placeholder="City, Country"
+                      placeholder={"City, Country"}
                       maxLength={100}
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block mb-2 text-sm font-medium">Nostr Public Key</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>Nostr Public Key</LocalizedText></label>
                     <div className="flex gap-2 items-center">
                       <input
                         className="flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         type="text"
                         readOnly
                         value={currentWallet?.nostrPublicKey || ''}
-                        placeholder={currentWallet ? 'Nostr key not available' : 'Encrypted wallet required'}
+                        placeholder={currentWallet ? "Nostr key not available" : "Encrypted wallet required"}
                       />
                       <Button
                         type="button"
@@ -870,12 +873,12 @@ export default function SettingsPage() {
                         disabled={!currentWallet?.nostrPublicKey}
                         className="border-border text-muted-foreground hover:bg-muted cursor-pointer"
                       >
-                        {copiedNostrKey ? 'Copied' : <Copy className="w-4 h-4" />}
+                        {copiedNostrKey ? "Copied" : <Copy className="w-4 h-4" />}
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      Your Nostr public key is derived from your wallet private key and can be linked as public ownership proof.
-                    </p>
+                      <LocalizedText>Your Nostr public key is derived from your wallet private key and can be linked as public ownership proof.
+                    </LocalizedText></p>
                   </div>
                 </div>
                 
@@ -887,18 +890,18 @@ export default function SettingsPage() {
           <TabsContent value="social" className="space-y-6 mt-6">
             <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
               <CardHeader>
-                <CardTitle>Social Links</CardTitle>
+                <CardTitle><LocalizedText>Social Links</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block mb-2 text-sm font-medium">Website</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>Website</LocalizedText></label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="url"
                       value={website}
                       onChange={e => setWebsite(e.target.value)}
-                      placeholder="https://yourdomain.com"
+                      placeholder={"https://yourdomain.com"}
                     />
                   </div>
                   
@@ -909,30 +912,30 @@ export default function SettingsPage() {
                       type="text"
                       value={twitter}
                       onChange={e => setTwitter(e.target.value)}
-                      placeholder="@username"
+                      placeholder={"@username"}
                     />
                   </div>
                   
                   <div>
-                    <label className="block mb-2 text-sm font-medium">Discord</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>Discord</LocalizedText></label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={discord}
                       onChange={e => setDiscord(e.target.value)}
-                      placeholder="username"
+                      placeholder={"username"}
                     />
                   </div>
 
                   <div>
-                    <label className="block mb-2 text-sm font-medium">GitHub</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>GitHub</LocalizedText></label>
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <input
                         className="min-w-0 flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         type="text"
                         value={githubUrl}
                         onChange={e => setGithubUrl(e.target.value)}
-                        placeholder="github.com/username"
+                        placeholder={"github.com/username"}
                       />
                       <Button
                         asChild
@@ -942,36 +945,36 @@ export default function SettingsPage() {
                       >
                         <Link href={`/api/github/authorize?address=${encodeURIComponent(address)}`}>
                           <Github className="h-4 w-4" />
-                          {githubUrl ? 'Reconnect' : 'Connect'}
+                          {githubUrl ? "Reconnect" : "Connect"}
                         </Link>
                       </Button>
                     </div>
                     {githubUrl && (
                       <p className="mt-2 text-xs text-emerald-500">
-                        GitHub profile connected
-                      </p>
+                        <LocalizedText>GitHub profile connected
+                      </LocalizedText></p>
                     )}
                   </div>
                   
                   <div>
-                    <label className="block mb-2 text-sm font-medium">Instagram</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>Instagram</LocalizedText></label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={instagram}
                       onChange={e => setInstagram(e.target.value)}
-                      placeholder="@username"
+                      placeholder={"@username"}
                     />
                   </div>
                   
                   <div>
-                    <label className="block mb-2 text-sm font-medium">LinkedIn</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>LinkedIn</LocalizedText></label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
                       value={linkedin}
                       onChange={e => setLinkedin(e.target.value)}
-                      placeholder="linkedin.com/in/username"
+                      placeholder={"linkedin.com/in/username"}
                     />
                   </div>
                 </div>
@@ -980,12 +983,12 @@ export default function SettingsPage() {
 
             <Card id="developer-mode" className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground scroll-mt-24">
               <CardHeader>
-                <CardTitle>Developer Mode</CardTitle>
+                <CardTitle><LocalizedText>Developer Mode</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
                 <SettingsCheckboxRow
                   id="developer-mode-toggle"
-                  title="Show publishing tools"
+                  title={"Show publishing tools"}
                   description="Turn this on only when you want to submit or manage app listings."
                   checked={developerMode}
                   disabled={savingDeveloperMode}
@@ -994,7 +997,7 @@ export default function SettingsPage() {
 
                 {developerMode && (
                   <Button asChild className="w-full bg-orange-500 text-white hover:bg-orange-600">
-                    <Link href="/submit">Submit an App</Link>
+                    <Link href="/submit"><LocalizedText>Submit an App</LocalizedText></Link>
                   </Button>
                 )}
               </CardContent>
@@ -1006,12 +1009,12 @@ export default function SettingsPage() {
             <TabsContent value="professional" className="space-y-6 mt-6">
               <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
                 <CardHeader>
-                  <CardTitle>Professional Information</CardTitle>
+                  <CardTitle><LocalizedText>Professional Information</LocalizedText></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block mb-2 text-sm font-medium">Occupation</label>
+                      <label className="block mb-2 text-sm font-medium"><LocalizedText>Occupation</LocalizedText></label>
                       <input
                         className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         type="text"
@@ -1022,7 +1025,7 @@ export default function SettingsPage() {
                     </div>
                     
                     <div>
-                      <label className="block mb-2 text-sm font-medium">Company</label>
+                      <label className="block mb-2 text-sm font-medium"><LocalizedText>Company</LocalizedText></label>
                       <input
                         className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         type="text"
@@ -1033,7 +1036,7 @@ export default function SettingsPage() {
                     </div>
                     
                     <div>
-                      <label className="block mb-2 text-sm font-medium">Years of Experience</label>
+                      <label className="block mb-2 text-sm font-medium"><LocalizedText>Years of Experience</LocalizedText></label>
                       <input
                         className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         type="number"
@@ -1048,22 +1051,22 @@ export default function SettingsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block mb-2 text-sm font-medium">Bitcoin Experience Level</label>
+                      <label className="block mb-2 text-sm font-medium"><LocalizedText>Bitcoin Experience Level</LocalizedText></label>
                       <select
                         className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={bitcoinExperienceLevel}
                         onChange={e => setBitcoinExperienceLevel(e.target.value)}
                       >
-                        <option value="">Select level</option>
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
-                        <option value="expert">Expert</option>
+                        <option value=""><LocalizedText>Select level</LocalizedText></option>
+                        <option value="beginner"><LocalizedText>Beginner</LocalizedText></option>
+                        <option value="intermediate"><LocalizedText>Intermediate</LocalizedText></option>
+                        <option value="advanced"><LocalizedText>Advanced</LocalizedText></option>
+                        <option value="expert"><LocalizedText>Expert</LocalizedText></option>
                       </select>
                     </div>
 
                     <div>
-                      <label className="block mb-2 text-sm font-medium">Bitcoin Tech Stack</label>
+                      <label className="block mb-2 text-sm font-medium"><LocalizedText>Bitcoin Tech Stack</LocalizedText></label>
                       <input
                         className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         type="text"
@@ -1075,7 +1078,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block mb-2 text-sm font-medium">Bitcoin Project URL</label>
+                    <label className="block mb-2 text-sm font-medium"><LocalizedText>Bitcoin Project URL</LocalizedText></label>
                     <input
                       className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="url"
@@ -1086,7 +1089,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block mb-4 text-sm font-medium">Development Skills & Tools</label>
+                    <label className="block mb-4 text-sm font-medium"><LocalizedText>Development Skills & Tools</LocalizedText></label>
                     <div className="space-y-4">
                       {skillCategories.map((category) => (
                         <div key={category.category}>
@@ -1112,7 +1115,7 @@ export default function SettingsPage() {
                     </div>
                     {selectedSkills.length > 0 && (
                       <div className="mt-4">
-                        <h5 className="text-sm font-medium text-foreground mb-2">Selected Skills ({selectedSkills.length})</h5>
+                        <h5 className="text-sm font-medium text-foreground mb-2"><LocalizedText>Selected Skills (</LocalizedText>{selectedSkills.length})</h5>
                         <div className="flex flex-wrap gap-2">
                           {selectedSkills.map((skill) => (
                             <Badge
@@ -1134,13 +1137,13 @@ export default function SettingsPage() {
           <TabsContent value="privacy" className="space-y-6 mt-6">
             <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
               <CardHeader>
-                <CardTitle>Privacy Settings</CardTitle>
+                <CardTitle><LocalizedText>Privacy Settings</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <SettingsCheckboxRow
                     id="profile-public"
-                    title="Public Profile"
+                    title={"Public Profile"}
                     description="Make your profile visible to everyone"
                     checked={profilePublic}
                     onCheckedChange={setProfilePublic}
@@ -1148,7 +1151,7 @@ export default function SettingsPage() {
                   
                   <SettingsCheckboxRow
                     id="show-email"
-                    title="Show Email"
+                    title={"Show Email"}
                     description="Display your email on your public profile"
                     checked={showEmail}
                     onCheckedChange={setShowEmail}
@@ -1156,7 +1159,7 @@ export default function SettingsPage() {
                   
                   <SettingsCheckboxRow
                     id="show-location"
-                    title="Show Location"
+                    title={"Show Location"}
                     description="Display your location on your profile"
                     checked={showLocation}
                     onCheckedChange={setShowLocation}
@@ -1166,11 +1169,11 @@ export default function SettingsPage() {
                 <hr className="border-gray-700" />
                 
                 <div>
-                  <h3 className="text-lg font-medium mb-4">Notification Preferences</h3>
+                  <h3 className="text-lg font-medium mb-4"><LocalizedText>Notification Preferences</LocalizedText></h3>
                   <div className="space-y-4">
                     <SettingsCheckboxRow
                       id="email-notifications"
-                      title="Email Notifications"
+                      title={"Email Notifications"}
                       description="Receive email notifications"
                       checked={emailNotifications}
                       onCheckedChange={setEmailNotifications}
@@ -1178,7 +1181,7 @@ export default function SettingsPage() {
                     
                     <SettingsCheckboxRow
                       id="push-notifications"
-                      title="Push Notifications"
+                      title={"Push Notifications"}
                       description="Receive browser push notifications"
                       checked={pushNotifications}
                       onCheckedChange={setPushNotifications}
@@ -1186,7 +1189,7 @@ export default function SettingsPage() {
                     
                     <SettingsCheckboxRow
                       id="marketing-emails"
-                      title="Marketing Emails"
+                      title={"Marketing Emails"}
                       description="Receive updates about new features and promotions"
                       checked={marketingEmails}
                       onCheckedChange={setMarketingEmails}
@@ -1199,12 +1202,12 @@ export default function SettingsPage() {
             {!isExtensionWallet && (
               <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
                 <CardHeader>
-                  <CardTitle>Reveal Recovery Keys</CardTitle>
+                  <CardTitle><LocalizedText>Reveal Recovery Keys</LocalizedText></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <p className="text-sm text-gray-400">
-                    Enter your wallet password to decrypt and show your mnemonic, private key, and Nostr nsec key locally in this browser.
-                  </p>
+                    <LocalizedText>Enter your wallet password to decrypt and show your mnemonic, private key, and Nostr nsec key locally in this browser.
+                  </LocalizedText></p>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <input
@@ -1213,7 +1216,7 @@ export default function SettingsPage() {
                       value={recoveryPassword}
                       onChange={event => setRecoveryPassword(event.target.value)}
                       onKeyDown={event => {
-                        if (event.key === 'Enter') {
+                        if (event.key === "Enter") {
                           event.preventDefault();
                           void handleRevealRecoveryKeys();
                         }
@@ -1228,7 +1231,7 @@ export default function SettingsPage() {
                       className="shrink-0 bg-red-600 text-white hover:bg-red-700"
                     >
                       <KeyRound className="h-4 w-4" />
-                      {revealingKeys ? 'Unlocking...' : 'Reveal Keys'}
+                      {revealingKeys ? "Unlocking..." : "Reveal Keys"}
                     </Button>
                   </div>
 
@@ -1236,8 +1239,8 @@ export default function SettingsPage() {
                     <div className="space-y-4 rounded-lg border border-red-500/40 bg-red-500/5 p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm font-medium text-red-600 dark:text-red-300">
-                          Keep these keys private. Anyone with them can control your wallet.
-                        </p>
+                          <LocalizedText>Keep these keys private. Anyone with them can control your wallet.
+                        </LocalizedText></p>
                         <div className="flex gap-2">
                           <Button
                             type="button"
@@ -1247,7 +1250,7 @@ export default function SettingsPage() {
                             className="border-border text-muted-foreground hover:bg-muted"
                           >
                             {showRecoveryKeys ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            {showRecoveryKeys ? 'Hide' : 'Show'}
+                            {showRecoveryKeys ? "Hide" : "Show"}
                           </Button>
                           <Button
                             type="button"
@@ -1256,8 +1259,8 @@ export default function SettingsPage() {
                             onClick={clearRecoveryKeys}
                             className="border-border text-muted-foreground hover:bg-muted"
                           >
-                            Clear
-                          </Button>
+                            <LocalizedText>Clear
+                          </LocalizedText></Button>
                         </div>
                       </div>
 
@@ -1294,28 +1297,28 @@ export default function SettingsPage() {
           {isExtensionWallet && !isNostrLightningWallet && !isBitcoinOnlyExtensionWallet && (
             <Card className="bg-accent-background border-gray-200 dark:border-gray-700 mt-8">
               <CardHeader>
-                <CardTitle>Wallet Proof Linking</CardTitle>
+                <CardTitle><LocalizedText>Wallet Proof Linking</LocalizedText></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-400">
-                  Link your Stacks browser wallet address to your Nostr public key for ownership proof.
-                </p>
+                  <LocalizedText>Link your Stacks browser wallet address to your Nostr public key for ownership proof.
+                </LocalizedText></p>
 
                 {!isNostrKeyAvailable && (
                   <div className="rounded-lg bg-yellow-100 dark:bg-yellow-900/20 p-4 text-yellow-900 dark:text-yellow-100">
-                    No valid Nostr public key is available. Unlock your encrypted wallet or configure your Nostr key first.
-                  </div>
+                    <LocalizedText>No valid Nostr public key is available. Unlock your encrypted wallet or configure your Nostr key first.
+                  </LocalizedText></div>
                 )}
 
                 {isNostrKeyAvailable && (
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div>
-                        <label className="block text-xs font-medium uppercase text-gray-500">Stacks Wallet</label>
+                        <label className="block text-xs font-medium uppercase text-gray-500"><LocalizedText>Stacks Wallet</LocalizedText></label>
                         <p className="mt-1 text-sm text-foreground">{address}</p>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium uppercase text-gray-500">Nostr Public Key</label>
+                        <label className="block text-xs font-medium uppercase text-gray-500"><LocalizedText>Nostr Public Key</LocalizedText></label>
                         <p className="mt-1 text-sm text-foreground break-all">{currentWallet?.nostrPublicKey}</p>
                       </div>
                     </div>
@@ -1327,15 +1330,15 @@ export default function SettingsPage() {
                         disabled={!canLinkWallet || walletLinking}
                         className="w-full bg-slate-700 hover:bg-slate-800 text-white"
                       >
-                        Create Proof
-                      </Button>
+                        <LocalizedText>Create Proof
+                      </LocalizedText></Button>
                       <Button
                         type="button"
                         onClick={handleLinkWallet}
                         disabled={!walletProofResult || walletLinking}
                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
                       >
-                        {walletLinking ? 'Linking...' : 'Link Wallet'}
+                        {walletLinking ? "Linking..." : "Link Wallet"}
                       </Button>
                     </div>
 
@@ -1362,7 +1365,7 @@ export default function SettingsPage() {
               disabled={saving}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-6 cursor-pointer"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>
@@ -1377,15 +1380,15 @@ export default function SettingsPage() {
               href="/settings/password"
               className="block w-full text-center py-3 px-4 rounded-lg border border-[#222] bg-accent-background text-foreground hover:underline"
             >
-              Change Password
-            </Link>
+              <LocalizedText>Change Password
+            </LocalizedText></Link>
           )}
           <Link
             href="/settings/api/delete"
             className="block w-full text-center text-red-400 py-3 px-4transition-colors"
           >
-            Delete Account
-          </Link>
+            <LocalizedText>Delete Account
+          </LocalizedText></Link>
         </div>
       </div>
 

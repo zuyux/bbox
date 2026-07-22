@@ -1,5 +1,6 @@
 'use client';
 
+
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Boxes, CheckCircle2, ShieldCheck, Sparkles, X } from 'lucide-react';
@@ -152,7 +153,7 @@ export default function WelcomeModal() {
           type="button"
           onClick={() => dismiss({ hideWelcomeModalPreference: false })}
           className="absolute right-4 top-4 inline-flex size-9 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-          aria-label="Close welcome modal"
+          aria-label={"Close welcome modal"}
         >
           <X className="size-4" />
         </button>
@@ -189,7 +190,7 @@ export default function WelcomeModal() {
           </p>
         </div>
 
-        <div className="mt-auto flex justify-center gap-2 py-7" aria-label="Welcome progress">
+        <div className="mt-auto flex justify-center gap-2 py-7" aria-label={"Welcome progress"}>
           {slides.map((item, index) => (
             <button
               key={item.title}
@@ -211,7 +212,7 @@ export default function WelcomeModal() {
             onClick={handlePrimaryAction}
             className="h-11 w-full rounded-md bg-gradient-to-r from-orange-500 to-orange-700 px-6 text-white hover:from-orange-400 hover:to-orange-600"
           >
-            {isLastSlide ? 'Start' : 'Next'}
+            {isLastSlide ? "Start" : "Next"}
             <ArrowRight className="size-4" />
           </Button>
         </div>

@@ -1,4 +1,7 @@
 "use client";
+
+
+import { LocalizedText } from "@/components/LocalizedText";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { getStoredEncryptedWallet, retrieveEncryptedWallet, updateEncryptedWalletAddresses, type WalletData } from "@/lib/encryptedStorage";
 import { getBitcoinAddressFromPrivateKey, getLiquidAddressFromPrivateKey, getRootstockAddressFromPrivateKey } from "@/lib/bitcoinWallet";
@@ -257,13 +260,13 @@ function CreatePasskeyAddressModal({
           onSubmit={onSubmit}
           isLoading={isLoading}
           error={error}
-          placeholder="Create a wallet password"
+          placeholder={"Create a wallet password"}
           showStrengthIndicator
           onCancel={onClose}
         />
         <div className="mt-4 text-center text-xs text-black/50 dark:text-white/50">
-          Your password encrypts the new wallet locally and is never sent to our servers.
-        </div>
+          <LocalizedText>Your password encrypts the new wallet locally and is never sent to our servers.
+        </LocalizedText></div>
       </div>
     </div>
   );
@@ -979,20 +982,20 @@ export default function WalletPage() {
       return;
     }
     if (typeof navigator === 'undefined' || !navigator.clipboard?.readText) {
-      toast.error('Clipboard unavailable in this context.');
+      toast.error("Clipboard unavailable in this context.");
       return;
     }
     try {
       const text = await navigator.clipboard.readText();
       if (!text) {
-        toast.error('Clipboard is empty.');
+        toast.error("Clipboard is empty.");
         return;
       }
       setSendTo(text.trim());
-      toast.success('Recipient pasted.');
+      toast.success("Recipient pasted.");
     } catch (error) {
       console.warn('Clipboard read failed', error);
-      toast.error('Clipboard permission denied.');
+      toast.error("Clipboard permission denied.");
     }
   }, [sendLoading]);
 
@@ -1273,7 +1276,7 @@ export default function WalletPage() {
     e.preventDefault();
 
     if (!sendFormValid) {
-      toast.error('Please fix the highlighted fields before sending.');
+      toast.error("Please fix the highlighted fields before sending.");
       return;
     }
 
@@ -1418,7 +1421,7 @@ export default function WalletPage() {
       if (err instanceof Error) {
         toast.error(err.message || 'Error sending sBTC');
       } else {
-        toast.error('Error sending sBTC');
+        toast.error("Error sending sBTC");
       }
     } finally {
       setSendLoading(false);
@@ -1693,16 +1696,16 @@ export default function WalletPage() {
     return (
       <div className="min-h-screen bg-[#111] px-4 py-24">
         <div className="max-w-xl mx-auto p-8 rounded-2xl border shadow flex flex-col items-center justify-center select-none bg-[#111] text-card-foreground border-border">
-          <h1 className="text-3xl font-bold mb-6">Wallet</h1>
+          <h1 className="text-3xl font-bold mb-6"><LocalizedText>Wallet</LocalizedText></h1>
           <p className="mb-8 text-lg text-muted-foreground text-center">
-            Please connect your wallet to manage your funds.
-          </p>
+            <LocalizedText>Please connect your wallet to manage your funds.
+          </LocalizedText></p>
           <Link
             href="/"
             className="py-2 px-6 rounded-xl border bg-transparent text-foreground hover:bg-[#111] border-border transition-all duration-200 focus:outline-none cursor-pointer select-none"
           >
-            Connect Wallet
-          </Link>
+            <LocalizedText>Connect Wallet
+          </LocalizedText></Link>
         </div>
       </div>
     );
@@ -1714,7 +1717,7 @@ export default function WalletPage() {
       <div className="w-full max-w-xl mx-auto p-8 rounded-2xl border border-border shadow text-card-foreground select-none">
         <div className="my-2 flex items-center justify-start gap-3">
           <Wallet className="w-8 h-8 text-foreground" />
-          <h1 className="title text-lg font-bold">Wallet</h1>
+          <h1 className="title text-lg font-bold"><LocalizedText>Wallet</LocalizedText></h1>
         </div>
         <div className="mt-4 flex justify-center">
         <div className="flex items-center gap-3">
@@ -1728,7 +1731,7 @@ export default function WalletPage() {
                 onRefresh={isBitcoinOnlyAccount ? refreshBtcBalance : isNostrLightningAccount ? undefined : refreshStacksBalance}
                 className="title text-2xl font-bold select-all"
               >
-                {isNostrLightningAccount && lightningBalance.status !== 'available'
+                {isNostrLightningAccount && lightningBalance.status !== "available"
                   ? abbreviateAddress(address, 8)
                   : primaryBalanceDisplay}
               </BalanceDisplay>
@@ -1754,29 +1757,29 @@ export default function WalletPage() {
           onClick={() => copyReceiveAddress(address, 'Nostr account')}
           type="button"
         >
-          Copy Account
-        </button>
+          <LocalizedText>Copy Account
+        </LocalizedText></button>
       ) : isBitcoinOnlyAccount ? (
         <button
           className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
           onClick={() => setShowReceive(true)}
         >
-          Receive
-        </button>
+          <LocalizedText>Receive
+        </LocalizedText></button>
       ) : (
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button
             className="border border-border bg-transparent text-foreground w-full px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
             onClick={() => setShowSend(true)}
           >
-            Send
-          </button>
+            <LocalizedText>Send
+          </LocalizedText></button>
           <button
             className="border border-border bg-transparent text-foreground px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
             onClick={() => setShowReceive(true)}
           >
-            Receive
-          </button>
+            <LocalizedText>Receive
+          </LocalizedText></button>
         </div>
       )}
 
@@ -1787,14 +1790,14 @@ export default function WalletPage() {
           onClick={() => setShowSwap(true)}
         >
           <Image src="/swap.svg" alt="" width={18} height={18} aria-hidden="true" />
-          <span>Swap</span>
+          <span><LocalizedText>Swap</LocalizedText></span>
         </button>
       )}
 
       <div className="mt-16 w-full">
         <div className="flex items-center justify-between">
           {!isNostrLightningAccount && !isBitcoinOnlyAccount && !assetsLoading && (
-            <span className="text-xs text-muted-foreground">{visibleAssetCount} assets</span>
+            <span className="text-xs text-muted-foreground">{visibleAssetCount} <LocalizedText>assets</LocalizedText></span>
           )}
         </div>
 
@@ -1803,15 +1806,15 @@ export default function WalletPage() {
             <div className="space-y-4 p-4">
               <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <Image src={walletType === 'nostria' ? '/nostria.svg' : '/alby.svg'} alt={identityProviderLabel} width={28} height={28} />
+                  <Image src={walletType === "nostria" ? '/nostria.svg' : '/alby.svg'} alt={identityProviderLabel} width={28} height={28} />
                   <div className="min-w-0">
                     <div className="text-sm font-semibold">{identityProviderLabel}</div>
-                    <div className="text-xs text-muted-foreground">Nostr account</div>
+                    <div className="text-xs text-muted-foreground"><LocalizedText>Nostr account</LocalizedText></div>
                   </div>
                 </div>
                 <div className="text-right min-w-0">
                   <div className="text-sm font-mono truncate max-w-40">{address}</div>
-                  <div className="text-xs text-muted-foreground">Connected</div>
+                  <div className="text-xs text-muted-foreground"><LocalizedText>Connected</LocalizedText></div>
                 </div>
               </div>
 
@@ -1819,21 +1822,21 @@ export default function WalletPage() {
                 <div className="flex items-center gap-3">
                   <Image src="/icons/lightning.svg" alt="Lightning" width={28} height={28} />
                   <div>
-                    <div className="text-sm font-semibold">Lightning</div>
+                    <div className="text-sm font-semibold"><LocalizedText>Lightning</LocalizedText></div>
                     <div className="text-xs text-muted-foreground">
-                      {profileLightningAddress || (lightningBalance.status === 'unavailable' ? 'Provider balance unavailable' : 'Wallet balance')}
+                      {profileLightningAddress || (lightningBalance.status === "unavailable" ? "Provider balance unavailable" : "Wallet balance")}
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
                   <BalanceDisplay
-                    loading={lightningBalance.status === 'loading'}
-                    unavailable={lightningBalance.status === 'unavailable' && !profileLightningAddress}
+                    loading={lightningBalance.status === "loading"}
+                    unavailable={lightningBalance.status === "unavailable" && !profileLightningAddress}
                   >
-                    {lightningBalance.status === 'available' ? lightningBalance.display : profileLightningAddress ? 'Configured' : lightningBalance.display}
+                    {lightningBalance.status === "available" ? lightningBalance.display : profileLightningAddress ? "Configured" : lightningBalance.display}
                   </BalanceDisplay>
                   <div className="text-xs text-muted-foreground">
-                    {lightningBalance.status === 'available' ? 'Balance' : profileLightningAddress ? 'Address set' : 'Balance unavailable'}
+                    {lightningBalance.status === "available" ? "Balance" : profileLightningAddress ? "Address set" : "Balance unavailable"}
                   </div>
                 </div>
               </div>
@@ -1843,8 +1846,8 @@ export default function WalletPage() {
                   href="/settings#lightning-address"
                   className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-transparent px-3 py-2 text-sm font-semibold text-foreground transition hover:bg-[#111]"
                 >
-                  Set Lightning Address
-                </Link>
+                  <LocalizedText>Set Lightning Address
+                </LocalizedText></Link>
               )}
             </div>
           ) : (
@@ -1853,15 +1856,15 @@ export default function WalletPage() {
               <div className="flex items-center gap-3">
                 <Image src="/btc.svg" alt="Bitcoin" width={28} height={28} />
                 <div>
-                  <div className="text-sm font-semibold">Bitcoin</div>
-                  <div className="text-xs text-muted-foreground">BTC</div>
+                  <div className="text-sm font-semibold"><LocalizedText>Bitcoin</LocalizedText></div>
+                  <div className="text-xs text-muted-foreground"><LocalizedText>BTC</LocalizedText></div>
                 </div>
               </div>
               <div className="text-right">
                 <BalanceDisplay loading={btcBalanceLoading} unavailable={btcBalance.value === null} onRefresh={refreshBtcBalance}>
                   {btcBalanceDisplay}
                 </BalanceDisplay>
-                <div className="text-xs text-muted-foreground">Balance</div>
+                <div className="text-xs text-muted-foreground"><LocalizedText>Balance</LocalizedText></div>
               </div>
             </div>
 
@@ -1871,15 +1874,15 @@ export default function WalletPage() {
               <div className="flex items-center gap-3">
                 <Image src="/liquid.svg" alt="Liquid" width={28} height={28} />
                 <div>
-                  <div className="text-sm font-semibold">Liquid</div>
-                  <div className="text-xs text-muted-foreground">Liquid</div>
+                  <div className="text-sm font-semibold"><LocalizedText>Liquid</LocalizedText></div>
+                  <div className="text-xs text-muted-foreground"><LocalizedText>Liquid</LocalizedText></div>
                 </div>
               </div>
               <div className="text-right">
                 <BalanceDisplay loading={liquidBalanceLoading} unavailable={liquidBalance.value === null} onRefresh={refreshLiquidBalance}>
                   {liquidBalanceDisplay}
                 </BalanceDisplay>
-                <div className="text-xs text-muted-foreground">Balance</div>
+                <div className="text-xs text-muted-foreground"><LocalizedText>Balance</LocalizedText></div>
               </div>
             </div>
 
@@ -1887,15 +1890,15 @@ export default function WalletPage() {
               <div className="flex items-center gap-3">
                 <Image src="/rsk.svg" alt="Rootstock" width={28} height={28} />
                 <div>
-                  <div className="text-sm font-semibold">Rootstock</div>
-                  <div className="text-xs text-muted-foreground">RSK</div>
+                  <div className="text-sm font-semibold"><LocalizedText>Rootstock</LocalizedText></div>
+                  <div className="text-xs text-muted-foreground"><LocalizedText>RSK</LocalizedText></div>
                 </div>
               </div>
               <div className="text-right">
                 <BalanceDisplay loading={rskBalanceLoading} unavailable={rskBalance.value === null} onRefresh={refreshRskBalance}>
                   {rskBalanceDisplay}
                 </BalanceDisplay>
-                <div className="text-xs text-muted-foreground">Balance</div>
+                <div className="text-xs text-muted-foreground"><LocalizedText>Balance</LocalizedText></div>
               </div>
             </div>
 
@@ -1903,15 +1906,15 @@ export default function WalletPage() {
               <div className="flex items-center gap-3">
                 <Image src="/stx.png" alt="Stacks" width={28} height={28} />
                 <div>
-                  <div className="text-sm font-semibold">Stacks</div>
-                  <div className="text-xs text-muted-foreground">STX</div>
+                  <div className="text-sm font-semibold"><LocalizedText>Stacks</LocalizedText></div>
+                  <div className="text-xs text-muted-foreground"><LocalizedText>STX</LocalizedText></div>
                 </div>
               </div>
               <div className="text-right">
                 <BalanceDisplay loading={loading} unavailable={stxBalanceUnavailable} onRefresh={refreshStacksBalance}>
                   {stxBalanceDisplay}
                 </BalanceDisplay>
-                <div className="text-xs text-muted-foreground">Balance</div>
+                <div className="text-xs text-muted-foreground"><LocalizedText>Balance</LocalizedText></div>
               </div>
             </div>
             </>
@@ -1926,7 +1929,7 @@ export default function WalletPage() {
               ))}
             </div>
           ) : !isNostrLightningAccount && !isBitcoinOnlyAccount && visibleAssetCount === 0 ? (
-            <div className="p-4 text-sm text-muted-foreground hidden">No assets detected for this wallet yet.</div>
+            <div className="p-4 text-sm text-muted-foreground hidden"><LocalizedText>No assets detected for this wallet yet.</LocalizedText></div>
           ) : !isNostrLightningAccount && !isBitcoinOnlyAccount ? (
             <ul>
               {visibleAssets.map((asset) => (
@@ -1941,7 +1944,7 @@ export default function WalletPage() {
                   <div className="text-right">
                     <div className="font-mono text-sm">{asset.formattedBalance}</div>
                     <div className="text-[11px] uppercase text-muted-foreground">
-                      {asset.type === 'stx' ? 'Stacks' : 'Token'}
+                      {asset.type === "stx" ? "Stacks" : "Token"}
                     </div>
                   </div>
                 </li>
@@ -1977,10 +1980,10 @@ export default function WalletPage() {
           >
             <div className="flex items-start justify-between gap-4 p-6 pb-4 border-b border-border/60">
               <div>
-                <h2 className="text-xl font-semibold">Send Bitcoin</h2>
+                <h2 className="text-xl font-semibold"><LocalizedText>Send Bitcoin</LocalizedText></h2>
                 <p className="text-sm text-muted-foreground mt-1">
                   {selectedSendAsset.networkLabel}
-                  {currentNetwork !== 'mainnet' && sendAsset === 'sbtc' && (
+                  {currentNetwork !== 'mainnet' && sendAsset === "sbtc" && (
                     <span className="ml-1 font-mono uppercase">{currentNetwork}</span>
                   )}
                 </p>
@@ -1999,8 +2002,8 @@ export default function WalletPage() {
             <form onSubmit={handleSend} className="space-y-5 overflow-y-auto px-6 py-5">
               <div>
                 <label className="block text-sm font-medium mb-2" htmlFor="send-asset">
-                  Asset
-                </label>
+                  <LocalizedText>Asset
+                </LocalizedText></label>
                 <select
                   id="send-asset"
                   className="w-full px-4 py-3 rounded-xl border border-border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60"
@@ -2020,8 +2023,8 @@ export default function WalletPage() {
                 <p className="font-medium">{sendMethodTitle}</p>
                 <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{sendMethodDescription}</p>
                 <p className="mt-3 text-xs text-muted-foreground">
-                  Available balance:
-                  <BalanceDisplay
+                  <LocalizedText>Available balance:
+                  </LocalizedText><BalanceDisplay
                     loading={selectedAssetBalanceLoading}
                     unavailable={selectedAssetBalanceUnavailable}
                     onRefresh={refreshSelectedSendAssetBalance}
@@ -2034,8 +2037,8 @@ export default function WalletPage() {
 
               <div>
                 <label className="block text-sm font-medium mb-2" htmlFor="send-recipient">
-                  Recipient Address
-                </label>
+                  <LocalizedText>Recipient Address
+                </LocalizedText></label>
                 <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
                   <input
                     id="send-recipient"
@@ -2055,8 +2058,8 @@ export default function WalletPage() {
                     disabled={sendLoading}
                     aria-label="Paste address from clipboard"
                   >
-                    Paste
-                  </button>
+                    <LocalizedText>Paste
+                  </LocalizedText></button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">{selectedSendAsset.recipientHint}</p>
                 {recipientError && (
@@ -2069,19 +2072,19 @@ export default function WalletPage() {
 
               <div>
                 <label className="block text-sm font-medium mb-2" htmlFor="send-amount">
-                  Amount
-                </label>
+                  <LocalizedText>Amount
+                </LocalizedText></label>
                 <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
                   <input
                     id="send-amount"
                     className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
                     type="number"
-                    min={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' || sendAsset === 'liquid' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 0}
-                    step={sendAsset === 'sbtc' ? 1 : sendAsset === 'bitcoin' || sendAsset === 'liquid' ? 0.00000001 : sendAsset === 'rootstock' ? 0.000000000000000001 : 'any'}
+                    min={sendAsset === "sbtc" ? 1 : sendAsset === "bitcoin" || sendAsset === "liquid" ? 0.00000001 : sendAsset === "rootstock" ? 0.000000000000000001 : 0}
+                    step={sendAsset === "sbtc" ? 1 : sendAsset === "bitcoin" || sendAsset === "liquid" ? 0.00000001 : sendAsset === "rootstock" ? 0.000000000000000001 : "any"}
                     value={sendAmount}
                     onChange={e => setSendAmount(e.target.value)}
                     required
-                    placeholder={sendAsset === 'sbtc' ? '1000' : sendAsset === 'bitcoin' || sendAsset === 'liquid' ? '0.00000000' : sendAsset === 'rootstock' ? '0.000000000000000000' : '0.0'}
+                    placeholder={sendAsset === "sbtc" ? '1000' : sendAsset === "bitcoin" || sendAsset === "liquid" ? '0.00000000' : sendAsset === "rootstock" ? '0.000000000000000000' : '0.0'}
                     disabled={sendLoading}
                     style={{ MozAppearance: "textfield" } as React.CSSProperties}
                   />
@@ -2091,14 +2094,14 @@ export default function WalletPage() {
                     onClick={() => handleQuickFillValue(maxFillValue)}
                     disabled={sendLoading || !maxFillValue}
                   >
-                    Max
-                  </button>
+                    <LocalizedText>Max
+                  </LocalizedText></button>
                 </div>
                 <div className="flex items-center justify-between text-xs mt-2 text-muted-foreground">
-                  <span>{sendAsset === 'sbtc' ? 'Minimum 1 sat' : sendAsset === 'bitcoin' ? 'Amount in BTC' : sendAsset === 'liquid' ? 'Amount in L-BTC' : sendAsset === 'rootstock' ? 'Amount in RBTC' : `Amount in ${selectedSendAsset.unit}`}</span>
+                  <span>{sendAsset === "sbtc" ? "Minimum 1 sat" : sendAsset === "bitcoin" ? "Amount in BTC" : sendAsset === "liquid" ? "Amount in L-BTC" : sendAsset === "rootstock" ? "Amount in RBTC" : `Amount in ${selectedSendAsset.unit}`}</span>
                   <span className="inline-flex items-center gap-1">
-                    Available
-                    <BalanceDisplay
+                    <LocalizedText>Available
+                    </LocalizedText><BalanceDisplay
                       loading={selectedAssetBalanceLoading}
                       unavailable={selectedAssetBalanceUnavailable}
                       onRefresh={refreshSelectedSendAssetBalance}
@@ -2131,8 +2134,8 @@ export default function WalletPage() {
               {supportsMemo && (
                 <div>
                   <label className="block text-sm font-medium mb-2" htmlFor="send-memo">
-                    Memo (optional)
-                  </label>
+                    <LocalizedText>Memo (optional)
+                  </LocalizedText></label>
                   <textarea
                     id="send-memo"
                     className={`w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 resize-none ${memoError ? 'border-destructive/70' : 'border-border'}`}
@@ -2145,12 +2148,12 @@ export default function WalletPage() {
                   />
                   <div className="flex items-center justify-between text-xs mt-2">
                     <span className={memoError ? 'text-destructive' : 'text-muted-foreground'}>
-                      {memoByteLength}/{MAX_MEMO_BYTES} bytes
-                    </span>
+                      {memoByteLength}/{MAX_MEMO_BYTES} <LocalizedText>bytes
+                    </LocalizedText></span>
                     {!memoError && (
                       <span className="text-muted-foreground">
-                        Memo limit enforced by the sBTC contract
-                      </span>
+                        <LocalizedText>Memo limit enforced by the sBTC contract
+                      </LocalizedText></span>
                     )}
                   </div>
                   {memoError && <p className="text-xs text-destructive mt-2">{memoError}</p>}
@@ -2160,28 +2163,28 @@ export default function WalletPage() {
               {(sendAmount || trimmedRecipient) && (
                 <div className="rounded-2xl border border-border bg-transparent p-4 text-sm">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Network</span>
+                    <span className="text-muted-foreground"><LocalizedText>Network</LocalizedText></span>
                     <span className="font-mono uppercase">{currentNetwork}</span>
                   </div>
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-muted-foreground">Recipient</span>
+                    <span className="text-muted-foreground"><LocalizedText>Recipient</LocalizedText></span>
                     <span className={`font-mono text-xs ${trimmedRecipient ? 'text-foreground' : 'text-muted-foreground'}`}>
                       {summaryRecipientDisplay}
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-muted-foreground">Amount</span>
+                    <span className="text-muted-foreground"><LocalizedText>Amount</LocalizedText></span>
                     <span className="font-semibold text-lg">{sendAmount || '0'} {selectedSendAsset.unit}</span>
                   </div>
                   {remainingBalanceDisplay && (
                     <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                      <span>Remaining balance</span>
+                      <span><LocalizedText>Remaining balance</LocalizedText></span>
                       <span>{remainingBalanceDisplay} {selectedSendAsset.unit}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between text-xs text-muted-foreground mt-3">
-                    <span>Method</span>
-                    <span>{sendAsset === 'bitcoin' && !isLocalWallet || extensionAvailable && sendAsset === 'sbtc' ? 'Browser extension' : 'Encrypted wallet'}</span>
+                    <span><LocalizedText>Method</LocalizedText></span>
+                    <span>{sendAsset === "bitcoin" && !isLocalWallet || extensionAvailable && sendAsset === "sbtc" ? "Browser extension" : "Encrypted wallet"}</span>
                   </div>
                 </div>
               )}
@@ -2189,8 +2192,8 @@ export default function WalletPage() {
               {selectedAssetNeedsPassword && selectedSendAsset.supported && (
                 <div>
                   <label className="block text-sm font-medium mb-2" htmlFor="send-password">
-                    Wallet Password
-                  </label>
+                    <LocalizedText>Wallet Password
+                  </LocalizedText></label>
                   <input
                     id="send-password"
                     className={`w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${passwordError ? 'border-destructive/70' : 'border-border'}`}
@@ -2202,7 +2205,7 @@ export default function WalletPage() {
                     disabled={sendLoading}
                     autoComplete="current-password"
                   />
-                  <p className="text-xs text-muted-foreground mt-2">Required to decrypt and sign with your local wallet.</p>
+                  <p className="text-xs text-muted-foreground mt-2"><LocalizedText>Required to decrypt and sign with your local wallet.</LocalizedText></p>
                   {passwordError && <p className="text-xs text-destructive mt-2">{passwordError}</p>}
                 </div>
               )}
@@ -2213,7 +2216,7 @@ export default function WalletPage() {
                   className="w-full py-3 px-4 rounded-xl border border-border bg-transparent text-foreground transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:bg-[#111]"
                   disabled={sendLoading || !sendFormValid}
                 >
-                  {sendLoading ? (sendAsset === 'bitcoin' && !isLocalWallet || extensionAvailable && sendAsset === 'sbtc' ? 'Sending via extension...' : 'Sending...') : sendActionLabel}
+                  {sendLoading ? (sendAsset === "bitcoin" && !isLocalWallet || extensionAvailable && sendAsset === "sbtc" ? "Sending via extension..." : "Sending...") : sendActionLabel}
                 </button>
                 <button
                   type="button"
@@ -2221,8 +2224,8 @@ export default function WalletPage() {
                   onClick={closeSendModal}
                   disabled={sendLoading}
                 >
-                  Cancel
-                </button>
+                  <LocalizedText>Cancel
+                </LocalizedText></button>
               </div>
             </form>
           </div>
@@ -2249,7 +2252,7 @@ export default function WalletPage() {
                 <X className="h-[18px]" />
               </button>
             </div>
-            <h2 className="text-xl font-bold mb-6">Receive {selectedReceiveLabel}</h2>
+            <h2 className="text-xl font-bold mb-6"><LocalizedText>Receive </LocalizedText>{selectedReceiveLabel}</h2>
             <div className="mb-6">
               {selectedReceiveAddress ? (
                 <div className="w-full p-6 flex items-center justify-center rounded-xl bg-[#111]">
@@ -2271,16 +2274,16 @@ export default function WalletPage() {
                     <LoaderCircle className="animate-spin" size={28} />
                   ) : (
                     <>
-                      <div className="text-sm">No {selectedReceiveLabel} address yet</div>
-                      {receiveAsset !== 'stacks' && !isBitcoinOnlyAccount && (
+                      <div className="text-sm"><LocalizedText>No </LocalizedText>{selectedReceiveLabel} <LocalizedText>address yet</LocalizedText></div>
+                      {receiveAsset !== "stacks" && !isBitcoinOnlyAccount && (
                         <button
                           type="button"
                           className="rounded-lg border border-border bg-transparent px-4 py-2 text-xs font-medium text-foreground transition hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
                           onClick={() => openGenerateAddressModal(receiveAsset)}
                           disabled={generatingAddresses}
                         >
-                          Generate {selectedReceiveLabel} Address
-                        </button>
+                          <LocalizedText>Generate </LocalizedText>{selectedReceiveLabel} <LocalizedText>Address
+                        </LocalizedText></button>
                       )}
                     </>
                   )}
@@ -2304,7 +2307,7 @@ export default function WalletPage() {
                         onClick={() => setSelectedOkxBitcoinAddress(account.address)}
                         onKeyDown={(event) => {
                           if (event.target !== event.currentTarget) return;
-                          if (event.key !== 'Enter' && event.key !== ' ') return;
+                          if (event.key !== "Enter" && event.key !== ' ') return;
                           event.preventDefault();
                           setSelectedOkxBitcoinAddress(account.address);
                         }}
@@ -2337,12 +2340,12 @@ export default function WalletPage() {
               <div
                 role="button"
                 tabIndex={0}
-                className={`w-full rounded-2xl border p-4 text-left transition ${receiveAsset === 'bitcoin' ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent hover:bg-[#111]'}`}
+                className={`w-full rounded-2xl border p-4 text-left transition ${receiveAsset === "bitcoin" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent hover:bg-[#111]'}`}
                 onClick={() => setReceiveAsset('bitcoin')}
                 onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'bitcoin')}
               >
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <span className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Bitcoin L1</span>
+                  <span className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground"><LocalizedText>Bitcoin L1</LocalizedText></span>
                   {!btcAddressLoading && !primaryReceiveAddress && !isBitcoinOnlyAccount && (
                     <button
                       type="button"
@@ -2353,12 +2356,12 @@ export default function WalletPage() {
                       }}
                       disabled={generatingAddresses}
                     >
-                      Generate
-                    </button>
+                      <LocalizedText>Generate
+                    </LocalizedText></button>
                   )}
                 </div>
                 {btcAddressLoading ? (
-                  <div className="text-sm">Loading address...</div>
+                  <div className="text-sm"><LocalizedText>Loading address...</LocalizedText></div>
                 ) : primaryReceiveAddress ? (
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-sm break-all">{primaryReceiveAddress}</span>
@@ -2375,7 +2378,7 @@ export default function WalletPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="text-sm text-destructive">{btcAddressError || 'No Bitcoin address available.'}</div>
+                  <div className="text-sm text-destructive">{btcAddressError || "No Bitcoin address available."}</div>
                 )}
               </div>
               )}
@@ -2385,11 +2388,11 @@ export default function WalletPage() {
                 <div
                   role="button"
                   tabIndex={0}
-                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === 'stacks' ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
+                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "stacks" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
                   onClick={() => setReceiveAsset('stacks')}
                   onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'stacks')}
                 >
-                  <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Stacks</div>
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground"><LocalizedText>Stacks</LocalizedText></div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-sm break-all">{address}</span>
                     <button
@@ -2409,13 +2412,13 @@ export default function WalletPage() {
                 <div
                   role="button"
                   tabIndex={0}
-                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === 'rootstock' ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
+                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "rootstock" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
                   onClick={() => setReceiveAsset('rootstock')}
                   onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'rootstock')}
                 >
                   {rskAddress ? (
                     <>
-                      <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Rootstock</div>
+                      <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground"><LocalizedText>Rootstock</LocalizedText></div>
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-mono text-sm break-all">{rskAddress}</span>
                         <button
@@ -2434,8 +2437,8 @@ export default function WalletPage() {
                   ) : (
                     <div className="flex items-stretch justify-between gap-4">
                       <div className="min-w-0 py-1">
-                        <div className="mb-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Rootstock</div>
-                        <div className="text-sm text-muted-foreground">Not configured.</div>
+                        <div className="mb-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground"><LocalizedText>Rootstock</LocalizedText></div>
+                        <div className="text-sm text-muted-foreground"><LocalizedText>Not configured.</LocalizedText></div>
                       </div>
                       <button
                         type="button"
@@ -2446,8 +2449,8 @@ export default function WalletPage() {
                         }}
                         disabled={generatingAddresses}
                       >
-                        Generate
-                      </button>
+                        <LocalizedText>Generate
+                      </LocalizedText></button>
                     </div>
                   )}
                 </div>
@@ -2455,13 +2458,13 @@ export default function WalletPage() {
                 <div
                   role="button"
                   tabIndex={0}
-                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === 'liquid' ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
+                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "liquid" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
                   onClick={() => setReceiveAsset('liquid')}
                   onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'liquid')}
                 >
                   {liquidAddress ? (
                     <>
-                      <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Liquid</div>
+                      <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground"><LocalizedText>Liquid</LocalizedText></div>
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-mono text-sm break-all">{liquidAddress}</span>
                         <button
@@ -2480,8 +2483,8 @@ export default function WalletPage() {
                   ) : (
                     <div className="flex items-stretch justify-between gap-4">
                       <div className="min-w-0 py-1">
-                        <div className="mb-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Liquid</div>
-                        <div className="text-sm text-muted-foreground">Not configured.</div>
+                        <div className="mb-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground"><LocalizedText>Liquid</LocalizedText></div>
+                        <div className="text-sm text-muted-foreground"><LocalizedText>Not configured.</LocalizedText></div>
                       </div>
                       <button
                         type="button"
@@ -2492,8 +2495,8 @@ export default function WalletPage() {
                         }}
                         disabled={generatingAddresses}
                       >
-                        Generate
-                      </button>
+                        <LocalizedText>Generate
+                      </LocalizedText></button>
                     </div>
                   )}
                 </div>
@@ -2509,8 +2512,8 @@ export default function WalletPage() {
           isOpen={showGenerateAddressesModal}
           onClose={closeGenerateAddressModal}
           onSign={handleGenerateAddress}
-          title={`Generate ${generateAddressLayer ? RECEIVE_LAYER_LABELS[generateAddressLayer] : 'Receive'} Address`}
-          description={`Enter your wallet password to decrypt the local private key and generate ${generateAddressLayer ? `your ${RECEIVE_LAYER_LABELS[generateAddressLayer]}` : 'the selected'} receive address in this browser.`}
+          title={`Generate ${generateAddressLayer ? RECEIVE_LAYER_LABELS[generateAddressLayer] : "Receive"} Address`}
+          description={`Enter your wallet password to decrypt the local private key and generate ${generateAddressLayer ? `your ${RECEIVE_LAYER_LABELS[generateAddressLayer]}` : "the selected"} receive address in this browser.`}
           actionText="Generate"
           isLoading={generatingAddresses}
         />
@@ -2520,7 +2523,7 @@ export default function WalletPage() {
           onClose={closeGenerateAddressModal}
           onSubmit={handleCreatePasskeyAndGenerateAddress}
           title={`Create Passkey Account`}
-          description={`Create a passkey account with your email and password to generate ${generateAddressLayer ? `your ${RECEIVE_LAYER_LABELS[generateAddressLayer]}` : 'the selected'} receive address.`}
+          description={`Create a passkey account with your email and password to generate ${generateAddressLayer ? `your ${RECEIVE_LAYER_LABELS[generateAddressLayer]}` : "the selected"} receive address.`}
           error={createPasskeyError}
           isLoading={generatingAddresses}
         />
@@ -2528,14 +2531,14 @@ export default function WalletPage() {
 
       {/* Recent Transactions */}
       <div className="mt-10">
-        <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
+        <h2 className="text-lg font-semibold mb-4"><LocalizedText>Recent Transactions</LocalizedText></h2>
         <div className="bg-[#111] rounded-xl py-4 max-h-96 overflow-y-auto border border-border">
           {txLoading ? (
             <div className="flex justify-center items-center py-8">
               <LoaderCircle className="animate-spin text-foreground" size={32} />
             </div>
           ) : transactions.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">No recent transactions found.</div>
+            <div className="text-center text-muted-foreground py-8"><LocalizedText>No recent transactions found.</LocalizedText></div>
           ) : (
             <ul className="space-4 mx-4">
               {transactions.map((tx) => (
@@ -2550,15 +2553,15 @@ export default function WalletPage() {
                         </a>
                       </div>
                       <div className="text-sm mt-1">
-                        {tx.tx_type === 'token_transfer' ? (
+                        {tx.tx_type === "token_transfer" ? (
                           <>
-                            <span className="font-semibold">{tx.sender_address === address ? 'Sent' : 'Received'}</span>
+                            <span className="font-semibold">{tx.sender_address === address ? "Sent" : "Received"}</span>
                             {tx.sender_address === address ? (
-                              <> to <span className="font-mono">{tx.token_transfer?.recipient_address?.slice(0, 8)}...{tx.token_transfer?.recipient_address?.slice(-6)}</span></>
+                              <> <LocalizedText>to </LocalizedText><span className="font-mono">{tx.token_transfer?.recipient_address?.slice(0, 8)}...{tx.token_transfer?.recipient_address?.slice(-6)}</span></>
                             ) : (
-                              <> from <span className="font-mono">{tx.sender_address.slice(0, 8)}...{tx.sender_address.slice(-6)}</span></>
+                              <> <LocalizedText>from </LocalizedText><span className="font-mono">{tx.sender_address.slice(0, 8)}...{tx.sender_address.slice(-6)}</span></>
                             )}
-                            <span className="ml-2">{tx.token_transfer?.amount ? Number(tx.token_transfer.amount) / 1e6 : ''} STX</span>
+                            <span className="ml-2">{tx.token_transfer?.amount ? Number(tx.token_transfer.amount) / 1e6 : ''} <LocalizedText>STX</LocalizedText></span>
                           </>
                         ) : (
                           <span className="text-gray-500">{tx.tx_type.replace(/_/g, ' ')}</span>

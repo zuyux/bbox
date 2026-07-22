@@ -1,3 +1,5 @@
+
+import { LocalizedText } from '@/components/LocalizedText';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { ArrowUpRight } from 'lucide-react';
@@ -94,8 +96,8 @@ const ResourceGrid = ({ title, blurb, items }: { title: string; blurb: string; i
           <CardFooter className="pt-0">
             <Button variant="ghost" className="px-0" asChild>
               <Link href={resource.href} target="_blank" rel="noreferrer">
-                View docs
-                <ArrowUpRight className="ml-2 h-4 w-4" />
+                <LocalizedText>View docs
+                </LocalizedText><ArrowUpRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </CardFooter>
@@ -110,12 +112,12 @@ export default function BuildPage() {
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-4 pt-16 pb-20">
         <section className="text-center mb-16">
-          <p className="text-sm uppercase tracking-[0.35em] text-orange-500 mb-4">Start Building</p>
-          <h1 className="title text-4xl md:text-5xl font-bold mb-6">Everything You Need to Ship Sovereign Software</h1>
+          <p className="text-sm uppercase tracking-[0.35em] text-orange-500 mb-4"><LocalizedText>Start Building</LocalizedText></p>
+          <h1 className="title text-4xl md:text-5xl font-bold mb-6"><LocalizedText>Everything You Need to Ship Sovereign Software</LocalizedText></h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Start with the Bitcoin Layer 1 and Layer 2 foundations that anchor BBOX, then extend into the wallets,
+            <LocalizedText>Start with the Bitcoin Layer 1 and Layer 2 foundations that anchor BBOX, then extend into the wallets,
             protocols, scaling systems, and SDKs that power production sovereign apps.
-          </p>
+          </LocalizedText></p>
         </section>
 
         <ResourceGrid
@@ -132,10 +134,10 @@ export default function BuildPage() {
 
         <section className="mb-20">
           <div className="mb-6 text-center md:text-left">
-            <p className="text-sm uppercase tracking-[0.4em] text-orange-500 mb-2">Toolkits & Sandboxes</p>
+            <p className="text-sm uppercase tracking-[0.4em] text-orange-500 mb-2"><LocalizedText>Toolkits & Sandboxes</LocalizedText></p>
             <p className="text-muted-foreground text-base max-w-2xl">
-              Production-ready SDKs and reference stacks that plug directly into BBOX submissions and milestone reviews.
-            </p>
+              <LocalizedText>Production-ready SDKs and reference stacks that plug directly into BBOX submissions and milestone reviews.
+            </LocalizedText></p>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             {toolkits.map(resource => (
@@ -147,8 +149,8 @@ export default function BuildPage() {
                 <CardFooter className="pt-0">
                   <Button variant="ghost" className="px-0" asChild>
                     <Link href={resource.href} target="_blank" rel="noreferrer">
-                      Open resource
-                      <ArrowUpRight className="ml-2 h-4 w-4" />
+                      <LocalizedText>Open resource
+                      </LocalizedText><ArrowUpRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </CardFooter>
@@ -160,14 +162,14 @@ export default function BuildPage() {
         <section className="text-center">
           <Card className="border border-dashed border-orange-500 bg-gradient-to-r from-orange-500/5 via-transparent to-yellow-500/10">
             <CardHeader>
-              <CardTitle className="text-2xl">Share Your Favorite Stack</CardTitle>
+              <CardTitle className="text-2xl"><LocalizedText>Share Your Favorite Stack</LocalizedText></CardTitle>
               <CardDescription>
-                Missing a guide or SDK? Let us know so every builder hitting /build lands on the most current map of sovereign software infrastructure.
-              </CardDescription>
+                <LocalizedText>Missing a guide or SDK? Let us know so every builder hitting /build lands on the most current map of sovereign software infrastructure.
+              </LocalizedText></CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" asChild>
-                <Link href="mailto:team@bbox.build">Submit a resource</Link>
+                <Link href="mailto:team@bbox.build"><LocalizedText>Submit a resource</LocalizedText></Link>
               </Button>
             </CardContent>
           </Card>

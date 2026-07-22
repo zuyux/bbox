@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -32,7 +35,7 @@ export default function WalletRecoveryPage() {
   // Validate token on component mount
   useEffect(() => {
     if (!token) {
-      setError('Invalid recovery link');
+      setError("Invalid recovery link");
       setIsValidating(false);
       return;
     }
@@ -51,7 +54,7 @@ export default function WalletRecoveryPage() {
           setError(data.error || 'Invalid or expired recovery link');
         }
       } catch {
-        setError('Failed to validate recovery link');
+        setError("Failed to validate recovery link");
       } finally {
         setIsValidating(false);
       }
@@ -71,7 +74,7 @@ export default function WalletRecoveryPage() {
       if (remaining <= 0) {
         setTimeLeft('Expired');
         setTokenValid(false);
-        setError('Recovery link has expired');
+        setError("Recovery link has expired");
         return;
       }
 
@@ -112,17 +115,17 @@ export default function WalletRecoveryPage() {
 
   const handleCreateWallet = async () => {
     if (!passphrase.trim()) {
-      setError('Please enter a passphrase');
+      setError("Please enter a passphrase");
       return;
     }
 
     if (passphrase !== confirmPassphrase) {
-      setError('Passphrases do not match');
+      setError("Passphrases do not match");
       return;
     }
 
     if (passphrase.length < 8) {
-      setError('Passphrase must be at least 8 characters long');
+      setError("Passphrase must be at least 8 characters long");
       return;
     }
 
@@ -132,10 +135,10 @@ export default function WalletRecoveryPage() {
 
       // Generate new mnemonic
       const mnemonic = generateMnemonic(wordlist);
-      
+
       // Generate wallet from mnemonic
       const walletData = await generateWalletFromMnemonic(mnemonic);
-      
+
       // Create encrypted wallet
       await createEncryptedWallet(walletData, passphrase);
 
@@ -149,7 +152,7 @@ export default function WalletRecoveryPage() {
       } catch (e) {
         console.warn('Failed to send account info email:', e);
       }
-      
+
       // Redirect to welcome page
       router.push(`/welcome?email=${encodeURIComponent(email)}`);
 
@@ -166,7 +169,7 @@ export default function WalletRecoveryPage() {
         <Card className="w-full max-w-md bg-[#181818] border-gray-700">
           <CardContent className="flex flex-col items-center p-8">
             <Loader className="w-8 h-8 animate-spin text-blue-500 mb-4" />
-            <p className="text-gray-300">Validating recovery link...</p>
+            <p className="text-gray-300"><LocalizedText>Validating recovery link...</LocalizedText></p>
           </CardContent>
         </Card>
       </div>
@@ -179,19 +182,19 @@ export default function WalletRecoveryPage() {
         <Card className="w-full max-w-md bg-[#181818] border-gray-700">
           <CardHeader className="text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <CardTitle className="text-xl text-red-400">Recovery Failed</CardTitle>
+            <CardTitle className="text-xl text-red-400"><LocalizedText>Recovery Failed</LocalizedText></CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-gray-300">
-              {error || 'Invalid or expired recovery link'}
+              {error || "Invalid or expired recovery link"}
             </p>
-            <Button 
+            <Button
               onClick={() => router.push('/')}
               variant="outline"
               className="w-full cursor-pointer hover:bg-white hover:text-black transition-colors border-gray-600 text-gray-300 hover:border-white"
             >
-              Return to Home
-            </Button>
+              <LocalizedText>Return to Home
+            </LocalizedText></Button>
           </CardContent>
         </Card>
       </div>
@@ -207,10 +210,10 @@ export default function WalletRecoveryPage() {
               <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Key className="w-8 h-8 text-blue-400" />
               </div>
-              <CardTitle className="text-2xl text-white mb-2">Create Your Wallet</CardTitle>
+              <CardTitle className="text-2xl text-white mb-2"><LocalizedText>Create Your Wallet</LocalizedText></CardTitle>
               <p className="text-gray-400 text-sm">
-                Your email has been verified. Let&apos;s create your secure wallet.
-              </p>
+                <LocalizedText>Your email has been verified. Let&apos;s create your secure wallet.
+              </LocalizedText></p>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
@@ -229,32 +232,32 @@ export default function WalletRecoveryPage() {
 
               {/* Wallet Creation Info */}
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-white">Ready to Create Wallet</h3>
+                <h3 className="text-lg font-medium text-white"><LocalizedText>Ready to Create Wallet</LocalizedText></h3>
                 <p className="text-gray-400 text-sm">
-                  We&apos;ll generate a new secure wallet for you with a 12-word recovery phrase. 
+                  <LocalizedText>We&apos;ll generate a new secure wallet for you with a 12-word recovery phrase.
                   You&apos;ll need to set a passphrase to encrypt and protect your wallet.
-                </p>
+                </LocalizedText></p>
               </div>
 
               {/* Security Features */}
               <div className="bg-green-900/20 border border-green-700/30 rounded-lg p-4">
                 <h4 className="text-green-300 font-medium text-sm mb-3 flex items-center">
                   <Shield className="w-4 h-4 mr-2" />
-                  Security Features
-                </h4>
+                  <LocalizedText>Security Features
+                </LocalizedText></h4>
                 <ul className="text-green-200/80 text-xs space-y-2">
                   <li className="flex items-start">
                     <span className="mr-2 text-green-400">•</span>
-                    12-word recovery phrase generated securely
-                  </li>
+                    <LocalizedText>12-word recovery phrase generated securely
+                  </LocalizedText></li>
                   <li className="flex items-start">
                     <span className="mr-2 text-green-400">•</span>
-                    Wallet encrypted with your passphrase
-                  </li>
+                    <LocalizedText>Wallet encrypted with your passphrase
+                  </LocalizedText></li>
                   <li className="flex items-start">
                     <span className="mr-2 text-green-400">•</span>
-                    Private keys never leave your device
-                  </li>
+                    <LocalizedText>Private keys never leave your device
+                  </LocalizedText></li>
                 </ul>
               </div>
 
@@ -271,30 +274,30 @@ export default function WalletRecoveryPage() {
                 className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 cursor-pointer transition-colors"
               >
                 <Key className="w-4 h-4 mr-2" />
-                Continue to Set Passphrase
-              </Button>
+                <LocalizedText>Continue to Set Passphrase
+              </LocalizedText></Button>
             </CardContent>
           </>
         )}
 
-        {step === 'passphrase' && (
+        {step === "passphrase" && (
           <>
             <CardHeader className="text-center pb-6">
               <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-green-400" />
               </div>
-              <CardTitle className="text-2xl text-white mb-2">Set Wallet Passphrase</CardTitle>
+              <CardTitle className="text-2xl text-white mb-2"><LocalizedText>Set Wallet Passphrase</LocalizedText></CardTitle>
               <p className="text-gray-400 text-sm">
-                Choose a strong passphrase to encrypt and protect your wallet
-              </p>
+                <LocalizedText>Choose a strong passphrase to encrypt and protect your wallet
+              </LocalizedText></p>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
               {/* Passphrase Input */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-300">
-                  Wallet Passphrase
-                </label>
+                  <LocalizedText>Wallet Passphrase
+                </LocalizedText></label>
                 <Input
                   type="password"
                   value={passphrase}
@@ -308,8 +311,8 @@ export default function WalletRecoveryPage() {
               {/* Confirm Passphrase Input */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-300">
-                  Confirm Passphrase
-                </label>
+                  <LocalizedText>Confirm Passphrase
+                </LocalizedText></label>
                 <Input
                   type="password"
                   value={confirmPassphrase}
@@ -322,20 +325,20 @@ export default function WalletRecoveryPage() {
 
               {/* Passphrase Requirements */}
               <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-lg p-4">
-                <h4 className="text-yellow-300 font-medium text-sm mb-3">Passphrase Requirements</h4>
+                <h4 className="text-yellow-300 font-medium text-sm mb-3"><LocalizedText>Passphrase Requirements</LocalizedText></h4>
                 <ul className="text-yellow-200/80 text-xs space-y-1">
                   <li className="flex items-start">
                     <span className="mr-2 text-yellow-400">•</span>
-                    At least 8 characters long
-                  </li>
+                    <LocalizedText>At least 8 characters long
+                  </LocalizedText></li>
                   <li className="flex items-start">
                     <span className="mr-2 text-yellow-400">•</span>
-                    Mix of letters, numbers, and symbols recommended
-                  </li>
+                    <LocalizedText>Mix of letters, numbers, and symbols recommended
+                  </LocalizedText></li>
                   <li className="flex items-start">
                     <span className="mr-2 text-yellow-400">•</span>
-                    Choose something memorable but secure
-                  </li>
+                    <LocalizedText>Choose something memorable but secure
+                  </LocalizedText></li>
                 </ul>
               </div>
 
@@ -355,13 +358,13 @@ export default function WalletRecoveryPage() {
                 {isCreatingWallet ? (
                   <>
                     <Loader className="w-4 h-4 mr-2 animate-spin" />
-                    Creating Wallet...
-                  </>
+                    <LocalizedText>Creating Wallet...
+                  </LocalizedText></>
                 ) : (
                   <>
                     <Key className="w-4 h-4 mr-2" />
-                    Create Wallet
-                  </>
+                    <LocalizedText>Create Wallet
+                  </LocalizedText></>
                 )}
               </Button>
 
@@ -369,21 +372,21 @@ export default function WalletRecoveryPage() {
               <div className="bg-red-900/20 border border-red-700/30 rounded-lg p-4">
                 <h4 className="text-red-300 font-medium text-sm mb-3 flex items-center">
                   <span className="mr-2">🔒</span>
-                  Important Security Notice
-                </h4>
+                  <LocalizedText>Important Security Notice
+                </LocalizedText></h4>
                 <ul className="text-red-200/80 text-xs space-y-2">
                   <li className="flex items-start">
                     <span className="mr-2 text-red-400">•</span>
-                    Your passphrase encrypts your wallet locally
-                  </li>
+                    <LocalizedText>Your passphrase encrypts your wallet locally
+                  </LocalizedText></li>
                   <li className="flex items-start">
                     <span className="mr-2 text-red-400">•</span>
-                    We cannot recover your wallet if you forget this passphrase
-                  </li>
+                    <LocalizedText>We cannot recover your wallet if you forget this passphrase
+                  </LocalizedText></li>
                   <li className="flex items-start">
                     <span className="mr-2 text-red-400">•</span>
-                    Store your passphrase in a secure location
-                  </li>
+                    <LocalizedText>Store your passphrase in a secure location
+                  </LocalizedText></li>
                 </ul>
               </div>
             </CardContent>

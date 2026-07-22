@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -265,7 +268,7 @@ export default function AppsPage() {
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-4 pt-20 pb-12 max-w-4xl">
         {appsLoading && (
-          <div className="text-center py-8 text-sm text-muted-foreground">Loading apps...</div>
+          <div className="text-center py-8 text-sm text-muted-foreground"><LocalizedText>Loading apps...</LocalizedText></div>
         )}
 
         {appsError && (
@@ -342,7 +345,7 @@ export default function AppsPage() {
                         <span>•</span>
                         <div className="flex items-center gap-1 text-green-600">
                           <Shield className="w-3 h-3" />
-                          <span className="font-medium">Verified</span>
+                          <span className="font-medium"><LocalizedText>Verified</LocalizedText></span>
                         </div>
                       </>
                     )}
@@ -375,8 +378,8 @@ export default function AppsPage() {
         
         {filteredApps.length === 0 && (
           <div className="text-center py-16">
-            <div className="text-muted-foreground text-lg mb-2">No apps found</div>
-            <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
+            <div className="text-muted-foreground text-lg mb-2"><LocalizedText>No apps found</LocalizedText></div>
+            <p className="text-sm text-muted-foreground"><LocalizedText>Try adjusting your filters</LocalizedText></p>
           </div>
         )}
       </div>

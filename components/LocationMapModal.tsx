@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import { useState, useEffect, useRef } from 'react';
 import { X, ExternalLink, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -124,7 +127,7 @@ export default function LocationMapModal({
   // Handle current location
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by this browser.');
+      alert("Geolocation is not supported by this browser.");
       return;
     }
 
@@ -137,7 +140,7 @@ export default function LocationMapModal({
       },
       (error) => {
         console.error('Error getting location:', error);
-        alert('Error getting your current location. Please enter coordinates manually.');
+        alert("Error getting your current location. Please enter coordinates manually.");
       }
     );
   };
@@ -149,7 +152,7 @@ export default function LocationMapModal({
       <div className="bg-[#000] border border-[#333] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[#333]">
-          <h2 className="text-xl font-semibold text-white">Select NFT Location</h2>
+          <h2 className="text-xl font-semibold text-white"><LocalizedText>Select NFT Location</LocalizedText></h2>
           <Button
             variant="ghost"
             size="sm"
@@ -165,10 +168,10 @@ export default function LocationMapModal({
           {/* Manual coordinate input and current location */}
           {onLocationSelect && (
             <div className="mb-4 p-4 bg-[#111] border border-[#333] rounded-lg">
-              <h3 className="text-white font-semibold mb-3">Set Location Coordinates</h3>
+              <h3 className="text-white font-semibold mb-3"><LocalizedText>Set Location Coordinates</LocalizedText></h3>
               <div className="grid grid-cols-2 gap-4 mb-3">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Latitude</label>
+                  <label className="block text-sm text-gray-400 mb-1"><LocalizedText>Latitude</LocalizedText></label>
                   <input
                     type="number"
                     step="any"
@@ -181,7 +184,7 @@ export default function LocationMapModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Longitude</label>
+                  <label className="block text-sm text-gray-400 mb-1"><LocalizedText>Longitude</LocalizedText></label>
                   <input
                     type="number"
                     step="any"
@@ -201,8 +204,8 @@ export default function LocationMapModal({
                   className="flex-1 border-[#333] text-white bg-transparent hover:bg-[#222] cursor-pointer"
                 >
                   <Target className="mr-2 h-4 w-4" />
-                  Use Current Location
-                </Button>
+                  <LocalizedText>Use Current Location
+                </LocalizedText></Button>
                 <Button
                   onClick={() => {
                     const lat = parseFloat(currentLat);
@@ -215,8 +218,8 @@ export default function LocationMapModal({
                   disabled={!currentLat || !currentLng || isNaN(parseFloat(currentLat)) || isNaN(parseFloat(currentLng))}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Set Location
-                </Button>
+                  <LocalizedText>Set Location
+                </LocalizedText></Button>
               </div>
             </div>
           )}
@@ -224,9 +227,9 @@ export default function LocationMapModal({
           {/* Current coordinates display */}
           {currentLat && currentLng && !onLocationSelect && (
             <div className="mb-4 p-3 bg-[#111] border border-[#333] rounded-lg">
-              <p className="text-gray-400 text-sm mb-1">NFT Coordinates:</p>
+              <p className="text-gray-400 text-sm mb-1"><LocalizedText>NFT Coordinates:</LocalizedText></p>
               <p className="text-white font-mono text-sm">
-                Lat: {parseFloat(currentLat).toFixed(6)}, Lng: {parseFloat(currentLng).toFixed(6)}
+                <LocalizedText>Lat: </LocalizedText>{parseFloat(currentLat).toFixed(6)}<LocalizedText>, Lng: </LocalizedText>{parseFloat(currentLng).toFixed(6)}
               </p>
             </div>
           )}
@@ -237,7 +240,7 @@ export default function LocationMapModal({
               <div className="absolute inset-0 flex items-center justify-center bg-[#111] text-gray-400 z-10">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
-                  <p>Loading interactive map...</p>
+                  <p><LocalizedText>Loading interactive map...</LocalizedText></p>
                 </div>
               </div>
             )}
@@ -258,8 +261,8 @@ export default function LocationMapModal({
             {/* Instructions overlay */}
             {!mapLoading && onLocationSelect && (
               <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white text-xs p-2 rounded z-[1000] max-w-48">
-                💡 Click on the map or drag the marker to set location
-              </div>
+                <LocalizedText>💡 Click on the map or drag the marker to set location
+              </LocalizedText></div>
             )}
           </div>
 
@@ -277,8 +280,8 @@ export default function LocationMapModal({
                 className="border-[#333] text-white bg-black hover:bg-[#222] cursor-pointer"
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
-                Open in OSM
-              </Button>
+                <LocalizedText>Open in OSM
+              </LocalizedText></Button>
             )}
           </div>
         </div>

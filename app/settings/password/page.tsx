@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from "@/components/LocalizedText";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
@@ -102,7 +105,7 @@ export default function PasswordPage() {
       <div className="max-w-xl mx-auto my-24 p-8 bg-black rounded-2xl border-[1px] border-[#333] shadow text-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Checking authentication...</p>
+          <p><LocalizedText>Checking authentication...</LocalizedText></p>
         </div>
       </div>
     );
@@ -110,8 +113,8 @@ export default function PasswordPage() {
 
   return (
     <div className="max-w-xl mx-auto my-24 p-8 bg-transparent shadow text-white">
-      <h1 className="text-3xl font-bold mb-2">Change Password</h1>
-      <p className="text-gray-400 mb-8">Update your encrypted wallet password</p>
+      <h1 className="text-3xl font-bold mb-2"><LocalizedText>Change Password</LocalizedText></h1>
+      <p className="text-gray-400 mb-8"><LocalizedText>Update your encrypted wallet password</LocalizedText></p>
       
       {error && (
         <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 rounded-lg text-red-400">
@@ -122,7 +125,7 @@ export default function PasswordPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {hasPasswordWallet && (
           <div>
-            <label className="block mb-2 text-sm font-semibold">Current Password</label>
+            <label className="block mb-2 text-sm font-semibold"><LocalizedText>Current Password</LocalizedText></label>
             <input
               className="w-full px-4 py-2 rounded-xl border border-[#333] bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               type="password"
@@ -136,13 +139,13 @@ export default function PasswordPage() {
         )}
 
         <div>
-          <label className="block mb-2 text-sm font-semibold">New Password</label>
+          <label className="block mb-2 text-sm font-semibold"><LocalizedText>New Password</LocalizedText></label>
           <input
             className="w-full px-4 py-2 rounded-xl border border-[#333] bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             type="password"
             value={newPassword}
             onChange={e => setNewPassword(e.target.value)}
-            placeholder="Enter new password"
+            placeholder={"Enter new password"}
             minLength={8}
             autoComplete="new-password"
             required
@@ -152,7 +155,7 @@ export default function PasswordPage() {
           {newPassword && (
             <div className="mt-2">
               <div className="flex items-center gap-2 mb-1">
-                <div className="text-xs font-medium">Strength:</div>
+                <div className="text-xs font-medium"><LocalizedText>Strength:</LocalizedText></div>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((level) => (
                     <div
@@ -180,28 +183,28 @@ export default function PasswordPage() {
         </div>
 
         <div>
-          <label className="block mb-2 text-sm font-semibold">Confirm New Password</label>
+          <label className="block mb-2 text-sm font-semibold"><LocalizedText>Confirm New Password</LocalizedText></label>
           <input
             className="w-full px-4 py-2 rounded-xl border border-[#333] bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             type="password"
             value={confirmPassword}
             onChange={e => setConfirmPassword(e.target.value)}
-            placeholder="Confirm new password"
+            placeholder={"Confirm new password"}
             autoComplete="new-password"
             required
           />
           {confirmPassword && newPassword !== confirmPassword && (
-            <div className="text-xs text-red-400 mt-1">Passwords do not match</div>
+            <div className="text-xs text-red-400 mt-1"><LocalizedText>Passwords do not match</LocalizedText></div>
           )}
         </div>
 
         <div className="bg-gray-900 p-4 rounded-xl">
-          <h3 className="font-semibold mb-2 text-sm">Password Requirements:</h3>
+          <h3 className="font-semibold mb-2 text-sm"><LocalizedText>Password Requirements:</LocalizedText></h3>
           <ul className="text-xs text-gray-400 space-y-1">
-            <li>• At least 8 characters long (12+ recommended)</li>
-            <li>• Include uppercase and lowercase letters</li>
-            <li>• Include numbers and special characters</li>
-            <li>• Don&apos;t use easily guessable information</li>
+            <li><LocalizedText>• At least 8 characters long (12+ recommended)</LocalizedText></li>
+            <li><LocalizedText>• Include uppercase and lowercase letters</LocalizedText></li>
+            <li><LocalizedText>• Include numbers and special characters</LocalizedText></li>
+            <li><LocalizedText>• Don&apos;t use easily guessable information</LocalizedText></li>
           </ul>
         </div>
 
@@ -210,7 +213,7 @@ export default function PasswordPage() {
           disabled={saving || !passwordStrength.isValid || newPassword !== confirmPassword}
           className="w-full py-3 px-4 rounded-xl border-[1px] border-[#00b6e3] bg-[#00b6e3] text-white hover:bg-white hover:text-[#00b6e3] transition-all duration-200 focus:outline-none cursor-pointer select-none font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#00b6e3] disabled:hover:text-white"
         >
-          {saving ? 'Changing Password...' : 'Change Password'}
+          {saving ? "Changing Password..." : "Change Password"}
         </button>
       </form>
     </div>

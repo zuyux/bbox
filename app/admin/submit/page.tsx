@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import GetInModal from '@/components/GetInModal';
@@ -285,31 +288,31 @@ export default function AdminSubmitPage() {
       <div className="container mx-auto px-4 pt-20 pb-16 max-w-4xl">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Admin App Submission</h1>
+            <h1 className="text-3xl font-bold tracking-tight"><LocalizedText>Admin App Submission</LocalizedText></h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Only the authorized admin address can submit a new app here.
-            </p>
+              <LocalizedText>Only the authorized admin address can submit a new app here.
+            </LocalizedText></p>
           </div>
           <Button variant="secondary" asChild>
             <Link href="/apps">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Browse Apps
-            </Link>
+              <LocalizedText>Browse Apps
+            </LocalizedText></Link>
           </Button>
         </div>
 
         {!currentAddress && (
           <Card className="mb-6 border">
             <CardHeader>
-              <CardTitle>Connect a wallet</CardTitle>
+              <CardTitle><LocalizedText>Connect a wallet</LocalizedText></CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-3">
-                Connect a Stacks-compatible wallet and make sure the connected address matches the admin address.
-              </p>
+                <LocalizedText>Connect a Stacks-compatible wallet and make sure the connected address matches the admin address.
+              </LocalizedText></p>
               <Button onClick={() => setShowGetInModal(true)}>
-                Connect Wallet
-              </Button>
+                <LocalizedText>Connect Wallet
+              </LocalizedText></Button>
             </CardContent>
           </Card>
         )}
@@ -317,17 +320,17 @@ export default function AdminSubmitPage() {
         {currentAddress && !isAuthorizedAdmin && (
           <Card className="mb-6 border border-destructive/50 bg-transparent">
             <CardHeader>
-              <CardTitle className="text-destructive">Unauthorized Address</CardTitle>
+              <CardTitle className="text-destructive"><LocalizedText>Unauthorized Address</LocalizedText></CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-destructive">
-                Your connected wallet address is not authorized for admin submission.
+                <LocalizedText>Your connected wallet address is not authorized for admin submission.
+              </LocalizedText></p>
+              <p className="text-sm text-muted-foreground mt-2 break-words">
+                <LocalizedText>Connected: </LocalizedText><Badge variant="outline">{currentAddress}</Badge>
               </p>
               <p className="text-sm text-muted-foreground mt-2 break-words">
-                Connected: <Badge variant="outline">{currentAddress}</Badge>
-              </p>
-              <p className="text-sm text-muted-foreground mt-2 break-words">
-                Required: <Badge variant="secondary">{ADMIN_ADDRESS}</Badge>
+                <LocalizedText>Required: </LocalizedText><Badge variant="secondary">{ADMIN_ADDRESS}</Badge>
               </p>
             </CardContent>
           </Card>
@@ -336,29 +339,29 @@ export default function AdminSubmitPage() {
         <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
           <Card className="border">
             <CardHeader>
-              <CardTitle className="text-lg">App details</CardTitle>
+              <CardTitle className="text-lg"><LocalizedText>App details</LocalizedText></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="name" className='mb-2'>App Name</Label>
+                  <Label htmlFor="name" className='mb-2'><LocalizedText>App Name</LocalizedText></Label>
                   <Input
                     id="name"
                     name="bbox-admin-app-name"
                     autoComplete="off"
                     value={formData.name}
                     onChange={event => handleFieldChange('name', event.target.value)}
-                    placeholder="Example App"
+                    placeholder={"Example App"}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="category" className='mb-2'>Category</Label>
+                  <Label htmlFor="category" className='mb-2'><LocalizedText>Category</LocalizedText></Label>
                   <Select
                     onValueChange={value => handleFieldChange('category', value)}
                     value={formData.category}
                   >
                     <SelectTrigger id="category" className="w-full">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={"Select category"} />
                     </SelectTrigger>
                     <SelectContent>
                       {CATEGORY_OPTIONS.map(option => (
@@ -372,20 +375,20 @@ export default function AdminSubmitPage() {
               </div>
 
               <div>
-                <Label htmlFor="description" className='mb-2'>Description</Label>
+                <Label htmlFor="description" className='mb-2'><LocalizedText>Description</LocalizedText></Label>
                 <Textarea
                   id="description"
                   name="bbox-admin-app-description"
                   autoComplete="off"
                   value={formData.description}
                   onChange={event => handleFieldChange('description', event.target.value)}
-                  placeholder="Describe the app in a few sentences"
+                  placeholder={"Describe the app in a few sentences"}
                   rows={5}
                 />
               </div>
 
               <fieldset className="space-y-2">
-                <legend className="text-sm font-medium">Platforms</legend>
+                <legend className="text-sm font-medium"><LocalizedText>Platforms</LocalizedText></legend>
                 <div className="flex flex-wrap gap-4">
                   {PLATFORM_OPTIONS.map(platform => (
                     <label key={platform} className="flex items-center gap-2 text-sm">
@@ -397,60 +400,60 @@ export default function AdminSubmitPage() {
                     </label>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground">Select every platform the app supports.</p>
+                <p className="text-xs text-muted-foreground"><LocalizedText>Select every platform the app supports.</LocalizedText></p>
               </fieldset>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="website_url" className='mb-2'>Website URL</Label>
+                  <Label htmlFor="website_url" className='mb-2'><LocalizedText>Website URL</LocalizedText></Label>
                   <Input
                     id="website_url"
                     name="bbox-admin-website-url"
                     autoComplete="off"
                     value={formData.website_url}
                     onChange={event => handleFieldChange('website_url', event.target.value)}
-                    placeholder="https://example.com"
+                    placeholder={"https://example.com"}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="github_url" className='mb-2'>GitHub URL</Label>
+                  <Label htmlFor="github_url" className='mb-2'><LocalizedText>GitHub URL</LocalizedText></Label>
                   <Input
                     id="github_url"
                     name="bbox-admin-github-url"
                     autoComplete="off"
                     value={formData.github_url}
                     onChange={event => handleFieldChange('github_url', event.target.value)}
-                    placeholder="https://github.com/your-repo"
+                    placeholder={"https://github.com/your-repo"}
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="documentation_url" className='mb-2'>Documentation URL</Label>
+                <Label htmlFor="documentation_url" className='mb-2'><LocalizedText>Documentation URL</LocalizedText></Label>
                 <Input
                   id="documentation_url"
                   name="bbox-admin-documentation-url"
                   autoComplete="off"
                   value={formData.documentation_url}
                   onChange={event => handleFieldChange('documentation_url', event.target.value)}
-                  placeholder="https://docs.example.com"
+                  placeholder={"https://docs.example.com"}
                 />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="publisher_name" className='mb-2'>Publisher Name</Label>
+                  <Label htmlFor="publisher_name" className='mb-2'><LocalizedText>Publisher Name</LocalizedText></Label>
                   <Input
                     id="publisher_name"
                     name="bbox-admin-publisher-name"
                     autoComplete="off"
                     value={formData.publisher_name}
                     onChange={event => handleFieldChange('publisher_name', event.target.value)}
-                    placeholder="Publisher or team name"
+                    placeholder={"Publisher or team name"}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="publisher_email" className='mb-2'>Publisher Email</Label>
+                  <Label htmlFor="publisher_email" className='mb-2'><LocalizedText>Publisher Email</LocalizedText></Label>
                   <Input
                     id="publisher_email"
                     name="bbox-admin-publisher-email"
@@ -458,29 +461,29 @@ export default function AdminSubmitPage() {
                     autoComplete="off"
                     value={formData.publisher_email}
                     onChange={event => handleFieldChange('publisher_email', event.target.value)}
-                    placeholder="admin@example.com"
+                    placeholder={"admin@example.com"}
                   />
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="tags" className='mb-2'>Tags</Label>
+                  <Label htmlFor="tags" className='mb-2'><LocalizedText>Tags</LocalizedText></Label>
                   <Input
                     id="tags"
                     name="bbox-admin-tags"
                     autoComplete="off"
                     value={formData.tags}
                     onChange={event => handleFieldChange('tags', event.target.value)}
-                    placeholder="wallet, lightning, funding"
+                    placeholder={"wallet, lightning, funding"}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Separate tags with commas.
-                  </p>
+                    <LocalizedText>Separate tags with commas.
+                  </LocalizedText></p>
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <Label htmlFor="icon_file" className='mb-2'>Upload Icon Image</Label>
+                    <Label htmlFor="icon_file" className='mb-2'><LocalizedText>Upload Icon Image</LocalizedText></Label>
                     <div className="flex gap-2">
                       <Input
                         id="icon_file"
@@ -490,15 +493,15 @@ export default function AdminSubmitPage() {
                         autoComplete="off"
                         accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
                         onChange={handleIconUpload}
-                        disabled={!currentAddress || !isAuthorizedAdmin || iconUploadStatus === 'uploading'}
+                        disabled={!currentAddress || !isAuthorizedAdmin || iconUploadStatus === "uploading"}
                       />
                       <Button
                         type="button"
                         variant="secondary"
                         size="icon"
                         onClick={() => iconFileInputRef.current?.click()}
-                        disabled={!currentAddress || !isAuthorizedAdmin || iconUploadStatus === 'uploading'}
-                        aria-label="Upload image to IPFS"
+                        disabled={!currentAddress || !isAuthorizedAdmin || iconUploadStatus === "uploading"}
+                        aria-label={"Upload image to IPFS"}
                       >
                         <Upload className="h-4 w-4" />
                       </Button>
@@ -516,7 +519,7 @@ export default function AdminSubmitPage() {
                       <div className="mt-3 flex items-center gap-3">
                         <IPFSImage
                           src={iconPreviewUrl}
-                          alt={`${formData.name || 'App'} icon preview`}
+                          alt={`${formData.name || "App"} icon preview`}
                           width={56}
                           height={56}
                           className="h-14 w-14 rounded-md border object-cover"
@@ -527,24 +530,24 @@ export default function AdminSubmitPage() {
                           rel="noreferrer"
                           className="text-sm text-primary underline-offset-4 hover:underline"
                         >
-                          View IPFS image
-                        </a>
+                          <LocalizedText>View IPFS image
+                        </LocalizedText></a>
                       </div>
                     )}
                   </div>
                   <div>
-                    <Label htmlFor="icon_cid" className='mb-2'>Icon CID</Label>
+                    <Label htmlFor="icon_cid" className='mb-2'><LocalizedText>Icon CID</LocalizedText></Label>
                     <Input
                       id="icon_cid"
                       name="bbox-admin-icon-cid"
                       autoComplete="off"
                       value={formData.icon_cid}
                       onChange={event => handleFieldChange('icon_cid', event.target.value)}
-                      placeholder="Qm..."
+                      placeholder={"Qm..."}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Filled automatically after upload, or paste an existing IPFS CID.
-                    </p>
+                      <LocalizedText>Filled automatically after upload, or paste an existing IPFS CID.
+                    </LocalizedText></p>
                   </div>
                 </div>
               </div>
@@ -586,25 +589,25 @@ export default function AdminSubmitPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-muted-foreground">
-                Admin wallet: <Badge variant="secondary">{ADMIN_ADDRESS}</Badge>
+                <LocalizedText>Admin wallet: </LocalizedText><Badge variant="secondary">{ADMIN_ADDRESS}</Badge>
               </p>
               {currentAddress && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  Connected wallet: <Badge variant="outline">{currentAddress}</Badge>
+                  <LocalizedText>Connected wallet: </LocalizedText><Badge variant="outline">{currentAddress}</Badge>
                 </p>
               )}
             </div>
             <Button
               type="submit"
               disabled={
-                !currentAddress || !isAuthorizedAdmin || status === 'signing' || status === 'submitting'
+                !currentAddress || !isAuthorizedAdmin || status === "signing" || status === "submitting"
               }
             >
-              {status === 'signing'
-                ? 'Signing…'
-                : status === 'submitting'
-                ? 'Submitting…'
-                : 'Sign & Submit App'}
+              {status === "signing"
+                ? "Signing…"
+                : status === "submitting"
+                ? "Submitting…"
+                : "Sign & Submit App"}
             </Button>
           </div>
         </form>
@@ -612,21 +615,21 @@ export default function AdminSubmitPage() {
         <div className="mt-6 rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <h2 className="text-base font-medium">Submission details</h2>
+              <h2 className="text-base font-medium"><LocalizedText>Submission details</LocalizedText></h2>
               <p className="text-sm text-muted-foreground">
-                This form sends a signed admin submission payload and publishes the app to the review queue.
-              </p>
+                <LocalizedText>This form sends a signed admin submission payload and publishes the app to the review queue.
+              </LocalizedText></p>
             </div>
             <ExternalLink className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-border px-4 py-3">
-              <p className="text-xs uppercase text-muted-foreground">Signature status</p>
+              <p className="text-xs uppercase text-muted-foreground"><LocalizedText>Signature status</LocalizedText></p>
               <p className="mt-1 font-semibold">{signatureStatus}</p>
             </div>
             <div className="rounded-2xl border border-border px-4 py-3">
-              <p className="text-xs uppercase text-muted-foreground">Wallet source</p>
-              <p className="mt-1 font-semibold">{walletType ?? 'auto-detect on sign'}</p>
+              <p className="text-xs uppercase text-muted-foreground"><LocalizedText>Wallet source</LocalizedText></p>
+              <p className="mt-1 font-semibold">{walletType ?? "auto-detect on sign"}</p>
             </div>
           </div>
         </div>

@@ -1,3 +1,5 @@
+
+import { LocalizedText } from '@/components/LocalizedText';
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { X, Search, Code, User, Download, Star, Shield } from 'lucide-react';
@@ -164,7 +166,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search apps and users..."
+              placeholder={"Search apps and users..."}
               value={searchQuery}
               onChange={handleSearchChange}
               className="flex-1 bg-transparent text-foreground text-lg placeholder:text-foreground/50 outline-none"
@@ -172,7 +174,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
             <button
               onClick={onClose}
               className="p-1 rounded hover:bg-background/50 transition-colors cursor-pointer"
-              aria-label="Close search"
+              aria-label={"Close search"}
             >
               <X className="text-foreground" size={20} />
             </button>
@@ -203,13 +205,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
         {/* Content */}
         <div className="flex-1 overflow-y-auto bg-background/20 backdrop-blur-sm">
           {loading && (
-            <div className="text-foreground text-center py-8">Loading...</div>
+            <div className="text-foreground text-center py-8"><LocalizedText>Loading...</LocalizedText></div>
           )}
           
           {!loading && (
             <>
               {/* Apps Tab */}
-              {activeTab === 'apps' && (
+              {activeTab === "apps" && (
                 <div className="p-4">
                   <div className="space-y-1">
                     {searchQuery.trim() && filteredApps.map((app) => (
@@ -266,15 +268,15 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                       </div>
                     ) : filteredApps.length === 0 ? (
                       <div className="text-foreground text-center py-8">
-                        No apps found matching your search
-                      </div>
+                        <LocalizedText>No apps found matching your search
+                      </LocalizedText></div>
                     ) : null}
                   </div>
                 </div>
               )}
 
               {/* Users Tab */}
-              {activeTab === 'users' && (
+              {activeTab === "users" && (
                 <div className="p-4">
                   <div className="space-y-1">
                     {searchQuery.trim() && users.map((user) => (
@@ -288,7 +290,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                           {user.avatar_url || user.avatar_cid ? (
                             <SafariOptimizedImage
                               src={user.avatar_cid ? getIPFSUrl(user.avatar_cid) : user.avatar_url!}
-                              alt={user.display_name || user.username || 'User'}
+                              alt={user.display_name || user.username || "User"}
                               width={40}
                               height={40}
                               className="w-full h-full object-cover"
@@ -301,10 +303,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-foreground font-medium text-sm truncate">
-                            {user.display_name || user.username || 'Unknown User'}
+                            {user.display_name || user.username || "Unknown User"}
                           </div>
                           <div className="text-foreground text-xs truncate">
-                            {user.tagline || 'Bitcoin User'}
+                            {user.tagline || "Bitcoin User"}
                           </div>
                         </div>
                       </Link>
@@ -315,8 +317,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                       </div>
                     ) : users.length === 0 ? (
                       <div className="text-foreground text-center py-8">
-                        No users found matching your search
-                      </div>
+                        <LocalizedText>No users found matching your search
+                      </LocalizedText></div>
                     ) : null}
                   </div>
                 </div>

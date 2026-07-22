@@ -1,4 +1,7 @@
 'use client'
+
+
+import { LocalizedText } from "@/components/LocalizedText";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -52,7 +55,7 @@ export default function AccountCreatedPage() {
   if (!wallet) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="text-lg text-gray-400">No wallet found. Please create an account first.</div>
+        <div className="text-lg text-gray-400"><LocalizedText>No wallet found. Please create an account first.</LocalizedText></div>
       </div>
     );
   }
@@ -60,12 +63,12 @@ export default function AccountCreatedPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
       <div className="bg-[#111] rounded-2xl p-8 max-w-lg w-full border-[1px] border-[#222] shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-4 text-white">Your Account Has Been Created</h2>
+        <h2 className="text-2xl font-bold text-center mb-4 text-white"><LocalizedText>Your Account Has Been Created</LocalizedText></h2>
         <div className="mb-4 text-sm bg-white text-black text-center p-4 rounded-lg">
-          <b>Important:</b> Save your seed phrase below. You will need them to recover your account. We cannot recover your account if you lose them.
-        </div>
+          <b><LocalizedText>Important:</LocalizedText></b> <LocalizedText>Save your seed phrase below. You will need them to recover your account. We cannot recover your account if you lose them.
+        </LocalizedText></div>
         <div className="mb-4">
-          <div className="font-semibold text-white mb-1 text-center">Seed Phrase:</div>
+          <div className="font-semibold text-white mb-1 text-center"><LocalizedText>Seed Phrase:</LocalizedText></div>
           <div className="bg-[#181818] text-white font-mono p-6 rounded break-words text-sm">{wallet.mnemonic}</div>
         </div>
         <Button
@@ -78,7 +81,7 @@ export default function AccountCreatedPage() {
               <LoaderCircle className="animate-spin text-black dark:text-white" size={32} />
             </span>
           ) : (
-            <>I&apos;ve saved my credentials, continue</>
+            <><LocalizedText>I&apos;ve saved my credentials, continue</LocalizedText></>
           )}
         </Button>
       </div>

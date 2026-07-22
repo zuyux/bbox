@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import { useState } from 'react';
 import { X, Mail } from 'lucide-react';
 
@@ -45,7 +48,7 @@ export default function ExtensionEmailVerificationModal({
     setError('');
 
     if (!emailRegex.test(trimmedEmail)) {
-      setError('Enter a valid email address.');
+      setError("Enter a valid email address.");
       return;
     }
 
@@ -67,7 +70,7 @@ export default function ExtensionEmailVerificationModal({
       }
 
       setCodeSent(true);
-      setMessage('Verification code sent. Check your email.');
+      setMessage("Verification code sent. Check your email.");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Failed to send verification code');
     } finally {
@@ -82,7 +85,7 @@ export default function ExtensionEmailVerificationModal({
     setError('');
 
     if (!codeValid) {
-      setError('Enter the 6-digit verification code.');
+      setError("Enter the 6-digit verification code.");
       return;
     }
 
@@ -141,12 +144,12 @@ export default function ExtensionEmailVerificationModal({
             <Mail className="h-5 w-5" />
           </div>
           <div className="min-w-0 pt-0.5">
-            <h2 className="text-base font-semibold leading-6">Verify your email</h2>
-            <p className="text-xs leading-5 text-muted-foreground mb-4">Secure this wallet profile.</p>
+            <h2 className="text-base font-semibold leading-6"><LocalizedText>Verify your email</LocalizedText></h2>
+            <p className="text-xs leading-5 text-muted-foreground mb-4"><LocalizedText>Secure this wallet profile.</LocalizedText></p>
           </div>
           <button
             type="button"
-            aria-label="Close"
+            aria-label={"Close"}
             onClick={onClose}
             className="flex h-5 w-5 items-center justify-center text-muted-foreground transition hover:text-foreground"
           >
@@ -159,7 +162,7 @@ export default function ExtensionEmailVerificationModal({
             type="email"
             value={email}
             onChange={(event) => resetForEmailChange(event.target.value)}
-            placeholder="Enter your email address"
+            placeholder={"Enter your email address"}
             disabled={loading || codeSent}
             className="h-12 w-full"
             autoComplete="off"
@@ -193,7 +196,7 @@ export default function ExtensionEmailVerificationModal({
               disabled={loading || !emailValid || (codeSent && !codeValid)}
               className="h-10 w-full bg-[#0000ff] text-white hover:bg-[#0000ff]"
             >
-              {loading ? (codeSent ? 'Verifying...' : 'Sending...') : codeSent ? 'Verify Email' : 'Send Code'}
+              {loading ? (codeSent ? "Verifying..." : "Sending...") : codeSent ? "Verify Email" : "Send Code"}
             </Button>
           </div>
         </div>

@@ -1,5 +1,8 @@
 'use client';
 
+
+
+import { LocalizedText } from '@/components/LocalizedText';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -15,7 +18,7 @@ export default function VerifyEmailPage() {
     const token = searchParams?.get('token');
     if (!token) {
       setStatus('error');
-      setMessage('Verification token is missing.');
+      setMessage("Verification token is missing.");
       return;
     }
 
@@ -35,11 +38,11 @@ export default function VerifyEmailPage() {
         }
 
         setStatus('success');
-        setMessage('Your email has been verified successfully. You can now return to BBOX.');
+        setMessage("Your email has been verified successfully. You can now return to BBOX.");
       } catch (error) {
         console.error('Verify email error:', error);
         setStatus('error');
-        setMessage('Unexpected error verifying your email.');
+        setMessage("Unexpected error verifying your email.");
       }
     };
 
@@ -57,18 +60,18 @@ export default function VerifyEmailPage() {
       <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center space-y-6">
         <div className="flex justify-center">{icon}</div>
         <h1 className="text-2xl font-semibold text-foreground">
-          {status === 'success' && 'Email Verified'}
-          {status === 'error' && 'Verification Failed'}
-          {status === 'loading' && 'Verifying Email'}
+          {status === 'success' && "Email Verified"}
+          {status === 'error' && "Verification Failed"}
+          {status === "loading" && "Verifying Email"}
         </h1>
         <p className="text-muted-foreground">{message}</p>
         <div className="flex flex-col gap-3">
           <Button asChild className="cursor-pointer">
-            <Link href="/">Return to BBOX</Link>
+            <Link href="/"><LocalizedText>Return to BBOX</LocalizedText></Link>
           </Button>
           {status === 'error' && (
             <Button variant="outline" asChild className="cursor-pointer">
-              <a href="mailto:fabohax@gmail.com">Contact Support</a>
+              <a href="mailto:fabohax@gmail.com"><LocalizedText>Contact Support</LocalizedText></a>
             </Button>
           )}
         </div>
