@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { locales } from '@/lib/i18n';
 import { getSiteUrl } from '@/lib/site';
 
-const publicRoutes = ['', '/apps', '/about', '/documentation', '/build', '/funding', '/privacy-policy'];
+const publicRoutes = ['', '/apps', '/about', '/documentation', '/build', '/funding', '/privacy-policy', '/terms-of-service'];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl();
