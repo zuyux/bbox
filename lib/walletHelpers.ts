@@ -1,5 +1,5 @@
 import { getStxAddress } from '@stacks/wallet-sdk';
-import { validateMnemonic as isValidMnemonic, mnemonicToSeed } from 'bip39';
+import { validateMnemonic as isValidMnemonic, mnemonicToSeed, wordlists } from 'bip39';
 import { HDKey } from '@scure/bip32';
 import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
 import { getNostrPublicKeyFromPrivateKey } from './nostr';
@@ -15,7 +15,11 @@ export async function validateAndGenerateWallet(mnemonic: string) {
     throw new Error('Mnemonic must contain either 12 or 24 words.');
   }
 
-  if (!isValidMnemonic(normalizedMnemonic)) throw new Error('Invalid mnemonic');
+  const supportedWordlists = [wordlists.english, wordlists.spanish, wordlists.portuguese];
+  const isValidSupportedMnemonic = supportedWordlists.some((wordlist) =>
+    isValidMnemonic(normalizedMnemonic, wordlist)
+  );
+  if (!isValidSupportedMnemonic) throw new Error('Invalid mnemonic');
 
   const seed = await mnemonicToSeed(normalizedMnemonic);
   const root = HDKey.fromMasterSeed(seed);

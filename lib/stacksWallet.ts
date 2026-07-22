@@ -1,20 +1,46 @@
-import { generateMnemonic } from 'bip39';
+import { generateMnemonic, wordlists } from 'bip39';
 import { getStxAddress } from '@stacks/wallet-sdk';
 import { HDKey } from '@scure/bip32';
 import { mnemonicToSeed } from 'bip39';
 import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
 import { getNostrPublicKeyFromPrivateKey } from './nostr';
 
+export type MnemonicLanguage = 'en' | 'es' | 'pt';
+
+const mnemonicWordlists: Record<MnemonicLanguage, string[]> = {
+  en: wordlists.english,
+  es: wordlists.spanish,
+  pt: wordlists.portuguese,
+};
+
+export function getDeviceMnemonicLanguage(): MnemonicLanguage {
+  if (typeof navigator === 'undefined') return 'en';
+
+  const deviceLanguages = navigator.languages?.length
+    ? navigator.languages
+    : [navigator.language];
+
+  for (const locale of deviceLanguages) {
+    const language = locale?.toLowerCase().split('-')[0];
+    if (language === 'en' || language === 'es' || language === 'pt') {
+      return language;
+    }
+  }
+
+  return 'en';
+}
+
 /**
  * Creates a Stacks wallet and returns key details.
  * @param network - One of: 'mainnet', 'testnet', 'devnet', 'mocknet'
  */
 export async function createStacksAccount(
-  network: 'mainnet' | 'testnet' | 'devnet' | 'mocknet' = (process.env.NEXT_PUBLIC_STACKS_NETWORK as 'mainnet' | 'testnet' | 'devnet') || 'testnet'
+  network: 'mainnet' | 'testnet' | 'devnet' | 'mocknet' = (process.env.NEXT_PUBLIC_STACKS_NETWORK as 'mainnet' | 'testnet' | 'devnet') || 'testnet',
+  mnemonicLanguage: MnemonicLanguage = getDeviceMnemonicLanguage()
 ) {
   try {
-    // Generate a new mnemonic using bip39 directly
-    const mnemonic = generateMnemonic();
+    // Match the device language when supported, with English as the default.
+    const mnemonic = generateMnemonic(128, undefined, mnemonicWordlists[mnemonicLanguage]);
     
     // Convert mnemonic to seed
     const seed = await mnemonicToSeed(mnemonic);
