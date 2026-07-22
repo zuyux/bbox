@@ -43,6 +43,7 @@ const lacquer = Lacquer({
 });
 
 const socialLocales = { en: 'en_US', es: 'es_ES', pt: 'pt_BR' } as const;
+const socialCoverUrl = 'https://bbox.lol/bbox-cover.png';
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -77,13 +78,18 @@ export async function generateMetadata(): Promise<Metadata> {
       url: localizedPath,
       locale: socialLocales[locale],
       alternateLocale: Object.values(socialLocales).filter((value) => value !== socialLocales[locale]),
-      images: [{ url: '/BBOX-BG.png', alt: 'BBOX' }],
+      images: [{
+        url: socialCoverUrl,
+        width: 1536,
+        height: 1024,
+        alt: 'BBOX — Open App Store for Verified Software',
+      }],
     },
     twitter: {
       card: 'summary_large_image',
       title: seo.title,
       description: seo.description,
-      images: ['/BBOX-BG.png'],
+      images: [socialCoverUrl],
     },
     icons: {
       icon: '/favicon.ico',
