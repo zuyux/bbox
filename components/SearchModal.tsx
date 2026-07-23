@@ -221,14 +221,14 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                         className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 cursor-pointer group transition-all duration-200"
                         onClick={onClose}
                       >
-                        <div className="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden bg-foreground/10">
+                        <div className="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden bg-transparent">
                           {app.imgCID ? (
                             <SafariOptimizedImage
                               src={getIPFSUrl(app.imgCID)}
                               alt={`${app.name} logo`}
                               width={40}
                               height={40}
-                              className="h-full w-full object-cover"
+                              className="h-full w-full object-contain"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-500 to-yellow-500">

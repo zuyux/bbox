@@ -25,7 +25,8 @@ import {
   Code, 
   Globe,
   ArrowRight,
-  Gamepad2
+  Gamepad2,
+  Loader2
 } from 'lucide-react';
 
 const categoryIcons: Record<string, typeof Shield | string> = {
@@ -75,12 +76,12 @@ const AppLogo = ({ name, imgCID }: { name: string; imgCID?: string }) => {
   const showRemoteImage = hasValidHash && !imageFailed;
 
   return (
-    <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[#111] to-[#222] rounded-2xl text-white text-xl sm:text-2xl font-bold shadow-sm overflow-hidden flex items-center justify-center">
+    <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-transparent rounded-2xl text-foreground text-xl sm:text-2xl font-bold overflow-hidden flex items-center justify-center">
       {showRemoteImage && imgCID ? (
         <IPFSImage
           src={imgCID}
           alt={`${name} logo`}
-          className="object-cover"
+          className="object-contain"
           fill
           sizes="80px"
           onError={() => setImageFailed(true)}
@@ -91,7 +92,7 @@ const AppLogo = ({ name, imgCID }: { name: string; imgCID?: string }) => {
           alt={`Default logo for ${name}`}
           fill
           sizes="80px"
-          className="object-cover"
+          className="object-contain"
         />
       )}
     </div>
@@ -264,13 +265,18 @@ export default function AppsPage() {
     };
   }, [hasMoreApps, handleLoadMore]);
 
+  if (appsLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background" role="status" aria-live="polite">
+        <Loader2 className="h-10 w-10 animate-spin text-foreground" aria-hidden="true" />
+        <span className="sr-only"><LocalizedText>Loading apps...</LocalizedText></span>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-4 pt-20 pb-12 max-w-4xl">
-        {appsLoading && (
-          <div className="text-center py-8 text-sm text-muted-foreground"><LocalizedText>Loading apps...</LocalizedText></div>
-        )}
-
         {appsError && (
           <div className="rounded-3xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive mb-6">
             {appsError}
@@ -322,7 +328,7 @@ export default function AppsPage() {
                     </div>
                     <Button 
                       size="sm" 
-                      className="bg-green-500 hover:bg-green-600 text-white rounded-md px-3 flex-shrink-0 cursor-pointer self-stretch flex items-center justify-center"
+                      className="hidden bg-green-500 hover:bg-green-600 text-white rounded-md px-3 flex-shrink-0 cursor-pointer self-stretch items-center justify-center sm:flex"
                     >
                       <ArrowRight className="w-4 h-4" />
                     </Button>

@@ -49,12 +49,12 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const [createWalletError, setCreateWalletError] = useState<string | null>(null);
 
   const walletOptions = [
-    { id: 'alby', label: 'Alby', icon: '/alby.svg', mode: 'wallets' as const },
+    { id: 'alby', label: 'Alby', icon: '/alby.svg', needsContrastPlate: true, mode: 'wallets' as const },
     { id: 'leather', label: 'Leather', icon: '/leather.svg', mode: 'wallets' as const },
     { id: 'nostria', label: 'Nostria Signer', icon: '/nostria.svg', mode: 'wallets' as const },
     { id: 'okx', label: 'OKX Wallet', icon: '/okx.webp', mode: 'wallets' as const },
     { id: 'walletconnect', label: 'WalletConnect', icon: '/wallet-connect.png', mode: 'wallets' as const },
-    { id: 'xverse', label: 'Xverse', icon: '/xverse.svg', mode: 'wallets' as const },
+    { id: 'xverse', label: 'Xverse', icon: '/xverse.svg', needsContrastPlate: true, mode: 'wallets' as const },
   ];
 
   const persistWalletContext = (
@@ -459,9 +459,9 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       }}
     >
       <div
-        className="bg-background text-foreground rounded-[21px] w-[360px] pt-8 pb-0 px-0 shadow-2xl flex flex-col items-center
+        className="bg-card text-card-foreground rounded-[21px] w-[360px] pt-8 pb-0 px-0 shadow-2xl flex flex-col items-center
           transition-all duration-300 ease-out
-          opacity-0 translate-y-[-24px] animate-getinmodal border border-[#333]"
+          opacity-0 translate-y-[-24px] animate-getinmodal border border-border"
         onClick={(e) => {
           // Prevent modal from closing when clicking inside the modal content
           e.stopPropagation();
@@ -583,16 +583,22 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                       setImportModalMode(option.mode);
                       setShowImportModal(true);
                     }}
-                    className="group flex flex-col items-center justify-center gap-2 rounded-[13px] border border-border bg-surface px-3 py-4 text-center transition hover:border-blue-500"
+                    className="group flex flex-col items-center justify-center gap-2 rounded-[13px] border border-border bg-background px-3 py-4 text-center transition hover:border-ring hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <Image
-                      src={option.icon}
-                      alt={option.label}
-                      width={36}
-                      height={36}
-                      className="mx-auto mb-1 h-9 w-9 rounded-md bg-transparent object-contain"
-                      unoptimized
-                    />
+                    <span
+                      className={`mb-1 flex h-11 w-11 items-center justify-center rounded-[10px] ${
+                        option.needsContrastPlate ? 'bg-slate-950 p-1.5' : ''
+                      }`}
+                    >
+                      <Image
+                        src={option.icon}
+                        alt={option.label}
+                        width={36}
+                        height={36}
+                        className="h-9 w-9 rounded-md bg-transparent object-contain"
+                        unoptimized
+                      />
+                    </span>
                     <span className="text-sm font-semibold text-foreground">{option.label}</span>
                   </button>
                 ))}
@@ -622,7 +628,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                     setImportModalMode('email');
                     setShowImportModal(true);
                   }}
-                  className="w-full h-12 rounded-[9px] bg-surface text-foreground font-semibold text-base cursor-pointer flex items-center px-4 border border-border hover:bg-muted"
+                  className="w-full h-12 rounded-[9px] bg-background text-foreground font-semibold text-base cursor-pointer flex items-center px-4 border border-border hover:bg-muted"
                   type="button"
                 >
                   <Image
@@ -630,7 +636,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                     alt="Sign in With Email"
                     width={18}
                     height={18}
-                    className="mr-3"
+                    className="mr-3 invert dark:invert-0"
                     unoptimized
                   />
                   <span className="text-center flex-1"><LocalizedText>Email Signing</LocalizedText></span>

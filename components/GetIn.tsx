@@ -105,7 +105,7 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
           <FreeSamouraiLabel />
           <button
             type="button"
-            className="w-9 h-9 border-1 border-[#555] bg-gradient-to-br from-muted to-muted-foreground/50 rounded-full overflow-hidden cursor-pointer select-none transition-all duration-200 flex items-center justify-center"
+            className="size-9 aspect-square shrink-0 border-1 border-[#555] bg-gradient-to-br from-muted to-muted-foreground/50 rounded-full overflow-hidden cursor-pointer select-none transition-all duration-200 flex items-center justify-center"
             onClick={() => setShowUserModal(true)}
             aria-label="Profile"
           >
@@ -145,7 +145,7 @@ export const GetInButton = (buttonProps: GetInButtonProps) => {
           <FreeSamouraiLabel />
           <Button
             onClick={() => setShowGetInModal(true)}
-            className="title rounded-md px-1 md:px-3 py-3 md:py-2 text-md md:text-md bg-background/50 border-border border-[1px] hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-200 text-foreground cursor-pointer select-none"
+            className="title size-11 aspect-square shrink-0 rounded-md p-0 md:size-10 bg-background/50 border-border border-[1px] hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-200 text-foreground cursor-pointer select-none"
             {...buttonProps}
           >
             <User/>

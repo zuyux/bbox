@@ -288,9 +288,9 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
 
   return createPortal(
     <div className="fixed inset-0 bg-background/20 backdrop-blur-md flex items-center justify-center z-[201] select-none">
-      <div className="bg-background text-foreground rounded-2xl w-[400px] max-w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+      <div className="bg-background text-foreground rounded-2xl w-[calc(100%_-_2rem)] max-w-[400px] max-h-[90vh] overflow-y-auto shadow-2xl border border-border">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="text-foreground text-xl font-semibold flex items-center">
             <Wallet className="w-5 h-5 mr-2" />
             <LocalizedText>Sign in with email
@@ -304,7 +304,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="px-5 py-4 space-y-4">
           {connectMode === "wallets" && (
             <>
               {(wallets.length === 0 || wallets.every(w => !w.installed && w.id !== 'walletconnect')) && (
@@ -536,7 +536,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="bg-background text-foreground px-4 py-3 border-black/50 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                  className="h-12 bg-background px-5 py-3 text-base text-foreground border-foreground/40 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
                 />
               </div>
               <div className="space-y-0">
@@ -547,13 +547,13 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
-                  className="bg-background text-foreground px-4 py-3 border-black/50 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                  className="h-12 bg-background px-5 py-3 text-base text-foreground border-foreground/40 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
                 />
               </div>
               <Button 
                 onClick={handleEmailConnect} 
                 disabled={!email || !password || isLoading} 
-                className="w-full"
+                className="w-full h-11"
               >
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>

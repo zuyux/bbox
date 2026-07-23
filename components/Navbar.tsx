@@ -10,7 +10,7 @@ export const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 w-full z-50 select-none" aria-label={messages.nav.primary}>
       <div className="mx-auto px-3 md:px-5">
-        <div className="grid grid-cols-3 items-center">
+        <div className="grid grid-cols-3 items-center py-5 md:py-0">
           <div className="flex justify-start">
             <Link href="/" className="flex items-center gap-2" aria-label={messages.nav.home}>
               <Image

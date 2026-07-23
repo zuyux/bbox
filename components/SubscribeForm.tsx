@@ -47,7 +47,7 @@ export default function SubscribeForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex min-w-0 items-center gap-1.5" aria-label="Subscribe">
+    <form onSubmit={handleSubmit} className="hidden min-w-0 items-center gap-1.5 md:flex" aria-label="Subscribe">
       <label className="sr-only" htmlFor="footer-subscribe-email">
         Email
       </label>
