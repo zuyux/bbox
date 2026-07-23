@@ -198,7 +198,7 @@ function BalanceDisplay({
       ) : unavailable && onRefresh ? (
         <button
           type="button"
-          className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-transparent text-foreground transition hover:bg-[#111]"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-transparent text-foreground transition hover:bg-muted"
           onClick={(event) => {
             event.stopPropagation();
             onRefresh();
@@ -703,19 +703,6 @@ export default function WalletPage() {
       ? 'Bitcoin balance'
     : 'Satoshis';
 
-  useEffect(() => {
-    const previousBodyBackground = document.body.style.background;
-    const previousHtmlBackground = document.documentElement.style.background;
-
-    document.body.style.background = '#111';
-    document.documentElement.style.background = '#111';
-
-    return () => {
-      document.body.style.background = previousBodyBackground;
-      document.documentElement.style.background = previousHtmlBackground;
-    };
-  }, []);
-
   const resetSendForm = () => {
     setSendTo("");
     setSendAmount("");
@@ -1041,7 +1028,7 @@ export default function WalletPage() {
     const baseClass = 'shrink-0 text-sm p-2 rounded-lg transition';
     return receiveAsset === asset
       ? `${baseClass} text-foreground hover:bg-transparent`
-      : `${baseClass} text-foreground hover:bg-[#111]`;
+      : `${baseClass} text-foreground hover:bg-muted`;
   }, [receiveAsset]);
   // Detect if Hiro Wallet extension is available and connected (optional, can remove if not needed)
   useEffect(() => {
@@ -1694,15 +1681,15 @@ export default function WalletPage() {
   // If no wallet address, ask to connect wallet
   if (!address) {
     return (
-      <div className="min-h-screen bg-[#111] px-4 py-24">
-        <div className="max-w-xl mx-auto p-8 rounded-2xl border shadow flex flex-col items-center justify-center select-none bg-[#111] text-card-foreground border-border">
+      <div className="min-h-screen bg-white px-4 py-24 text-black dark:bg-background dark:text-foreground">
+        <div className="max-w-xl mx-auto p-8 rounded-2xl border shadow flex flex-col items-center justify-center select-none bg-white text-black dark:bg-background dark:text-foreground border-border">
           <h1 className="text-3xl font-bold mb-6"><LocalizedText>Wallet</LocalizedText></h1>
           <p className="mb-8 text-lg text-muted-foreground text-center">
             <LocalizedText>Please connect your wallet to manage your funds.
           </LocalizedText></p>
           <Link
             href="/"
-            className="py-2 px-6 rounded-xl border bg-transparent text-foreground hover:bg-[#111] border-border transition-all duration-200 focus:outline-none cursor-pointer select-none"
+            className="py-2 px-6 rounded-xl border bg-transparent text-foreground hover:bg-muted border-border transition-all duration-200 focus:outline-none cursor-pointer select-none"
           >
             <LocalizedText>Connect Wallet
           </LocalizedText></Link>
@@ -1712,9 +1699,9 @@ export default function WalletPage() {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 bg-[#111] my-16">
+    <div className="min-h-screen bg-white py-12 px-4 text-black dark:bg-background dark:text-foreground sm:px-6 my-16">
 
-      <div className="w-full max-w-xl mx-auto p-8 rounded-2xl border border-border shadow text-card-foreground select-none">
+      <div className="w-full max-w-xl mx-auto p-8 rounded-2xl border border-border bg-white shadow text-black dark:bg-background dark:text-foreground select-none">
         <div className="my-2 flex items-center justify-start gap-3">
           <Wallet className="w-8 h-8 text-foreground" />
           <h1 className="title text-lg font-bold"><LocalizedText>Wallet</LocalizedText></h1>
@@ -1753,7 +1740,7 @@ export default function WalletPage() {
       
       {isNostrLightningAccount ? (
         <button
-          className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
+          className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
           onClick={() => copyReceiveAddress(address, 'Nostr account')}
           type="button"
         >
@@ -1761,7 +1748,7 @@ export default function WalletPage() {
         </LocalizedText></button>
       ) : isBitcoinOnlyAccount ? (
         <button
-          className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
+          className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
           onClick={() => setShowReceive(true)}
         >
           <LocalizedText>Receive
@@ -1769,13 +1756,13 @@ export default function WalletPage() {
       ) : (
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button
-            className="border border-border bg-transparent text-foreground w-full px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
+            className="border border-border bg-transparent text-foreground w-full px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
             onClick={() => setShowSend(true)}
           >
             <LocalizedText>Send
           </LocalizedText></button>
           <button
-            className="border border-border bg-transparent text-foreground px-6 py-3 rounded-xl hover:bg-[#111] cursor-pointer select-none transition-all duration-200"
+            className="border border-border bg-transparent text-foreground px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
             onClick={() => setShowReceive(true)}
           >
             <LocalizedText>Receive
@@ -1786,7 +1773,7 @@ export default function WalletPage() {
       {!isNostrLightningAccount && !isBitcoinOnlyAccount && (
         <button
           type="button"
-          className="mb-8 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-transparent px-6 py-3 text-foreground transition-all duration-200 hover:bg-[#111]"
+          className="mb-8 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-transparent px-6 py-3 text-foreground transition-all duration-200 hover:bg-muted"
           onClick={() => setShowSwap(true)}
         >
           <Image src="/swap.svg" alt="" width={18} height={18} aria-hidden="true" />
@@ -1844,7 +1831,7 @@ export default function WalletPage() {
               {!profileLightningAddress && (
                 <Link
                   href="/settings#lightning-address"
-                  className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-transparent px-3 py-2 text-sm font-semibold text-foreground transition hover:bg-[#111]"
+                  className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-transparent px-3 py-2 text-sm font-semibold text-foreground transition hover:bg-muted"
                 >
                   <LocalizedText>Set Lightning Address
                 </LocalizedText></Link>
@@ -1969,13 +1956,13 @@ export default function WalletPage() {
 
       {showSend && (
         <div
-          className="fixed inset-0 bg-[#111] backdrop-blur-sm flex items-center justify-center z-100 px-4 py-6"
+          className="fixed inset-0 z-100 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/50 px-4 pb-4 pt-20 backdrop-blur-sm sm:items-center sm:py-6"
           onClick={() => {
             if (!sendLoading) closeSendModal();
           }}
         >
           <div
-            className="bg-[#111] text-card-foreground rounded-2xl border border-border shadow-xl w-full max-w-lg max-h-[calc(100vh-3rem)] overflow-hidden flex flex-col"
+            className="flex max-h-[calc(100dvh-6rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-white text-black shadow-xl dark:bg-background dark:text-foreground sm:max-h-[calc(100dvh-3rem)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 p-6 pb-4 border-b border-border/60">
@@ -1999,14 +1986,14 @@ export default function WalletPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSend} className="space-y-5 overflow-y-auto px-6 py-5">
+            <form onSubmit={handleSend} className="min-h-0 space-y-5 overflow-y-auto overscroll-contain px-6 py-5">
               <div>
                 <label className="block text-sm font-medium mb-2" htmlFor="send-asset">
                   <LocalizedText>Asset
                 </LocalizedText></label>
                 <select
                   id="send-asset"
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60"
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60"
                   value={sendAsset}
                   onChange={(event) => setSendAsset(event.target.value as SendAsset)}
                   disabled={sendLoading}
@@ -2042,7 +2029,7 @@ export default function WalletPage() {
                 <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
                   <input
                     id="send-recipient"
-                    className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${recipientError ? 'border-destructive/70' : 'border-border'}`}
+                    className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${recipientError ? 'border-destructive/70' : 'border-border'}`}
                     value={sendTo}
                     onChange={e => setSendTo(e.target.value)}
                     required
@@ -2077,7 +2064,7 @@ export default function WalletPage() {
                 <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
                   <input
                     id="send-amount"
-                    className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
+                    className={`min-w-0 w-full px-4 py-3 rounded-xl border bg-background text-foreground text-right text-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${amountError ? 'border-destructive/70' : 'border-border'}`}
                     type="number"
                     min={sendAsset === "sbtc" ? 1 : sendAsset === "bitcoin" || sendAsset === "liquid" ? 0.00000001 : sendAsset === "rootstock" ? 0.000000000000000001 : 0}
                     step={sendAsset === "sbtc" ? 1 : sendAsset === "bitcoin" || sendAsset === "liquid" ? 0.00000001 : sendAsset === "rootstock" ? 0.000000000000000001 : "any"}
@@ -2138,7 +2125,7 @@ export default function WalletPage() {
                   </LocalizedText></label>
                   <textarea
                     id="send-memo"
-                    className={`w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 resize-none ${memoError ? 'border-destructive/70' : 'border-border'}`}
+                    className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 resize-none ${memoError ? 'border-destructive/70' : 'border-border'}`}
                     rows={2}
                     maxLength={120}
                     value={sendMemo}
@@ -2196,7 +2183,7 @@ export default function WalletPage() {
                   </LocalizedText></label>
                   <input
                     id="send-password"
-                    className={`w-full px-4 py-3 rounded-xl border bg-[#111] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${passwordError ? 'border-destructive/70' : 'border-border'}`}
+                    className={`w-full px-4 py-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 ${passwordError ? 'border-destructive/70' : 'border-border'}`}
                     type="password"
                     value={sendPassword}
                     onChange={e => setSendPassword(e.target.value)}
@@ -2210,23 +2197,13 @@ export default function WalletPage() {
                 </div>
               )}
 
-              <div className="space-y-3">
-                <button
-                  type="submit"
-                  className="w-full py-3 px-4 rounded-xl border border-border bg-transparent text-foreground transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:bg-[#111]"
-                  disabled={sendLoading || !sendFormValid}
-                >
-                  {sendLoading ? (sendAsset === "bitcoin" && !isLocalWallet || extensionAvailable && sendAsset === "sbtc" ? "Sending via extension..." : "Sending...") : sendActionLabel}
-                </button>
-                <button
-                  type="button"
-                  className="w-full py-3 px-4 rounded-xl border border-border bg-transparent text-foreground hover:bg-[#111] transition-all cursor-pointer"
-                  onClick={closeSendModal}
-                  disabled={sendLoading}
-                >
-                  <LocalizedText>Cancel
-                </LocalizedText></button>
-              </div>
+              <button
+                type="submit"
+                className="w-full py-3 px-4 rounded-xl border border-border bg-transparent text-foreground transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:bg-muted"
+                disabled={sendLoading || !sendFormValid}
+              >
+                {sendLoading ? (sendAsset === "bitcoin" && !isLocalWallet || extensionAvailable && sendAsset === "sbtc" ? "Sending via extension..." : "Sending...") : sendActionLabel}
+              </button>
             </form>
           </div>
         </div>
@@ -2235,17 +2212,17 @@ export default function WalletPage() {
       {/* Receive Modal */}
       {showReceive && (
         <div
-          className="fixed inset-0 bg-[#111] backdrop-blur-sm flex items-center justify-center z-50 px-4"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/50 px-4 pb-4 pt-20 backdrop-blur-sm sm:items-center sm:py-6"
           onClick={closeReceiveModal}
         >
           <div
-            className="bg-[#111] text-foreground p-8 rounded-2xl border border-[#333] shadow-xl w-full max-w-sm text-center"
+            className="max-h-[calc(100dvh-6rem)] w-full max-w-sm overflow-y-auto overscroll-contain rounded-2xl border border-border bg-white p-6 text-center text-black shadow-xl dark:bg-background dark:text-foreground sm:max-h-[calc(100dvh-3rem)] sm:p-8"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-end">
               <button
                 onClick={closeReceiveModal}
-                className="bg-transparent border-none text-[#555] text-xl cursor-pointer"
+                className="bg-transparent border-none text-muted-foreground hover:text-foreground text-xl cursor-pointer"
                 aria-label="Close"
                 type="button"
               >
@@ -2255,14 +2232,14 @@ export default function WalletPage() {
             <h2 className="text-xl font-bold mb-6"><LocalizedText>Receive </LocalizedText>{selectedReceiveLabel}</h2>
             <div className="mb-6">
               {selectedReceiveAddress ? (
-                <div className="w-full p-6 flex items-center justify-center rounded-xl bg-[#111]">
+                <div className="w-full p-6 flex items-center justify-center rounded-xl bg-white">
                   <QRCodeSVG
                     value={selectedReceiveAddress}
                     width="100%"
                     height="100%"
                     size={256}
-                    bgColor="#111"
-                    fgColor="#f8fafc"
+                    bgColor="#ffffff"
+                    fgColor="#000000"
                     includeMargin={false}
                     level="M"
                     style={{ width: "100%", height: "auto", maxWidth: 256, maxHeight: 256 }}
@@ -2278,7 +2255,7 @@ export default function WalletPage() {
                       {receiveAsset !== "stacks" && !isBitcoinOnlyAccount && (
                         <button
                           type="button"
-                          className="rounded-lg border border-border bg-transparent px-4 py-2 text-xs font-medium text-foreground transition hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg border border-border bg-transparent px-4 py-2 text-xs font-medium text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                           onClick={() => openGenerateAddressModal(receiveAsset)}
                           disabled={generatingAddresses}
                         >
@@ -2303,7 +2280,7 @@ export default function WalletPage() {
                         key={`${account.addressType}-${account.address}`}
                         role="button"
                         tabIndex={0}
-                        className={`p-4 rounded-2xl border text-left text-sm transition ${selected ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent hover:bg-[#111]'}`}
+                        className={`p-4 rounded-2xl border text-left text-sm transition ${selected ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent hover:bg-muted'}`}
                         onClick={() => setSelectedOkxBitcoinAddress(account.address)}
                         onKeyDown={(event) => {
                           if (event.target !== event.currentTarget) return;
@@ -2340,7 +2317,7 @@ export default function WalletPage() {
               <div
                 role="button"
                 tabIndex={0}
-                className={`w-full rounded-2xl border p-4 text-left transition ${receiveAsset === "bitcoin" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent hover:bg-[#111]'}`}
+                className={`w-full rounded-2xl border p-4 text-left transition ${receiveAsset === "bitcoin" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent hover:bg-muted'}`}
                 onClick={() => setReceiveAsset('bitcoin')}
                 onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'bitcoin')}
               >
@@ -2349,7 +2326,7 @@ export default function WalletPage() {
                   {!btcAddressLoading && !primaryReceiveAddress && !isBitcoinOnlyAccount && (
                     <button
                       type="button"
-                      className="rounded-lg border h-full border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-lg border h-full border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={(event) => {
                         event.stopPropagation();
                         openGenerateAddressModal('bitcoin');
@@ -2388,7 +2365,7 @@ export default function WalletPage() {
                 <div
                   role="button"
                   tabIndex={0}
-                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "stacks" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
+                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "stacks" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-muted'}`}
                   onClick={() => setReceiveAsset('stacks')}
                   onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'stacks')}
                 >
@@ -2412,7 +2389,7 @@ export default function WalletPage() {
                 <div
                   role="button"
                   tabIndex={0}
-                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "rootstock" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
+                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "rootstock" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-muted'}`}
                   onClick={() => setReceiveAsset('rootstock')}
                   onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'rootstock')}
                 >
@@ -2442,7 +2419,7 @@ export default function WalletPage() {
                       </div>
                       <button
                         type="button"
-                        className="self-stretch rounded-lg border border-border bg-transparent px-4 text-xs font-medium text-foreground transition hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="self-stretch rounded-lg border border-border bg-transparent px-4 text-xs font-medium text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={(event) => {
                           event.stopPropagation();
                           openGenerateAddressModal('rootstock');
@@ -2458,7 +2435,7 @@ export default function WalletPage() {
                 <div
                   role="button"
                   tabIndex={0}
-                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "liquid" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-[#111]'}`}
+                  className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "liquid" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-muted'}`}
                   onClick={() => setReceiveAsset('liquid')}
                   onKeyDown={(event) => handleReceiveAssetKeyDown(event, 'liquid')}
                 >
@@ -2488,7 +2465,7 @@ export default function WalletPage() {
                       </div>
                       <button
                         type="button"
-                        className="self-stretch rounded-lg border border-border bg-transparent px-4 text-xs font-medium text-foreground transition hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="self-stretch rounded-lg border border-border bg-transparent px-4 text-xs font-medium text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={(event) => {
                           event.stopPropagation();
                           openGenerateAddressModal('liquid');
@@ -2532,7 +2509,7 @@ export default function WalletPage() {
       {/* Recent Transactions */}
       <div className="mt-10">
         <h2 className="text-lg font-semibold mb-4"><LocalizedText>Recent Transactions</LocalizedText></h2>
-        <div className="bg-[#111] rounded-xl py-4 max-h-96 overflow-y-auto border border-border">
+        <div className="bg-background rounded-xl py-4 max-h-96 overflow-y-auto border border-border">
           {txLoading ? (
             <div className="flex justify-center items-center py-8">
               <LoaderCircle className="animate-spin text-foreground" size={32} />

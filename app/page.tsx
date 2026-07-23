@@ -82,6 +82,7 @@ export default function HomePage() {
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const appDiscoveryRef = useRef<HTMLDivElement | null>(null);
   const [showInterestBar, setShowInterestBar] = useState(false);
+  const [hadInterestsOnEntry, setHadInterestsOnEntry] = useState<boolean | null>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastTimestampRef = useRef<number | null>(null);
   const pointerStateRef = useRef({ pointerId: null as number | null, startX: 0, startPosition: 0, hasCapture: false });
@@ -175,6 +176,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    if (hadInterestsOnEntry !== false) return;
     const target = appDiscoveryRef.current;
     if (!target) return;
     const observer = new IntersectionObserver(([entry]) => {
@@ -182,7 +184,7 @@ export default function HomePage() {
     }, { threshold: 0.15 });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [appsLoading]);
+  }, [appsLoading, hadInterestsOnEntry]);
 
   useEffect(() => {
     applyWrappedPosition(positionRef.current);
@@ -426,9 +428,16 @@ export default function HomePage() {
       .then(async (response) => {
         const result = await response.json();
         if (!response.ok) throw new Error(result?.error || 'Unable to load interests');
-        if (!cancelled) setVisitorInterests(Array.isArray(result.tags) ? result.tags : []);
+        if (!cancelled) {
+          const savedInterests = Array.isArray(result.tags) ? result.tags : [];
+          setVisitorInterests(savedInterests);
+          setHadInterestsOnEntry(savedInterests.length > 0);
+        }
       })
-      .catch((error) => console.warn('Unable to load personalized recommendations:', error));
+      .catch((error) => {
+        console.warn('Unable to load personalized recommendations:', error);
+        if (!cancelled) setHadInterestsOnEntry(false);
+      });
 
     return () => { cancelled = true; };
   }, []);
@@ -713,7 +722,9 @@ export default function HomePage() {
                   <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                     <div>
                       <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">{group.category}</p>
-                      <h3 className="text-lg font-semibold">{copy.top} {group.category} {copy.apps}</h3>
+                      <h3 className="text-lg font-semibold">
+                        {copy.topCategoryApps.replace('{category}', group.category)}
+                      </h3>
                     </div>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href={`/apps?category=${encodeURIComponent(group.category)}`} className="inline-flex items-center gap-1">
@@ -848,7 +859,11 @@ export default function HomePage() {
         </div>
       </div>
       {showGetInModal && <GetInModal onClose={handleGetInModalClose} />}
-      <InterestBar categories={popularInterestCategories} visible={showInterestBar} onInterestsChange={handleInterestsChange} />
+      <InterestBar
+        categories={popularInterestCategories}
+        visible={hadInterestsOnEntry === false && showInterestBar}
+        onInterestsChange={handleInterestsChange}
+      />
     </div>
   );
 }

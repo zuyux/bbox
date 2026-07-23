@@ -64,7 +64,7 @@ function SettingsCheckboxRow({
         <Label htmlFor={id} className="cursor-pointer text-sm font-medium">
           {title}
         </Label>
-        <p className="text-xs text-gray-400">{description}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </div>
     </div>
   );
@@ -125,19 +125,6 @@ export default function SettingsPage() {
   const isNostrKeyAvailable = Boolean(currentWallet?.nostrPublicKey && isNostrPublicKey(currentWallet.nostrPublicKey));
   const canLinkWallet = isExtensionWallet && !isNostrLightningWallet && !isBitcoinOnlyExtensionWallet && Boolean(walletType) && isNostrKeyAvailable;
 
-  useEffect(() => {
-    const previousBodyBackground = document.body.style.background;
-    const previousHtmlBackground = document.documentElement.style.background;
-
-    document.body.style.background = '#111';
-    document.documentElement.style.background = '#111';
-
-    return () => {
-      document.body.style.background = previousBodyBackground;
-      document.documentElement.style.background = previousHtmlBackground;
-    };
-  }, []);
-  
   // Basic Profile Fields
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -206,6 +193,10 @@ export default function SettingsPage() {
   const [revealingKeys, setRevealingKeys] = useState(false);
   const [recoveryKeys, setRecoveryKeys] = useState<{ mnemonic: string; privateKey: string; nsec: string } | null>(null);
   const [showRecoveryKeys, setShowRecoveryKeys] = useState(false);
+  const [interestCategories, setInterestCategories] = useState<string[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [interestsLoading, setInterestsLoading] = useState(true);
+  const [interestsSaving, setInterestsSaving] = useState(false);
   
   // State
   const [skillCategories, setSkillCategories] = useState<SkillCategory[]>([]);
@@ -213,6 +204,78 @@ export default function SettingsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const githubAuthStatus = searchParams.get('github');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([
+      fetch('/api/bbox-apps', { cache: 'no-store' }).then(async response => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload?.error || 'Unable to load interest categories');
+        return (Array.isArray(payload.apps) ? payload.apps : []) as unknown[];
+      }),
+      fetch('/api/interests', { cache: 'no-store' }).then(async response => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload?.error || 'Unable to load interests');
+        return (Array.isArray(payload.tags) ? payload.tags : [])
+          .filter((tag: unknown): tag is string => typeof tag === 'string');
+      }),
+    ])
+      .then(([apps, tags]) => {
+        if (cancelled) return;
+        const categories = [...new Set<string>(
+          apps
+            .map((app: unknown) => (
+              typeof app === 'object' && app !== null && 'category' in app
+                ? String(app.category).trim()
+                : ''
+            ))
+            .filter((category: string): category is string => Boolean(category))
+        )].sort((a, b) => a.localeCompare(b));
+        setInterestCategories(categories);
+        setSelectedInterests(tags);
+      })
+      .catch(error => {
+        console.error('Unable to load interests in settings:', error);
+        if (!cancelled) toast.error('Unable to load interests');
+      })
+      .finally(() => {
+        if (!cancelled) setInterestsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleInterestToggle = async (category: string) => {
+    if (interestsLoading || interestsSaving) return;
+
+    const previous = selectedInterests;
+    const next = previous.includes(category)
+      ? previous.filter(interest => interest !== category)
+      : [...previous, category];
+
+    setSelectedInterests(next);
+    setInterestsSaving(true);
+
+    try {
+      const response = await fetch('/api/interests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tags: next }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload?.error || 'Unable to save interests');
+      setSelectedInterests(Array.isArray(payload.tags) ? payload.tags : next);
+    } catch (error) {
+      console.error('Unable to save interests:', error);
+      setSelectedInterests(previous);
+      toast.error('Unable to save interests');
+    } finally {
+      setInterestsSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (!githubAuthStatus) return;
@@ -687,7 +750,7 @@ export default function SettingsPage() {
 
   if (!address) {
     return (
-      <div className="min-h-screen bg-[#111] px-4 py-24">
+      <div className="min-h-screen bg-white px-4 py-24 text-black dark:bg-background dark:text-foreground">
         <div className="max-w-2xl mx-auto p-8 rounded-2xl border text-center bg-accent-background border-gray-200 dark:border-gray-800 text-foreground">
           <h1 className="text-2xl font-bold mb-4">...</h1>
         </div>
@@ -696,7 +759,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111] px-4 py-24">
+    <div className="min-h-screen bg-white px-4 py-24 text-black dark:bg-background dark:text-foreground">
       <div className="max-w-4xl mx-auto p-0 rounded-2xl text-foreground">
       <h1 className="text-3xl font-bold mb-8"><LocalizedText>Profile Settings</LocalizedText></h1>
       
@@ -746,7 +809,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Username</LocalizedText></label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background dark:bg-accent-background text-gray-900 dark:text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:border-transparent focus:ring-2 focus:ring-blue-500"
                       type="text"
                       value={username}
                       onChange={e => setUsername(e.target.value)}
@@ -882,6 +945,49 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 
+              </CardContent>
+            </Card>
+
+            <Card className="border-gray-200 bg-accent-background text-foreground dark:border-gray-700">
+              <CardHeader>
+                <CardTitle>Interests</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Choose the categories used to personalize your recommendations.
+                </p>
+                {interestsLoading ? (
+                  <p className="text-sm text-muted-foreground">Loading interests...</p>
+                ) : interestCategories.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No interest categories are available.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {interestCategories.map(category => {
+                      const selected = selectedInterests.includes(category);
+                      return (
+                        <button
+                          key={category}
+                          type="button"
+                          aria-pressed={selected}
+                          disabled={interestsSaving}
+                          onClick={() => void handleInterestToggle(category)}
+                          className={`rounded-full border px-3 py-1.5 text-sm font-medium transition disabled:cursor-wait disabled:opacity-60 ${
+                            selected
+                              ? 'border-orange-500 bg-orange-500 text-white'
+                              : 'border-border bg-background text-foreground hover:border-orange-500/60'
+                          }`}
+                        >
+                          {category}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground" aria-live="polite">
+                  {interestsSaving
+                    ? 'Saving interests...'
+                    : `${selectedInterests.length} selected`}
+                </p>
               </CardContent>
             </Card>
 
