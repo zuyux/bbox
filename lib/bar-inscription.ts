@@ -209,7 +209,7 @@ export async function signBarPayloadWithPasskey(
   feeEstimate: BarFeeEstimate
 ): Promise<BarPasskeyAuthorization> {
   const unlocked = await unlockWalletByPassword(address, password);
-  const privateKeyHex = unlocked.privateKey.replace(/^0x/, '');
+  const privateKeyHex = unlocked.privateKey.replace(/^0x/, '').slice(0, 64);
   const privateKeyBytes = hexToBytes(privateKeyHex);
   const publicKey = bytesToHex(secp.getPublicKey(privateKeyBytes, true));
   const message = JSON.stringify({

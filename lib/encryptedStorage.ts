@@ -156,6 +156,14 @@ function buildEncryptedWalletData(walletData: WalletData, passphrase: string): E
   };
 }
 
+/** Build a server-portable encrypted wallet without writing secrets to storage. */
+export function createPortableEncryptedWalletData(
+  walletData: WalletData,
+  passphrase: string
+): PortableEncryptedWalletData {
+  return toPortableEncryptedWalletData(buildEncryptedWalletData(walletData, passphrase));
+}
+
 /**
  * Validate passphrase strength
  */

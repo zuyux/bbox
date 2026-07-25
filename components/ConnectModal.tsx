@@ -24,6 +24,7 @@ import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
 import { getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
 import { decryptPortableEncryptedWallet, type WalletData } from '@/lib/encryptedStorage';
+import ImportWalletModal from './ImportWalletModal';
 // Password verification utility for settings changes
 // Usage: await verifyPassphraseForSettings(address, passphrase, privateKey)
 export async function verifyPassphraseForSettings(address: string, passphrase: string, privateKey: string): Promise<boolean> {
@@ -54,7 +55,7 @@ interface ConnectModalProps {
   initialConnectMode?: ConnectMode;
 }
 
-type ConnectMode = 'wallets' | 'email';
+type ConnectMode = 'wallets' | 'email' | 'import';
 
 interface EmailAccountPayload {
   account: {
@@ -312,7 +313,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="text-foreground text-xl font-semibold flex items-center">
             <Wallet className="w-5 h-5 mr-2" />
-            <LocalizedText>Sign in with email
+            <LocalizedText>{connectMode === 'import' ? 'Recover Wallet' : connectMode === 'email' ? 'Sign in with email' : 'Connect Wallet'}
           </LocalizedText></h2>
           <button 
             onClick={onClose}
@@ -542,7 +543,6 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                 <Mail className="w-5 h-5 mr-2" />
                 <LocalizedText>Sign In with Email
               </LocalizedText></Button>
-
             </>
           )}
           {connectMode === "email" && (
@@ -581,14 +581,31 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                   {emailMessage}
                 </div>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  setEmailMessage('');
+                  setConnectMode('import');
+                }}
+                className="w-full pt-2 text-center text-sm font-medium text-foreground hover:text-foreground hover:underline cursor-pointer"
+              >
+                <LocalizedText>Recover with mnemonic</LocalizedText>
+              </button>
             </div>
           )}
-          {/* Mnemonic import disabled for security */}
-          {false && (
-            <div className="text-center py-8">
-              <p className="text-gray-600 font-medium"><LocalizedText>Mnemonic import has been disabled for security reasons.</LocalizedText></p>
-              <p className="text-gray-500 text-sm mt-2"><LocalizedText>Use email registration to create a new wallet or connect with Leather/Xverse.</LocalizedText></p>
-            </div>
+          {connectMode === 'import' && (
+            <ImportWalletModal
+              onBack={() => setConnectMode('email')}
+              onImported={async (wallet, newPassword) => {
+                await createEncryptedWallet(wallet, newPassword);
+                setAddress(wallet.address);
+                setWalletType('imported');
+                await persistSessionForWallet(wallet.address, 'imported');
+                onSuccess?.();
+                onClose();
+                router.push('/apps');
+              }}
+            />
           )}
         </div>
       </div>

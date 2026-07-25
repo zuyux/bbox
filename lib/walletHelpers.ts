@@ -3,6 +3,7 @@ import { validateMnemonic as isValidMnemonic, mnemonicToSeed, wordlists } from '
 import { HDKey } from '@scure/bip32';
 import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
 import { getNostrPublicKeyFromPrivateKey } from './nostr';
+import { compressPrivateKey } from '@stacks/transactions';
 
 /**
  * Validates a mnemonic and generates a wallet/account.
@@ -29,10 +30,9 @@ export async function validateAndGenerateWallet(mnemonic: string) {
     throw new Error('Unable to derive private key from mnemonic.');
   }
 
-  const privateKeyBytes = child.privateKey;
-  const privateKey = Array.from(privateKeyBytes)
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
+  // Stacks wallets use a compressed secp256k1 key. Omitting the compression
+  // marker derives a different address from the same recovery phrase.
+  const privateKey = compressPrivateKey(child.privateKey);
 
   const account = {
     stxPrivateKey: privateKey,

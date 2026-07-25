@@ -60,7 +60,10 @@ export function getBitcoinTaprootAddressFromPrivateKey(
   privateKey: string,
   network: 'mainnet' | 'testnet' = 'mainnet'
 ): string {
-  const privateKeyHex = privateKey.replace(/^0x/, '');
+  const inputPrivateKeyHex = privateKey.replace(/^0x/, '');
+  const privateKeyHex = inputPrivateKeyHex.length === 66 && inputPrivateKeyHex.endsWith('01')
+    ? inputPrivateKeyHex.slice(0, 64)
+    : inputPrivateKeyHex;
   const publicKeyBytes = secp.getPublicKey(hexToBytes(privateKeyHex), true);
   let internalPoint = secp.Point.fromHex(bytesToHex(publicKeyBytes));
 
@@ -83,10 +86,12 @@ export function getBitcoinTaprootAddressFromPrivateKey(
 }
 
 export function getRootstockAddressFromPrivateKey(privateKey: string): string {
-  const publicKey = privateKeyToPublic(privateKey);
-  const publicKeyHex = typeof publicKey === 'string' ? publicKey : bytesToHex(publicKey);
-  const normalizedPublicKeyHex = publicKeyHex.startsWith('04') ? publicKeyHex.slice(2) : publicKeyHex;
-  const publicKeyBytes = hexToBytes(normalizedPublicKeyHex);
+  // EVM/Rootstock addresses hash the uncompressed public key without its 04 prefix.
+  const privateKeyHex = privateKey.replace(/^0x/, '');
+  const normalizedPrivateKey = privateKeyHex.length === 66 && privateKeyHex.endsWith('01')
+    ? privateKeyHex.slice(0, -2)
+    : privateKeyHex;
+  const publicKeyBytes = secp.getPublicKey(hexToBytes(normalizedPrivateKey), false).slice(1);
   const hashed = keccak256(publicKeyBytes);
   const hashBytes = hexToBytes(hashed);
   const addressBytes = hashBytes.slice(-20);

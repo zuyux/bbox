@@ -19,6 +19,15 @@ function hexToBytes(hex: string): Uint8Array {
   return bytes;
 }
 
+function normalizeSecretKey(privateKeyHex: string): string {
+  const normalized = privateKeyHex.replace(/^0x/, '');
+  // Stacks represents compressed private keys as 32 secret bytes plus `01`.
+  // Noble secp256k1 APIs accept only the underlying 32-byte secret.
+  return normalized.length === 66 && normalized.endsWith('01')
+    ? normalized.slice(0, 64)
+    : normalized;
+}
+
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes)
     .map(byte => byte.toString(16).padStart(2, '0'))
@@ -30,14 +39,14 @@ function isHexString(value: string): boolean {
 }
 
 export function getNostrPublicKeyFromPrivateKey(privateKeyHex: string): string {
-  const privateKey = hexToBytes(privateKeyHex);
+  const privateKey = hexToBytes(normalizeSecretKey(privateKeyHex));
   const publicKeyBytes = schnorr.getPublicKey(privateKey);
   const words = bech32.toWords(publicKeyBytes);
   return bech32.encode('npub', words);
 }
 
 export function getNostrSecretKeyFromPrivateKey(privateKeyHex: string): string {
-  const privateKey = hexToBytes(privateKeyHex);
+  const privateKey = hexToBytes(normalizeSecretKey(privateKeyHex));
   const words = bech32.toWords(privateKey);
   return bech32.encode('nsec', words);
 }
@@ -90,7 +99,7 @@ export async function getNostrEventHash(event: Omit<NostrEvent, 'id' | 'sig'>): 
 
 export async function signNostrEvent(event: Omit<NostrEvent, 'id' | 'sig'>, privateKeyHex: string): Promise<string> {
   const eventHash = await getNostrEventHash(event);
-  const signatureBytes = await schnorr.signAsync(hexToBytes(eventHash), hexToBytes(privateKeyHex));
+  const signatureBytes = await schnorr.signAsync(hexToBytes(eventHash), hexToBytes(normalizeSecretKey(privateKeyHex)));
   return bytesToHex(signatureBytes);
 }
 
