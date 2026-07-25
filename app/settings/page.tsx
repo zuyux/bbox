@@ -29,7 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Copy, Eye, EyeOff, Github, KeyRound } from 'lucide-react';
+import { Copy, ExternalLink, Eye, EyeOff, Github, KeyRound } from 'lucide-react';
 
 interface SkillCategory {
   category: string;
@@ -127,6 +127,7 @@ export default function SettingsPage() {
 
   // Basic Profile Fields
   const [username, setUsername] = useState('');
+  const hasBnsUsername = username.trim().toLowerCase().endsWith('.btc');
   const [email, setEmail] = useState('');
   const [originalEmail, setOriginalEmail] = useState('');
   const [emailVerified, setEmailVerified] = useState(false);
@@ -808,15 +809,31 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Username</LocalizedText></label>
-                    <input
-                      className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                      type="text"
-                      value={username}
-                      onChange={e => setUsername(e.target.value)}
-                      placeholder={"your_username"}
-                      pattern="^[a-zA-Z0-9_]{3,50}$"
-                      title={"3-50 characters, letters, numbers, and underscores only"}
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        className="min-w-0 flex-1 rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:border-transparent focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                        type="text"
+                        value={username}
+                        onChange={e => setUsername(e.target.value)}
+                        placeholder={"your_username"}
+                        pattern={hasBnsUsername ? undefined : "^[a-zA-Z0-9_]{3,50}$"}
+                        title={hasBnsUsername ? "BNS usernames are managed on btc.us" : "3-50 characters, letters, numbers, and underscores only"}
+                        disabled={hasBnsUsername}
+                      />
+                      {hasBnsUsername && (
+                        <Button
+                          asChild
+                          type="button"
+                          variant="outline"
+                          className="shrink-0"
+                        >
+                          <a href="https://btc.us" target="_blank" rel="noopener noreferrer">
+                            <LocalizedText>Edit on btc.us</LocalizedText>
+                            <ExternalLink className="size-4" aria-hidden="true" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   
                   <div>
@@ -1308,6 +1325,36 @@ export default function SettingsPage() {
             {!isExtensionWallet && (
               <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
                 <CardHeader>
+                  <CardTitle><LocalizedText>Password</LocalizedText></CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Link
+                    href="/settings/password"
+                    className="block w-full text-center py-3 px-4 rounded-lg border border-[#222] bg-accent-background text-foreground hover:underline"
+                  >
+                    <LocalizedText>Change Password</LocalizedText>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card className="bg-accent-background border-red-900/50 text-foreground">
+              <CardHeader>
+                <CardTitle><LocalizedText>Account</LocalizedText></CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Link
+                  href="/settings/api/delete"
+                  className="block w-full rounded-lg border border-red-900/50 px-4 py-3 text-center text-red-400 transition-colors hover:bg-red-950/20"
+                >
+                  <LocalizedText>Delete Account</LocalizedText>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {!isExtensionWallet && (
+              <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
+                <CardHeader>
                   <CardTitle><LocalizedText>Reveal Recovery Keys</LocalizedText></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-5">
@@ -1476,27 +1523,6 @@ export default function SettingsPage() {
           </div>
         </form>
       </Tabs>
-
-      {/* Account Management Links */}
-      <div className="mt-12 pt-8">
-        <div className="space-y-3">
-          {/* Only show Change Password button for encrypted wallet users */}
-          {!isExtensionWallet && (
-            <Link
-              href="/settings/password"
-              className="block w-full text-center py-3 px-4 rounded-lg border border-[#222] bg-accent-background text-foreground hover:underline"
-            >
-              <LocalizedText>Change Password
-            </LocalizedText></Link>
-          )}
-          <Link
-            href="/settings/api/delete"
-            className="block w-full text-center text-red-400 py-3 px-4transition-colors"
-          >
-            <LocalizedText>Delete Account
-          </LocalizedText></Link>
-        </div>
-      </div>
 
       </div>
     </div>

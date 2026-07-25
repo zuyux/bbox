@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabaseClient';
 import { assertVerifiedEmailToken, VerifiedEmailTokenError } from '@/lib/emailCodeAuth';
 import crypto from 'crypto';
 import { getHashedIp } from '@/lib/visitorIdentity';
+import { sendAccountActivityNotification } from '@/lib/accountActivityNotifications';
 
 export async function POST(request: NextRequest) {
   try {
@@ -228,6 +229,18 @@ export async function POST(request: NextRequest) {
       .update({ user_address: address, updated_at: new Date().toISOString() })
       .eq('hashed_ip', hashedIp);
     if (interestLinkError) console.warn('Interest link warning:', interestLinkError);
+
+    if (!accountMatchesCurrentAddress) {
+      try {
+        await sendAccountActivityNotification({
+          type: 'account-created',
+          address,
+          email: normalizedEmail,
+        });
+      } catch (notificationError) {
+        console.warn('Account created, but the admin notification failed:', notificationError);
+      }
+    }
 
     return NextResponse.json({
       success: true,

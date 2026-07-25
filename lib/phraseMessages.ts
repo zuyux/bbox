@@ -712,7 +712,7 @@ export const phraseMessages: Record<Locale, Record<string, string>> = {
     "Your Nostr public key is derived from your wallet private key and can be linked as public ownership proof.": "Su clave pública de Nostr se deriva de la clave privada de su billetera y puede vincularse como prueba de propiedad pública.",
     "Social Links": "Enlaces sociales",
     "Website": "Sitio web",
-    "Discord": "Discordia",
+    "Discord": "Discordi",
     "GitHub": "GitHub",
     "GitHub profile connected": "Perfil de GitHub conectado",
     "Instagram": "Instagram",

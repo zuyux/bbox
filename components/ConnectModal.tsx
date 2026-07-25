@@ -146,6 +146,25 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
     persistCachedWalletState(connectedAddress, providerType);
     queueWelcomeModalAfterSignIn(connectedAddress);
 
+    if (providerType !== 'imported') {
+      try {
+        const notificationResponse = await fetch('/api/wallet-connect/signed-in', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            address: connectedAddress,
+            provider: providerType,
+          }),
+        });
+
+        if (!notificationResponse.ok) {
+          console.warn('Wallet connected, but the sign-in notification failed.');
+        }
+      } catch (notificationError) {
+        console.warn('Wallet connected, but the sign-in notification failed:', notificationError);
+      }
+    }
+
     try {
       const existingAccount = await getConnectedAccountByAddress(connectedAddress);
       const sessionPayload = {
