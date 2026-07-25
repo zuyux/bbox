@@ -131,8 +131,15 @@ export const emailTemplates = {
     html: `
       <div style="background:#000;padding:32px 24px;color:#fff;font-family:'Jersey 10',cursive;">
       <div style="background:#000;padding:32px 24px;border-radius:16px;max-width:600px;margin:auto;">
-        <h2 style="color:#ff8a00;margin-bottom:20px;">Welcome to BBOX!</h2>
-        <p>Your account has been created successfully.</p>
+        <h2 style="color:#ff8a00;margin-bottom:20px;">Welcome to BBOX — we're glad you're here!</h2>
+        <p>Your account has been created successfully. You are now part of a growing community helping make trustworthy open-source software easier to discover, support, and preserve.</p>
+
+        <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#000;">
+          <h3 style="margin-top:0;color:#ff8a00;">What is BBOX?</h3>
+          <p style="margin:8px 0;color:#e5e5e5;"><strong>BBOX is short for Bitcoin Box</strong> — an open home for high-integrity software and the people who build it.</p>
+          <p style="margin:12px 0 0;color:#e5e5e5;">BBOX is a Bitcoin-anchored registry and funding layer where anyone can discover verified open-source apps, review transparent project information, support public goods, and follow the work behind each project. Builders keep control of their records while Bitcoin provides a durable, auditable foundation.</p>
+        </div>
+
         <p><strong>Bitcoin Address:</strong> <code style="background:#000;border:1px solid #333;padding:4px 8px;border-radius:4px;color:#fff;">${bitcoinAddress}</code></p>
 
         <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#000;">
@@ -170,8 +177,15 @@ export const emailTemplates = {
     html: `
       <div style="background:#000;padding:32px 24px;color:#fff;font-family:Arial,sans-serif;">
       <div style="background:#000;padding:32px 24px;border-radius:16px;max-width:600px;margin:auto;">
-        <h2 style="color:#ff8a00;margin-bottom:20px;">Welcome to BBOX!</h2>
-        <p>Your email was verified and your account has been created successfully.</p>
+        <h2 style="color:#ff8a00;margin-bottom:20px;">Welcome to BBOX — we're glad you're here!</h2>
+        <p>Your email has been verified and your account is ready. You are now part of a growing community helping make trustworthy open-source software easier to discover, support, and preserve.</p>
+
+        <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#000;">
+          <h3 style="margin-top:0;color:#ff8a00;">What is BBOX?</h3>
+          <p style="margin:8px 0;color:#e5e5e5;"><strong>BBOX is short for Bitcoin Box</strong> — an open home for high-integrity software and the people who build it.</p>
+          <p style="margin:12px 0 0;color:#e5e5e5;">BBOX is a Bitcoin-anchored registry and funding layer where anyone can discover verified open-source apps, review transparent project information, support public goods, and follow the work behind each project. Builders keep control of their records while Bitcoin provides a durable, auditable foundation.</p>
+        </div>
+
         <p><strong>Bitcoin Address:</strong> <code style="background:#000;border:1px solid #333;padding:4px 8px;border-radius:4px;color:#fff;">${bitcoinAddress}</code></p>
         <div style="background:#000;border:1px solid #2f2f33;padding:16px;border-radius:8px;margin:20px 0;">
           <p style="margin:0;color:#ff8a00;"><strong>Important Security Notice:</strong></p>
