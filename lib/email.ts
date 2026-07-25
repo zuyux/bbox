@@ -105,8 +105,9 @@ export const emailTemplates = {
   waitlistWelcome: (email: string) => ({
     subject: "Welcome to the BBOX Waitlist!",
     html: `
-      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:'Jersey 10',cursive;text-align:center;max-width:480px;margin:auto;">
-        <h1 style="font-size:2rem;font-weight:700;margin-bottom:12px;letter-spacing:1px;">Welcome to the BBOX Waitlist!</h1>
+      <div style="background:#000;padding:32px 24px;color:#fff;font-family:'Jersey 10',cursive;">
+      <div style="background:#000;padding:32px 24px;border-radius:16px;text-align:center;max-width:480px;margin:auto;">
+        <h1 style="color:#ff8a00;font-size:2rem;font-weight:700;margin-bottom:12px;letter-spacing:1px;">Welcome to the BBOX Waitlist!</h1>
         <p style="font-size:1.1rem;margin-bottom:18px;">Hey <b>${email}</b>,</p>
         <p style="font-size:1rem;margin-bottom:18px;">We're excited to have you join the registry for verified open-source software and digital sovereignty.<br />
         You'll be the first to know about exclusive features, updates, and early access opportunities.</p>
@@ -116,24 +117,26 @@ export const emailTemplates = {
         <hr style="border:none;border-top:1px solid #333;margin:32px 0;" />
         <p style="color:#898989;font-size:13px;">BBOX &mdash; The Universal Registry for Verified Software</p>
       </div>
+      </div>
     `
   }),
 
-  accountCreated: ({ address, verifyUrl, removeUrl, expiresInHours }: {
-    address: string;
+  accountCreated: ({ bitcoinAddress, verifyUrl, removeUrl, expiresInHours }: {
+    bitcoinAddress: string;
     verifyUrl: string;
     removeUrl: string;
     expiresInHours: number;
   }) => ({
     subject: "BBOX Account Created Successfully",
     html: `
-      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:'Jersey 10',cursive;max-width:600px;margin:auto;">
-        <h2 style="color:#ff006a;margin-bottom:20px;">Welcome to BBOX!</h2>
+      <div style="background:#000;padding:32px 24px;color:#fff;font-family:'Jersey 10',cursive;">
+      <div style="background:#000;padding:32px 24px;border-radius:16px;max-width:600px;margin:auto;">
+        <h2 style="color:#ff8a00;margin-bottom:20px;">Welcome to BBOX!</h2>
         <p>Your account has been created successfully.</p>
-        <p><strong>Address:</strong> <code style="background:#333;padding:4px 8px;border-radius:4px;color:#fff;">${address}</code></p>
+        <p><strong>Bitcoin Address:</strong> <code style="background:#000;border:1px solid #333;padding:4px 8px;border-radius:4px;color:#fff;">${bitcoinAddress}</code></p>
 
-        <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#101015;">
-          <h3 style="margin-top:0;color:#ffde91;">Verify your email</h3>
+        <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#000;">
+          <h3 style="margin-top:0;color:#ff8a00;">Verify your email</h3>
           <p style="margin:8px 0 18px;color:#e5e5e5;">Click below to confirm this email belongs to you. Verification is optional, but it helps us keep your account safer.</p>
           <div style="text-align:center;margin-bottom:18px;">
             <a href="${verifyUrl}" style="display:inline-block;padding:12px 26px;background:#00c2ff;color:#050505;border-radius:8px;font-weight:600;text-decoration:none;">Verify Email</a>
@@ -141,8 +144,8 @@ export const emailTemplates = {
           <p style="margin:0;font-size:13px;color:#9ca3af;">If you don't verify but also don't remove this email within ${expiresInHours} hours, we'll automatically treat it as verified.</p>
         </div>
 
-        <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#150b0b;">
-          <h3 style="margin-top:0;color:#ff6b6b;">Didn't create this wallet?</h3>
+        <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#000;">
+          <h3 style="margin-top:0;color:#ff8a00;">Didn't create this wallet?</h3>
           <p style="margin:8px 0 18px;color:#f5d0d0;">Use the link below within ${expiresInHours} hours to remove your email from this wallet so you can register it elsewhere.</p>
           <div style="text-align:center;margin-bottom:8px;">
             <a href="${removeUrl}" style="display:inline-block;padding:12px 26px;background:#ff3b3b;color:#050505;border-radius:8px;font-weight:600;text-decoration:none;">Remove My Email</a>
@@ -150,29 +153,32 @@ export const emailTemplates = {
           <p style="margin:0;font-size:13px;color:#f5d0d0;">After the ${expiresInHours}-hour window, the email is locked to this wallet unless you contact support.</p>
         </div>
 
-        <div style="background:#1a1a1a;padding:16px;border-radius:8px;margin:20px 0;">
-          <p style="margin:0;color:#ff6b6b;"><strong>⚠️ Important Security Notice:</strong></p>
+        <div style="background:#000;border:1px solid #2f2f33;padding:16px;border-radius:8px;margin:20px 0;">
+          <p style="margin:0;color:#ff8a00;"><strong>⚠️ Important Security Notice:</strong></p>
           <p style="margin:8px 0 0 0;">Keep your mnemonic/seed phrase safe. Never share it with anyone. This is the only way to recover your wallet.</p>
         </div>
         <p style="color:#898989;font-size:13px;">BBOX &mdash; The Universal Registry for Verified Software</p>
       </div>
+      </div>
     `
   }),
 
-  verifiedAccountCreated: ({ address }: {
-    address: string;
+  verifiedAccountCreated: ({ bitcoinAddress }: {
+    bitcoinAddress: string;
   }) => ({
     subject: "BBOX Account Created Successfully",
     html: `
-      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:Arial,sans-serif;max-width:600px;margin:auto;">
-        <h2 style="color:#00c2ff;margin-bottom:20px;">Welcome to BBOX!</h2>
+      <div style="background:#000;padding:32px 24px;color:#fff;font-family:Arial,sans-serif;">
+      <div style="background:#000;padding:32px 24px;border-radius:16px;max-width:600px;margin:auto;">
+        <h2 style="color:#ff8a00;margin-bottom:20px;">Welcome to BBOX!</h2>
         <p>Your email was verified and your account has been created successfully.</p>
-        <p><strong>Address:</strong> <code style="background:#333;padding:4px 8px;border-radius:4px;color:#fff;">${address}</code></p>
-        <div style="background:#1a1a1a;padding:16px;border-radius:8px;margin:20px 0;">
-          <p style="margin:0;color:#ff6b6b;"><strong>Important Security Notice:</strong></p>
+        <p><strong>Bitcoin Address:</strong> <code style="background:#000;border:1px solid #333;padding:4px 8px;border-radius:4px;color:#fff;">${bitcoinAddress}</code></p>
+        <div style="background:#000;border:1px solid #2f2f33;padding:16px;border-radius:8px;margin:20px 0;">
+          <p style="margin:0;color:#ff8a00;"><strong>Important Security Notice:</strong></p>
           <p style="margin:8px 0 0 0;">Keep your mnemonic/seed phrase safe. Never share it with anyone. This is the only way to recover your wallet.</p>
         </div>
         <p style="color:#898989;font-size:13px;">BBOX &mdash; The Universal Registry for Verified Software</p>
+      </div>
       </div>
     `
   }),
@@ -183,15 +189,17 @@ export const emailTemplates = {
   }) => ({
     subject: "Your BBOX verification code",
     html: `
-      <div style="background:#18181b;padding:32px 24px;border-radius:16px;color:#fff;font-family:Arial,sans-serif;max-width:520px;margin:auto;">
-        <h2 style="color:#00c2ff;margin:0 0 18px;">Verify your email</h2>
+      <div style="background:#000;padding:32px 24px;color:#fff;font-family:Arial,sans-serif;">
+      <div style="background:#000;padding:32px 24px;border-radius:16px;max-width:520px;margin:auto;">
+        <h2 style="color:#ff8a00;margin:0 0 18px;">Verify your email</h2>
         <p style="margin:0 0 18px;color:#e5e5e5;">Enter this code to continue creating your BBOX wallet.</p>
-        <div style="letter-spacing:8px;font-size:32px;font-weight:700;text-align:center;background:#101015;border:1px solid #2f2f33;border-radius:12px;padding:22px;margin:24px 0;color:#fff;">
+        <div style="letter-spacing:8px;font-size:32px;font-weight:700;text-align:center;background:#000;border:1px solid #2f2f33;border-radius:12px;padding:22px;margin:24px 0;color:#fff;">
           ${code}
         </div>
         <p style="margin:0 0 14px;color:#9ca3af;font-size:14px;">This code expires in ${expiresInMinutes} minutes.</p>
         <p style="margin:0;color:#9ca3af;font-size:14px;">If you did not request this, you can ignore this email.</p>
         <p style="color:#898989;font-size:12px;margin-top:28px;">BBOX &mdash; The Universal Registry for Verified Software</p>
+      </div>
       </div>
     `
   }),
@@ -206,13 +214,14 @@ export const emailTemplates = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Account Connection</title>
       </head>
-      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px;">🔐 Account Connection</h1>
+      <body style="background:#000;font-family:Arial,sans-serif;line-height:1.6;color:#fff;margin:0;padding:20px;">
+        <div style="background:#000;max-width:600px;margin:0 auto;">
+        <div style="background:#000;padding:30px;border:1px solid #2f2f33;border-radius:10px 10px 0 0;text-align:center;">
+          <h1 style="color:#ff8a00;margin:0;font-size:24px;">🔐 Account Connection</h1>
         </div>
         
-        <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e9ecef;">
-          <h2 style="color: #2563eb; margin-top: 0;">Connect Your Account</h2>
+        <div style="background:#000;padding:30px;border-radius:0 0 10px 10px;border:1px solid #2f2f33;">
+          <h2 style="color:#ff8a00;margin-top:0;">Connect Your Account</h2>
           
           <p>Hello!</p>
           
@@ -225,11 +234,11 @@ export const emailTemplates = {
             </a>
           </div>
           
-          <p style="color: #666; font-size: 14px; margin-top: 30px;">
+          <p style="color:#b3b3b3;font-size:14px;margin-top:30px;">
             <strong>Important:</strong> This link will expire in 30 minutes for security reasons.
           </p>
           
-          <p style="color: #666; font-size: 14px;">
+          <p style="color:#b3b3b3;font-size:14px;">
             If you didn't request this connection, please ignore this email.
           </p>
           
@@ -239,6 +248,7 @@ export const emailTemplates = {
             This email was sent by BBOX Platform<br>
             If you can't click the button, copy and paste this link: ${connectionUrl}
           </p>
+        </div>
         </div>
       </body>
       </html>

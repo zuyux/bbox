@@ -396,7 +396,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
             const mailRes = await fetch('/api/wallet-connect/account-created', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: trimmedEmail, address, preVerified: true }),
+              body: JSON.stringify({ email: trimmedEmail, bitcoinAddress: walletData.bitcoinAddress, preVerified: true }),
             });
             const mailResult = await mailRes.json();
             if (!mailRes.ok) {

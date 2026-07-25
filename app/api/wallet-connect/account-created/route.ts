@@ -6,9 +6,9 @@ const VERIFICATION_WINDOW_HOURS = 48;
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, address, preVerified } = await request.json();
-    if (!email || !address) {
-      return NextResponse.json({ error: 'Missing email or address' }, { status: 400 });
+    const { email, bitcoinAddress, preVerified } = await request.json();
+    if (!email || !bitcoinAddress) {
+      return NextResponse.json({ error: 'Missing email or Bitcoin address' }, { status: 400 });
     }
 
     const baseUrl =
@@ -17,16 +17,16 @@ export async function POST(request: NextRequest) {
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
     const emailTemplate = preVerified
-      ? emailTemplates.verifiedAccountCreated({ address })
+      ? emailTemplates.verifiedAccountCreated({ bitcoinAddress })
       : (() => {
-          const verifyToken = createEmailToken({ email, address, type: 'verify', expiresInHours: VERIFICATION_WINDOW_HOURS });
-          const removeToken = createEmailToken({ email, address, type: 'remove', expiresInHours: VERIFICATION_WINDOW_HOURS });
+          const verifyToken = createEmailToken({ email, address: bitcoinAddress, type: 'verify', expiresInHours: VERIFICATION_WINDOW_HOURS });
+          const removeToken = createEmailToken({ email, address: bitcoinAddress, type: 'remove', expiresInHours: VERIFICATION_WINDOW_HOURS });
 
           const verifyUrl = `${baseUrl}/email/verify?token=${encodeURIComponent(verifyToken)}`;
           const removeUrl = `${baseUrl}/email/remove?token=${encodeURIComponent(removeToken)}`;
 
           return emailTemplates.accountCreated({
-            address,
+            bitcoinAddress,
             verifyUrl,
             removeUrl,
             expiresInHours: VERIFICATION_WINDOW_HOURS,

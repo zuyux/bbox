@@ -946,7 +946,7 @@ export default function WalletPage() {
       await fetch('/api/wallet-connect/account-created', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: trimmedEmail, address: walletData.address, preVerified: true }),
+        body: JSON.stringify({ email: trimmedEmail, bitcoinAddress: walletData.bitcoinAddress, preVerified: true }),
       }).catch((error) => {
         console.warn('Failed to send account created email:', error);
       });
