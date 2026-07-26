@@ -22,11 +22,12 @@ interface ConnectedAccountRecord {
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { identifier, email, password } = await request.json();
+    const suppliedIdentifier = identifier ?? email;
 
-    if (!email || typeof email !== 'string') {
+    if (!suppliedIdentifier || typeof suppliedIdentifier !== 'string') {
       return NextResponse.json(
-        { error: 'Email is required' },
+        { error: 'Username or email is required' },
         { status: 400 }
       );
     }
@@ -38,26 +39,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
+    const normalizedIdentifier = suppliedIdentifier.trim().toLowerCase();
+    if (!normalizedIdentifier) {
       return NextResponse.json(
-        { error: 'Email is required' },
+        { error: 'Username or email is required' },
         { status: 400 }
       );
     }
 
-    const normalizedEmail = trimmedEmail.toLowerCase();
+    let accountAddress: string | null = null;
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedIdentifier);
+
+    if (!isEmail) {
+      const { data: profiles, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .select('address')
+        .ilike('username', normalizedIdentifier)
+        .limit(2);
+
+      if (profileError || profiles?.length !== 1) {
+        return NextResponse.json(
+          { error: 'Invalid username, email, or password' },
+          { status: 401 }
+        );
+      }
+      accountAddress = profiles[0].address;
+    }
+
     const { data, error } = await supabaseAdmin
       .from('connected_accounts')
       .select(
         'email,address,passkey,encrypted_private_key,encrypted_mnemonic,encryption_salt,encryption_iv,encryption_version,wallet_label,bitcoin_address,rootstock_address,liquid_address'
       )
-      .ilike('email', normalizedEmail)
+      .ilike(isEmail ? 'email' : 'address', isEmail ? normalizedIdentifier : accountAddress!)
       .single<ConnectedAccountRecord>();
 
     if (error || !data) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Invalid username, email, or password' },
         { status: 401 }
       );
     }
@@ -100,7 +119,7 @@ export async function POST(request: NextRequest) {
     } catch (decryptError) {
       console.warn('Failed to decrypt wallet during email login:', decryptError);
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Invalid username, email, or password' },
         { status: 401 }
       );
     }
@@ -111,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     if (passkeyHash !== data.passkey) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Invalid username, email, or password' },
         { status: 401 }
       );
     }
@@ -139,7 +158,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Email login lookup failed:', error);
+    console.error('Account login lookup failed:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { H1, Lead } from '@/components/ui/typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowRight, Blocks, ChevronDown, Code2, Coins, Compass, Layers3, ShieldCheck, Sparkles, Store, Users } from 'lucide-react';
+import { ArrowRight, Blocks, ChevronDown, Code2, Layers3, Sparkles, Store, Users } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import type { BitcoinApp } from '@/lib/appsUtils';
 import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
@@ -45,17 +45,17 @@ const bboxHighlights = [
   {
     title: 'Discover sovereign software',
     description: 'Browse Bitcoin apps, privacy tools, safe AI projects, and open-source systems in one verified index.',
-    icon: Compass,
+    iconSrc: '/telescope.svg',
   },
   {
     title: 'Fund visible progress',
     description: 'Support open-source teams through milestone-based funding, public roadmaps, and transparent delivery signals.',
-    icon: Coins,
+    iconSrc: '/fund.svg',
   },
   {
     title: 'Choose with confidence',
     description: 'Compare source links, reviews, app metadata, and public history before you install, fund, or recommend an app.',
-    icon: ShieldCheck,
+    iconSrc: '/shield.svg',
   },
 ];
 
@@ -541,10 +541,10 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="space-y-3 p-5">
-                {bboxHighlights.map(({ title, description, icon: Icon }) => (
+                {bboxHighlights.map(({ title, description, iconSrc }) => (
                   <div key={title} className="flex gap-3 rounded-md border border-border bg-background/70 p-4">
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-orange-500/10 text-orange-500">
-                      <Icon className="h-4 w-4" />
+                    <span className="mt-0.5 mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-500">
+                      <Image src={iconSrc} alt="" width={36} height={36} className="h-full w-full object-contain" aria-hidden="true" />
                     </span>
                     <div>
                       <h2 className="mb-1 text-sm font-semibold">{title}</h2>

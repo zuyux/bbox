@@ -197,16 +197,16 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
 
 
   const handleEmailConnect = async () => {
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
+    const identifier = email.trim();
+    if (!identifier) {
       setEmailStatus('error');
-      setEmailMessage('Please enter your email address');
-      onError?.('Please enter your email address');
+      setEmailMessage('Please enter your username or email address');
+      onError?.('Please enter your username or email address');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
+    if (identifier.includes('@') && !emailRegex.test(identifier)) {
       setEmailStatus('error');
       setEmailMessage('Please enter a valid email address');
       onError?.('Please enter a valid email address');
@@ -230,7 +230,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: trimmedEmail, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       const payload = await response.json();
@@ -270,12 +270,12 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
         try {
           unlockedWallet = decryptPortableEncryptedWallet(walletPayload, password);
         } catch {
-          throw new Error('Invalid email or password');
+          throw new Error('Invalid username, email, or password');
         }
 
         const passkeyHash = CryptoJS.SHA256(unlockedWallet.privateKey + password).toString();
         if (passkeyHash !== account.passkey) {
-          throw new Error('Invalid email or password');
+          throw new Error('Invalid username, email, or password');
         }
       } else {
         throw new Error('Failed to authenticate account');
@@ -313,7 +313,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="text-foreground text-xl font-semibold flex items-center">
             <Wallet className="w-5 h-5 mr-2" />
-            <LocalizedText>{connectMode === 'import' ? 'Recover Wallet' : connectMode === 'email' ? 'Sign in with email' : 'Connect Wallet'}
+            <LocalizedText>{connectMode === 'import' ? 'Recover Wallet' : connectMode === 'email' ? 'Sign in with username or email' : 'Connect Wallet'}
           </LocalizedText></h2>
           <button 
             onClick={onClose}
@@ -541,20 +541,21 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                 type="button"
               >
                 <Mail className="w-5 h-5 mr-2" />
-                <LocalizedText>Sign In with Email
+                <LocalizedText>Sign In with Username or Email
               </LocalizedText></Button>
             </>
           )}
           {connectMode === "email" && (
             <div className="space-y-2 text-black">
               <div className="space-y-0">
-                <Label htmlFor="email" className="hidden"><LocalizedText>Email</LocalizedText></Label>
+                <Label htmlFor="email" className="hidden">Username or email</Label>
                 <Input
                   id="email"
-                  type="email"
+                  type="text"
+                  autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder="Username or email"
                   className="h-12 bg-background px-5 py-3 text-base text-foreground border-foreground/40 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
                 />
               </div>
