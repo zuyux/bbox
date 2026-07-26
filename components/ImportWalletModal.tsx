@@ -4,7 +4,10 @@ import { useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { validateAndGenerateWallet } from '@/lib/walletHelpers';
+import {
+  validateAndGenerateWallet,
+  validateAndGenerateWalletFromPrivateKeyMnemonic,
+} from '@/lib/walletHelpers';
 import CryptoJS from 'crypto-js';
 import { signMessageHashRsv } from '@stacks/transactions';
 import {
@@ -71,24 +74,33 @@ export default function ImportWalletModal({ onBack, onImported }: ImportWalletMo
     }
     try {
       setBusy(true);
-      const derived = await validateAndGenerateWallet(words.join(' '));
-      const response = await fetch('/api/wallet/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'check',
-          address: derived.address,
-          bitcoinAddress: derived.bitcoinAddress,
-          rootstockAddress: derived.rootstockAddress,
-          liquidAddress: derived.liquidAddress,
-        }),
-      });
-      const result = await response.json();
-      if (!response.ok || !result.exists) {
-        throw new Error(result.error || 'No BBOX account was found for this recovery phrase.');
+      const phrase = words.join(' ');
+      const candidates = [await validateAndGenerateWallet(phrase)];
+      if (phraseLength === 24) {
+        candidates.push(validateAndGenerateWalletFromPrivateKeyMnemonic(phrase));
       }
-      setWallet({ ...derived, label: result.walletLabel || 'BBOX Wallet' });
-      setStep('password');
+
+      for (const derived of candidates) {
+        const response = await fetch('/api/wallet/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'check',
+            address: derived.address,
+            bitcoinAddress: derived.bitcoinAddress,
+            rootstockAddress: derived.rootstockAddress,
+            liquidAddress: derived.liquidAddress,
+          }),
+        });
+        const result = await response.json();
+        if (response.ok && result.exists) {
+          setWallet({ ...derived, label: result.walletLabel || 'BBOX Wallet' });
+          setStep('password');
+          return;
+        }
+      }
+
+      throw new Error('No BBOX account was found for this recovery phrase.');
     } catch (cause) {
       setError(cause instanceof Error && cause.message !== 'Invalid mnemonic'
         ? cause.message

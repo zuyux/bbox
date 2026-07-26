@@ -103,7 +103,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       await requestXverseStacksSignIn(stxAddress);
       persistWalletContext(stxAddress, 'xverse');
       if (onClose) onClose();
-      router.push('/apps');
+      router.push('/wallet');
     } catch (err: unknown) {
       const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Xverse.');
       if (isWalletRequestCancelled(err)) {
@@ -145,7 +145,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       await requestLeatherStacksSignIn(leatherProvider, stxAddress);
       persistWalletContext(stxAddress, 'leather');
       if (onClose) onClose();
-      router.push('/apps');
+      router.push('/wallet');
     } catch (err: unknown) {
       const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Leather.');
       if (isWalletRequestCancelled(err)) {
@@ -174,7 +174,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       const albyConnection = await connectAlbyWallet();
       persistWalletContext(albyConnection.address, 'alby');
       if (onClose) onClose();
-      router.push('/apps');
+      router.push('/wallet');
     } catch (err: unknown) {
       const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Alby.');
       if (isWalletRequestCancelled(err)) {
@@ -203,7 +203,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         }));
       }
       if (onClose) onClose();
-      router.push('/apps');
+      router.push('/wallet');
     } catch (err: unknown) {
       const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Nostria Signer.');
       if (isWalletRequestCancelled(err)) {
@@ -232,7 +232,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       const okxConnection = await connectOkxWallet();
       persistWalletContext(okxConnection.address, 'okx');
       if (onClose) onClose();
-      router.push('/apps');
+      router.push('/wallet');
     } catch (err: unknown) {
       const errorMsg = getWalletErrorMessage(err, 'Failed to connect to OKX Wallet.');
       if (isWalletRequestCancelled(err)) {
@@ -253,7 +253,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       const walletConnectConnection = await connectWalletConnect();
       persistWalletContext(walletConnectConnection.address, 'walletconnect');
       if (onClose) onClose();
-      router.push('/apps');
+      router.push('/wallet');
     } catch (err: unknown) {
       const errorMsg = getWalletErrorMessage(err, 'Failed to connect with WalletConnect.');
       if (isWalletRequestCancelled(err)) {
@@ -432,7 +432,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         }
 
         if (unlockedAddress) {
-          router.push('/apps');
+          router.push('/wallet');
           if (onClose) onClose();
         }
       }

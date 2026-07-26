@@ -1,4 +1,4 @@
-import { generateMnemonic, wordlists } from 'bip39';
+import { entropyToMnemonic, generateMnemonic, wordlists } from 'bip39';
 import { getStxAddress } from '@stacks/wallet-sdk';
 import { HDKey } from '@scure/bip32';
 import { mnemonicToSeed } from 'bip39';
@@ -7,14 +7,42 @@ import { getNostrPublicKeyFromPrivateKey } from './nostr';
 
 export type MnemonicLanguage = 'en' | 'es' | 'pt';
 
+const MNEMONIC_LANGUAGE_STORAGE_KEY = 'bbox_mnemonic_language';
+
 const mnemonicWordlists: Record<MnemonicLanguage, string[]> = {
   en: wordlists.english,
   es: wordlists.spanish,
   pt: wordlists.portuguese,
 };
 
+export function privateKeyToMnemonic(
+  privateKey: string,
+  language: MnemonicLanguage
+): string {
+  const normalizedKey = privateKey.trim().replace(/^0x/i, '');
+  // Stacks compressed private keys append `01` to the 32-byte secret.
+  const secretKey = normalizedKey.length === 66 && normalizedKey.endsWith('01')
+    ? normalizedKey.slice(0, 64)
+    : normalizedKey;
+
+  if (!/^[0-9a-fA-F]{64}$/.test(secretKey)) {
+    throw new Error('Private key must be a 32-byte hex value, optionally followed by the Stacks compression marker');
+  }
+
+  return entropyToMnemonic(secretKey.toLowerCase(), mnemonicWordlists[language]);
+}
+
 export function getDeviceMnemonicLanguage(): MnemonicLanguage {
   if (typeof navigator === 'undefined') return 'en';
+
+  try {
+    const savedLanguage = window.localStorage.getItem(MNEMONIC_LANGUAGE_STORAGE_KEY);
+    if (savedLanguage === 'en' || savedLanguage === 'es' || savedLanguage === 'pt') {
+      return savedLanguage;
+    }
+  } catch (error) {
+    console.warn('Unable to read mnemonic language preference:', error);
+  }
 
   const deviceLanguages = navigator.languages?.length
     ? navigator.languages
@@ -28,6 +56,16 @@ export function getDeviceMnemonicLanguage(): MnemonicLanguage {
   }
 
   return 'en';
+}
+
+export function saveMnemonicLanguagePreference(language: MnemonicLanguage): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(MNEMONIC_LANGUAGE_STORAGE_KEY, language);
+  } catch (error) {
+    console.warn('Unable to save mnemonic language preference:', error);
+  }
 }
 
 /**

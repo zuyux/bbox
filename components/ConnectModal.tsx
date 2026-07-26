@@ -291,7 +291,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
       setEmailMessage('Wallet unlocked. Redirecting...');
       onSuccess?.();
       onClose();
-      router.push('/apps');
+      router.push('/wallet');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to authenticate account';
       setEmailStatus('error');
@@ -373,7 +373,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 await persistSessionForWallet(stxAddress, 'leather');
                                 onSuccess?.();
                                 onClose();
-                                router.push('/apps');
+                                router.push('/wallet');
                               } else {
                                 const errorMsg = "Leather provider does not support request. Unlock the wallet and refresh the page.";
                                 setWalletError(errorMsg);
@@ -389,7 +389,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 await persistSessionForWallet(stxAddress, 'xverse');
                                 onSuccess?.();
                                 onClose();
-                                router.push('/apps');
+                                router.push('/wallet');
                               } catch (err: unknown) {
                                 const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Xverse.');
                                 if (isWalletRequestCancelled(err)) {
@@ -409,7 +409,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 await persistSessionForWallet(albyConnection.address, 'alby');
                                 onSuccess?.();
                                 onClose();
-                                router.push('/apps');
+                                router.push('/wallet');
                               } catch (err: unknown) {
                                 const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Alby.');
                                 if (isWalletRequestCancelled(err)) {
@@ -437,7 +437,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 }
                                 onSuccess?.();
                                 onClose();
-                                router.push('/apps');
+                                router.push('/wallet');
                               } catch (err: unknown) {
                                 const errorMsg = getWalletErrorMessage(err, 'Failed to connect to Nostria Signer.');
                                 if (isWalletRequestCancelled(err)) {
@@ -457,7 +457,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 await persistSessionForWallet(okxConnection.address, 'okx');
                                 onSuccess?.();
                                 onClose();
-                                router.push('/apps');
+                                router.push('/wallet');
                               } catch (err: unknown) {
                                 const errorMsg = getWalletErrorMessage(err, 'Failed to connect to OKX Wallet.');
                                 if (isWalletRequestCancelled(err)) {
@@ -477,7 +477,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 await persistSessionForWallet(walletConnectConnection.address, 'walletconnect');
                                 onSuccess?.();
                                 onClose();
-                                router.push('/apps');
+                                router.push('/wallet');
                               } catch (err: unknown) {
                                 const errorMsg = getWalletErrorMessage(err, 'Failed to connect with WalletConnect.');
                                 if (isWalletRequestCancelled(err)) {
@@ -603,7 +603,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                 await persistSessionForWallet(wallet.address, 'imported');
                 onSuccess?.();
                 onClose();
-                router.push('/apps');
+                router.push('/wallet');
               }}
             />
           )}

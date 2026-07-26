@@ -20,6 +20,12 @@ import {
 import { buildWalletProofMessage, createWalletProof } from '@/lib/commentSigning';
 import { hasEncryptedWallet, retrieveEncryptedWallet } from '@/lib/encryptedStorage';
 import { getNostrSecretKeyFromPrivateKey, isNostrPublicKey } from '@/lib/nostr';
+import {
+  getDeviceMnemonicLanguage,
+  privateKeyToMnemonic,
+  saveMnemonicLanguagePreference,
+  type MnemonicLanguage,
+} from '@/lib/stacksWallet';
 import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Copy, ExternalLink, Eye, EyeOff, Github, KeyRound } from 'lucide-react';
+import { Copy, ExternalLink, Eye, EyeOff, Github, KeyRound, Languages } from 'lucide-react';
 
 interface SkillCategory {
   category: string;
@@ -194,6 +200,8 @@ export default function SettingsPage() {
   const [revealingKeys, setRevealingKeys] = useState(false);
   const [recoveryKeys, setRecoveryKeys] = useState<{ mnemonic: string; privateKey: string; nsec: string } | null>(null);
   const [showRecoveryKeys, setShowRecoveryKeys] = useState(false);
+  const [privateKeyMnemonicLanguage, setPrivateKeyMnemonicLanguage] = useState<MnemonicLanguage>('en');
+  const [privateKeyMnemonic, setPrivateKeyMnemonic] = useState('');
   const [interestCategories, setInterestCategories] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [interestsLoading, setInterestsLoading] = useState(true);
@@ -205,6 +213,10 @@ export default function SettingsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const githubAuthStatus = searchParams.get('github');
+
+  useEffect(() => {
+    setPrivateKeyMnemonicLanguage(getDeviceMnemonicLanguage());
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -446,8 +458,11 @@ export default function SettingsPage() {
         throw new Error('Unable to unlock wallet keys');
       }
 
+      const preferredMnemonicLanguage = getDeviceMnemonicLanguage();
+      const preferredMnemonic = privateKeyToMnemonic(wallet.privateKey, preferredMnemonicLanguage);
+      setPrivateKeyMnemonicLanguage(preferredMnemonicLanguage);
       setRecoveryKeys({
-        mnemonic: wallet.mnemonic,
+        mnemonic: preferredMnemonic,
         privateKey: wallet.privateKey,
         nsec: getNostrSecretKeyFromPrivateKey(wallet.privateKey),
       });
@@ -466,6 +481,22 @@ export default function SettingsPage() {
     setRecoveryKeys(null);
     setRecoveryPassword('');
     setShowRecoveryKeys(false);
+    setPrivateKeyMnemonic('');
+  };
+
+  const handleTranslatePrivateKey = () => {
+    if (!recoveryKeys) return;
+
+    try {
+      setPrivateKeyMnemonic(privateKeyToMnemonic(
+        recoveryKeys.privateKey,
+        privateKeyMnemonicLanguage
+      ));
+      toast.success('Private key converted to mnemonic');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to convert private key';
+      toast.error(errorMessage);
+    }
   };
 
   const normalizeEmail = (value: string) => value.trim().toLowerCase();
@@ -1364,7 +1395,7 @@ export default function SettingsPage() {
 
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <input
-                      className="min-w-0 flex-1 px-4 py-3 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="min-w-0 flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="password"
                       value={recoveryPassword}
                       onChange={event => setRecoveryPassword(event.target.value)}
@@ -1440,6 +1471,66 @@ export default function SettingsPage() {
                           </div>
                         </div>
                       ))}
+
+                      {showRecoveryKeys && (
+                        <div className="space-y-3 rounded-lg border border-border bg-background/60 p-3">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                            <div className="flex-1 space-y-1.5">
+                              <label htmlFor="private-key-mnemonic-language" className="text-xs font-medium uppercase text-gray-500 mb-2">
+                                Mnemonic language
+                              </label>
+                              <select
+                                id="private-key-mnemonic-language"
+                                value={privateKeyMnemonicLanguage}
+                                onChange={event => {
+                                  const language = event.target.value as MnemonicLanguage;
+                                  setPrivateKeyMnemonicLanguage(language);
+                                  saveMnemonicLanguagePreference(language);
+                                  setPrivateKeyMnemonic('');
+                                  toast.success('Mnemonic language preference saved');
+                                }}
+                                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
+                              >
+                                <option className="bg-background text-foreground" value="en">English</option>
+                                <option className="bg-background text-foreground" value="es">Español</option>
+                                <option className="bg-background text-foreground" value="pt">Português</option>
+                              </select>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={handleTranslatePrivateKey}
+                              className="h-10 border-border text-muted-foreground hover:bg-muted"
+                            >
+                              <Languages className="h-4 w-4" />
+                              Translate
+                            </Button>
+                          </div>
+
+                          {privateKeyMnemonic && (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between gap-3">
+                                <label className="text-xs font-medium uppercase text-gray-500">Private Key Mnemonic</label>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => copySecret('Private Key Mnemonic', privateKeyMnemonic)}
+                                  className="h-8 border-border text-muted-foreground hover:bg-muted"
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <div className="break-words rounded-lg border border-[#222] bg-background p-3 font-mono text-sm text-foreground">
+                                {privateKeyMnemonic}
+                              </div>
+                              <p className="text-xs text-amber-600 dark:text-amber-300">
+                                This phrase encodes the private key&apos;s 32 secret bytes. It is not the wallet&apos;s original seed phrase and standard seed import will derive a different wallet.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>
