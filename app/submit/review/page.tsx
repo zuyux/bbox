@@ -394,7 +394,7 @@ export default function SubmittedAppsPage() {
                         <p><LocalizedText>⚡ Lightning address: </LocalizedText><span className="text-foreground font-medium">{app.lightning_address}</span></p>
                       )}
                       {app.website_url && (
-                        <p><LocalizedText>🔗 Website: </LocalizedText><a href={app.website_url} className="text-primary hover:underline" target="_blank" rel="noreferrer">{app.website_url}</a></p>
+                        <p><LocalizedText>🔗 Website: </LocalizedText><a href={app.website_url} className="text-accent hover:text-accent/80 hover:underline" target="_blank" rel="noreferrer">{app.website_url}</a></p>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2">

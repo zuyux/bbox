@@ -58,7 +58,7 @@ export default function SubscribeForm() {
         autoComplete="email"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
-        placeholder="email@domain.com"
+        placeholder="yoo@domain.com"
         disabled={state === 'submitting'}
         className="h-7 w-36 min-w-0 rounded border border-white/15 bg-white/10 px-2 text-xs text-white placeholder:text-white/35 outline-none transition focus:border-[#ff7a1a] focus:ring-1 focus:ring-[#ff7a1a] disabled:cursor-not-allowed disabled:opacity-60 sm:w-44"
       />

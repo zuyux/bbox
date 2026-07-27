@@ -2525,7 +2525,7 @@ export default function WalletPage() {
                       <div className="font-mono text-xs text-muted-foreground break-all">
                         <a href={`https://explorer.hiro.so/txid/${tx.tx_id}?chain=${currentNetwork}`}
                           target="_blank" rel="noopener noreferrer"
-                          className="hover:underline text-primary">
+                          className="text-accent hover:text-accent/80 hover:underline">
                           {tx.tx_id.slice(0, 10)}...{tx.tx_id.slice(-8)}
                         </a>
                       </div>

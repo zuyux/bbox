@@ -369,7 +369,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
           </div>
           <Button
             variant="link"
-            className="p-0 h-auto text-sm text-blue-500 hover:text-blue-600"
+            className="p-0 h-auto text-sm text-accent hover:text-accent/80"
             onClick={() => setShowReviewModal(true)}
           >
             See all reviews / Add your review
@@ -408,7 +408,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                     href={displayApp.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:text-blue-600 hover:underline"
+                    className="text-accent hover:text-accent/80 hover:underline"
                   >
                     {displayApp.link}
                   </a>
@@ -422,7 +422,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                       href={displayApp.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-blue-500 hover:text-blue-600 hover:underline"
+                      className="inline-flex items-center gap-1.5 text-accent hover:text-accent/80 hover:underline"
                     >
                       <Github className="h-4 w-4 flex-shrink-0" />
                       {displayApp.githubUrl}
@@ -438,7 +438,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold">More {displayApp.category} Apps</h3>
-              <Button variant="link" asChild className="text-sm text-blue-500 hover:text-blue-600 p-0 h-auto">
+              <Button variant="link" asChild className="text-sm text-accent hover:text-accent/80 p-0 h-auto">
                 <Link href="/apps">
                   See All
                   <ArrowRight className="ml-1 h-3 w-3" />

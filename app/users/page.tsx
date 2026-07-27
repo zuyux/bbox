@@ -38,7 +38,7 @@ export default function UsersPage() {
         {users.length === 0 && <li><LocalizedText>No users found.</LocalizedText></li>}
         {users.map((user) => (
           <li key={user.address}>
-            <Link href={`/${user.address}`} className="text-blue-500 hover:underline">
+            <Link href={`/${user.address}`} className="text-accent hover:text-accent/80 hover:underline">
               {user.address}
             </Link>
           </li>

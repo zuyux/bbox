@@ -126,7 +126,7 @@ function ProfileDisplay({ profile, isOwnProfile, nostrPublicKey }: {
                   href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:underline truncate"
+                  className="text-accent hover:text-accent/80 hover:underline truncate"
                 >
                   {profile.website.replace(/^https?:\/\//, '')}
                 </a>
@@ -139,7 +139,7 @@ function ProfileDisplay({ profile, isOwnProfile, nostrPublicKey }: {
                   href={getGithubProfileUrl(profile.github_url)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:underline truncate"
+                  className="text-accent hover:text-accent/80 hover:underline truncate"
                 >
                   {getGithubProfileLabel(profile.github_url)}
                 </a>
@@ -257,7 +257,7 @@ function BitcoinAppsSection({ apps, loading }: { apps: SubmittedApp[]; loading: 
 
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">{new Date(app.created_at || '').toLocaleDateString()}</span>
-                <Link href={`/preview/${app.id}`} className="text-primary hover:underline text-[11px]">
+                <Link href={`/preview/${app.id}`} className="text-accent hover:text-accent/80 hover:underline text-[11px]">
                   <LocalizedText>View details
                 </LocalizedText></Link>
               </div>

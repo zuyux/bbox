@@ -22,7 +22,7 @@ const en = {
       { label: 'Funding layer', detail: 'Milestones and funding context make grants, research, and public-goods support easier to inspect before money moves.' },
       { label: 'Open-source commons', detail: 'A neutral surface where users, contributors, communities, and DAOs can coordinate around high-integrity software.' },
     ],
-    map: 'Explore the map', browseCategory: 'Browse by Category', categoryLead: 'Drag the rail, pick a category, and jump straight into projects building useful sovereign software.', categoriesLabel: 'Open-source app categories', apps: 'apps',
+    map: 'Explore the map', browseCategory: 'Browse by Category', categoriesLabel: 'Open-source app categories', apps: 'apps',
     featured: 'Featured Apps', featuredLead: 'Top-rated apps grouped by category for quick discovery.', browseAll: 'Browse all apps', topCategoryApps: 'Top {category} apps', top: 'Top', exploreMore: 'Explore more', submitted: 'Submitted Projects', contributors: 'Contributors',
     faqBadge: 'Helpful answers', faqTitle: 'Frequently asked questions', faqLead: "Everything you need to know about BBOX. Can't find your answer? Start with the docs or explore the app registry.",
     faqItems: [
@@ -49,7 +49,7 @@ const es: typeof en = {
   nav: { primary: 'Navegación principal', home: 'Inicio de BBOX', search: 'Buscar aplicaciones', searchPlaceholder: 'BUSCAR APLICACIONES...', openSearch: 'Abrir búsqueda' },
   footer: { tagline: 'Nuestra tienda de aplicaciones' }, accessibility: { skip: 'Ir al contenido principal', main: 'Contenido principal' },
   home: {
-    badge: 'ESPACIO PARA HUMANOS', title: 'Descubre aplicaciones de código abierto', lead: 'Descubre aplicaciones útiles, compara información confiable y apoya proyectos abiertamente, sin depender de intermediarios ocultos.',
+    badge: 'ESPACIO PARA TERRÍCOLAS', title: 'APPS DE CÓDIGO ABIERTO PARA TODOS', lead: 'Descubre aplicaciones útiles, compara información confiable y apoya proyectos abiertamente, sin depender de intermediarios bboomers.',
     exploreApps: 'Explorar aplicaciones', applyFunding: 'Solicitar financiamiento', protocol: 'Protocolo de registro de aplicaciones', listedApps: 'aplicaciones registradas', categories: 'categorías', anchored: 'Anclado en Bitcoin', publicGoods: 'bienes públicos', loading: 'Cargando aplicaciones desde la base de datos pública...',
     what: 'Qué hace BBOX', whatTitle: 'Descubrimiento, coordinación y financiamiento en un solo lugar.', whatLead: 'BBOX organiza software de código abierto de alta integridad con perfiles, reseñas, subvenciones e hitos verificables anclados por el Bitcoin App Registry.',
     ecosystemPillars: [
@@ -58,7 +58,7 @@ const es: typeof en = {
       { label: 'Capa de financiamiento', detail: 'Los hitos y el contexto de financiamiento facilitan evaluar subvenciones, investigación y apoyo a bienes públicos antes de transferir fondos.' },
       { label: 'Bienes comunes de código abierto', detail: 'Un espacio neutral donde usuarios, colaboradores, comunidades y DAO pueden coordinarse en torno a software de alta integridad.' },
     ],
-    map: 'Explora el mapa', browseCategory: 'Explorar por categoría', categoryLead: 'Arrastra la lista, elige una categoría y descubre proyectos que crean software soberano útil.', categoriesLabel: 'Categorías de aplicaciones de código abierto', apps: 'aplicaciones', featured: 'Aplicaciones destacadas', featuredLead: 'Aplicaciones mejor valoradas por categoría para descubrirlas rápidamente.', browseAll: 'Ver todas', topCategoryApps: 'Mejores aplicaciones de {category}', top: 'Mejores', exploreMore: 'Explorar más', submitted: 'Proyectos enviados', contributors: 'Colaboradores',
+    map: 'Explora el mapa', browseCategory: 'Explorar por categoría', categoriesLabel: 'Categorías de aplicaciones de código abierto', apps: 'aplicaciones', featured: 'Aplicaciones destacadas', featuredLead: 'Aplicaciones mejor valoradas por categoría para descubrirlas rápidamente.', browseAll: 'Ver todas', topCategoryApps: 'Mejores aplicaciones de {category}', top: 'Mejores', exploreMore: 'Explorar más', submitted: 'Proyectos enviados', contributors: 'Colaboradores',
     faqBadge: 'Respuestas útiles', faqTitle: 'Preguntas frecuentes', faqLead: 'Todo lo que necesitas saber sobre BBOX. ¿No encuentras tu respuesta? Consulta la documentación o explora el registro.',
     faqItems: [
       { question: '¿BBOX es gratis?', answer: 'Sí. Explorar aplicaciones, leer perfiles y consultar metadatos públicos es gratis. El financiamiento y los servicios específicos de cada aplicación pueden incluir pagos definidos por cada proyecto.' },
@@ -93,7 +93,7 @@ const pt: typeof en = {
       { label: 'Camada de financiamento', detail: 'Marcos e contexto de financiamento facilitam a análise de subsídios, pesquisas e apoio a bens públicos antes da transferência de recursos.' },
       { label: 'Bens comuns de código aberto', detail: 'Um espaço neutro onde usuários, colaboradores, comunidades e DAOs podem se coordenar em torno de software de alta integridade.' },
     ],
-    map: 'Explore o mapa', browseCategory: 'Explorar por categoria', categoryLead: 'Arraste a lista, escolha uma categoria e encontre projetos que criam software soberano útil.', categoriesLabel: 'Categorias de aplicativos de código aberto', apps: 'aplicativos', featured: 'Aplicativos em destaque', featuredLead: 'Aplicativos mais bem avaliados por categoria para descoberta rápida.', browseAll: 'Ver todos', topCategoryApps: 'Melhores aplicativos de {category}', top: 'Melhores', exploreMore: 'Explorar mais', submitted: 'Projetos enviados', contributors: 'Colaboradores',
+    map: 'Explore o mapa', browseCategory: 'Explorar por categoria', categoriesLabel: 'Categorias de aplicativos de código aberto', apps: 'aplicativos', featured: 'Aplicativos em destaque', featuredLead: 'Aplicativos mais bem avaliados por categoria para descoberta rápida.', browseAll: 'Ver todos', topCategoryApps: 'Melhores aplicativos de {category}', top: 'Melhores', exploreMore: 'Explorar mais', submitted: 'Projetos enviados', contributors: 'Colaboradores',
     faqBadge: 'Respostas úteis', faqTitle: 'Perguntas frequentes', faqLead: 'Tudo o que você precisa saber sobre a BBOX. Não encontrou sua resposta? Consulte a documentação ou explore o registro.',
     faqItems: [
       { question: 'A BBOX é gratuita?', answer: 'Sim. Explorar aplicativos, ler perfis e consultar metadados públicos é gratuito. O financiamento e os serviços específicos de cada aplicativo podem envolver pagamentos definidos por cada projeto.' },

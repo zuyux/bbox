@@ -24,7 +24,6 @@ import {
   Coins, 
   Code, 
   Globe,
-  ArrowRight,
   Gamepad2,
   Loader2
 } from 'lucide-react';
@@ -310,7 +309,7 @@ export default function AppsPage() {
         {/* Apps List */}
         <div className="space-y-4">
           {visibleApps.map((app, index) => (
-            <Link key={app.id} href={`/apps/${app.id}`}>
+            <Link key={app.id} href={`/apps/${app.id}`} className="no-underline hover:no-underline">
               <div className="flex gap-4 p-4 rounded-md hover:bg-muted/50 transition-colors cursor-pointer border border-transparent hover:border-border">
                 {/* App Icon */}
                 <div className="flex-shrink-0">
@@ -319,19 +318,11 @@ export default function AppsPage() {
                 
                 {/* App Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-stretch justify-between gap-2 mb-1">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base sm:text-lg break-words line-clamp-1">{app.name}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2 break-words mb-2">
-                        {app.description}
-                      </p>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      className="hidden bg-green-500 hover:bg-green-600 text-white rounded-md px-3 flex-shrink-0 cursor-pointer self-stretch items-center justify-center sm:flex"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
+                  <div className="mb-1">
+                    <h3 className="font-semibold text-base sm:text-lg break-words line-clamp-1">{app.name}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 break-words mb-2">
+                      {app.description}
+                    </p>
                   </div>
                   
                   <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">

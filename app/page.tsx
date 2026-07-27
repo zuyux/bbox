@@ -592,12 +592,11 @@ export default function HomePage() {
 
         {/* Categories */}
         <div ref={appDiscoveryRef} className="mb-12">
-          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-6">
             <div>
               <p className="text-sm uppercase tracking-[0.28em] text-orange-500">{copy.map}</p>
               <h2 className="title text-3xl font-bold">{copy.browseCategory}</h2>
             </div>
-            <p className="mb-0 max-w-md text-sm text-muted-foreground">{copy.categoryLead}</p>
           </div>
           <div className="relative overflow-visible">
             <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent z-10" aria-hidden="true" />

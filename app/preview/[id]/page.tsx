@@ -261,7 +261,7 @@ export default async function PreviewAppPage({ params }: PreviewPageProps) {
                 <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-1"><LocalizedText>Contact</LocalizedText></p>
                 <p className="flex items-center gap-2 text-sm">
                   <Mail className="h-4 w-4" />
-                  <a href={`mailto:${app.publisher_email}`} className="text-primary hover:underline">
+                  <a href={`mailto:${app.publisher_email}`} className="text-accent hover:text-accent/80 hover:underline">
                     {app.publisher_email}
                   </a>
                 </p>
