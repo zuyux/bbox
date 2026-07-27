@@ -1,0 +1,115 @@
+---
+title: Protocolo BAR
+description: Guía técnica del Bitcoin App Registry (brc-app), su formato, operaciones y reglas deterministas de validación.
+---
+
+El **Bitcoin App Registry (BAR)** es un registro sin permisos y controlado por editores para aplicaciones de código abierto en Bitcoin L1. Usa inscripciones Taproot para crear un historial acumulativo que cualquier indexador puede validar.
+
+BAR es la capa de protocolo; BBOX es una aplicación que puede presentar registros BAR junto con información comunitaria y de financiación.
+
+## Principios de diseño
+
+1. **Sin guardián del protocolo:** ningún operador central debe aceptar un registro válido.
+2. **Soberanía del editor:** la clave propietaria actual autoriza cambios y transferencias.
+3. **Historial inmutable:** el nuevo estado se añade sin sobrescribir inscripciones anteriores.
+4. **Indexación independiente:** reglas deterministas permiten reconstruir la misma cadena válida.
+
+## Identidad del protocolo
+
+| Propiedad | Valor |
+| --- | --- |
+| Identificador | `brc-app` |
+| Especificación | v1 |
+| Capa | Bitcoin L1 |
+| Mecanismo | Inscripciones Taproot (Ordinals) |
+| Dirección coordinadora | `bc1p0saw6z028y7h6eag3w6hx5an6mk5ta8qk7wx2d3gtqtrty243uvqvjzvew` |
+
+La dirección es un ancla de descubrimiento, no un administrador.
+
+## Formato del registro
+
+```json
+{
+  "p": "brc-app",
+  "op": "register",
+  "app_id": "example-wallet",
+  "owner": "bc1p...direccion-taproot",
+  "name": "Example Wallet",
+  "repo": "https://github.com/example/wallet",
+  "description": "Una wallet Bitcoin autocustodiada.",
+  "license": "MIT",
+  "version": "1.4.0",
+  "build_hash": "sha256:0123456789abcdef...",
+  "platform": ["android", "linux"],
+  "chain_layer": "BTC",
+  "previous": null,
+  "timestamp": 1776556800
+}
+```
+
+| Campo | Significado |
+| --- | --- |
+| `p` | Debe ser `brc-app` |
+| `op` | `genesis`, `register`, `update` o `transfer` |
+| `app_id` | Identificador permanente de la cadena |
+| `owner` | Dirección Taproot autorizada |
+| `repo` | Repositorio fuente canónico |
+| `version` | Versión actual |
+| `build_hash` | Hash recomendado del artefacto |
+| `platform` | Plataformas compatibles |
+| `chain_layer` | Integración principal: `none`, `BTC`, `LN`, `Stacks`, `Rootstock`, `Starknet` u `other` |
+| `previous` | Inscripción válida anterior o `null` |
+| `timestamp` | Marca Unix recomendada |
+
+## Operaciones
+
+### `genesis`
+
+Define el protocolo una sola vez.
+
+### `register`
+
+Inicia un nuevo `app_id`. El creador debe coincidir con `owner`; `previous` puede ser `null` o referenciar genesis según la interpretación v1 del indexador.
+
+### `update`
+
+Publica nuevos metadatos. Debe estar autorizado por el propietario actual y `previous` debe apuntar a la última inscripción válida. Conviene publicar un estado canónico completo para evitar fusiones ambiguas.
+
+### `transfer`
+
+Transfiere el control a otra dirección Taproot. Las actualizaciones posteriores solo son válidas cuando las autoriza el nuevo propietario.
+
+## Validación determinista
+
+Un indexador debe:
+
+1. Analizar JSON válido.
+2. Exigir `p: "brc-app"` y una operación reconocida.
+3. Verificar la autorización del propietario.
+4. Exigir que `previous` apunte al último estado válido del mismo `app_id`.
+5. Rechazar actualizaciones obsoletas o competidoras.
+6. Mostrar la última inscripción válida sin eliminar el historial.
+
+```text
+register (propietario A)
+    └── update (A)
+          └── transfer (A → B)
+                └── update (B)  ← estado actual
+
+update obsoleto (A)              ← rechazado
+```
+
+## Garantías y límites
+
+BAR busca proporcionar historial público, continuidad de control y estado canónico reconstruible. No demuestra que el código sea seguro, que el editor tenga una identidad legal concreta, que un build corresponda al código ni que un proyecto cumplirá trabajo futuro. Tampoco ofrece escrow, calificaciones, moderación o análisis de malware.
+
+## BAR y el contrato BBOX
+
+| BAR | Registro Clarity de BBOX |
+| --- | --- |
+| Inscripciones Bitcoin L1 | Contrato inteligente Stacks |
+| Historial canónico del editor | Estado operativo e interacción |
+| Registro, actualización y transferencia | Envío, hash IPFS, votos y calificaciones |
+| Reconstruido por indexadores | Leído del estado del contrato |
+
+Una integración inicial debe validar esquemas, propietarios, punteros, forks y duplicados; conservar todo el historial; permitir reindexación desde Bitcoin; e incluir vectores de prueba.

@@ -1,0 +1,43 @@
+---
+title: Guia para publicadores
+description: Crie um registro claro, preserve a continuidade da identidade e publique evidências verificáveis.
+---
+
+Um registro forte permite entender o software sem depender de marketing. Deve ser atual, específico e ligado a fontes primárias.
+
+## Antes de enviar
+
+Prepare:
+
+- **Nome e resumo:** o que faz e para quem.
+- **Categoria e plataformas:** somente as realmente suportadas.
+- **Repositório:** fonte pública canônica.
+- **Site e documentação:** domínios controlados pelo projeto.
+- **Licença e versão:** coerentes com o repositório.
+- **Mídia:** logo e capturas do produto atual.
+- **Segurança:** auditorias, assinaturas, hashes ou builds reproduzíveis.
+
+## Escreva uma descrição útil
+
+Explique o problema, a abordagem, dependências e maturidade. Evite alegações como “seguro” ou “totalmente descentralizado” sem evidências e limites claros.
+
+## Preserve a continuidade
+
+Use uma carteira e contas públicas que o projeto consiga proteger. Ligue o registro a partir do site ou repositório oficial para corroborar propriedade nos dois sentidos.
+
+Proteja a chave Taproot do BAR. Perdê-la pode impedir a continuação da cadeia canônica.
+
+## Defina marcos revisáveis
+
+```text
+Entregável: beta Android com pagamento Lightning
+Aceitação: paga uma fatura de teste e mostra falhas
+Evidência: versão marcada, hash APK, demo e instruções
+Dependência: SDK upstream 3.2
+```
+
+## Mantenha o registro atualizado
+
+Atualize repositórios, domínios, versões, plataformas e segurança. Para mudar propriedade, use transferência explícita. No BAR, cada `update` deve apontar para a última inscrição válida em `previous`.
+
+Ative o [Modo Desenvolvedor](/pt/settings#developer-mode) para preparar um envio.

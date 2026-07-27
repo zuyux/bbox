@@ -237,7 +237,85 @@ body {
 .bbox-docs-theme #nd-sidebar,
 .bbox-docs-theme [data-sidebar-panel] {
   background: linear-gradient(180deg, #000 0%, #101010 100%);
-  border-color: #555;
+  border-color: #111;
+}
+
+.bbox-docs-theme #nd-sidebar {
+  padding-bottom: 3.5rem;
+}
+
+/* Fumadocs renders search in a body-level portal, so scope it through the
+   route class instead of the documentation layout container. */
+body.bbox-docs-route [role="dialog"] {
+  top: 12vh;
+  width: min(30rem, calc(100% - 1.5rem));
+  max-width: 30rem;
+  border: 1px solid #fff;
+  border-radius: 0.5rem;
+  background: #000;
+  color: #fff;
+  box-shadow: 0 16px 50px rgb(0 0 0 / 0.8);
+  --color-fd-background: #000;
+  --color-fd-foreground: #fff;
+  --color-fd-muted: #000;
+  --color-fd-muted-foreground: #fff;
+  --color-fd-popover: #000;
+  --color-fd-popover-foreground: #fff;
+  --color-fd-card: #000;
+  --color-fd-card-foreground: #fff;
+  --color-fd-border: #fff;
+  --color-fd-primary: #fff;
+  --color-fd-primary-foreground: #000;
+  --color-fd-secondary: #000;
+  --color-fd-secondary-foreground: #fff;
+  --color-fd-accent: #fff;
+  --color-fd-accent-foreground: #000;
+}
+
+body.bbox-docs-route [role="dialog"] > div:first-of-type {
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+}
+
+body.bbox-docs-route [role="dialog"] input {
+  color: #fff;
+  font-size: 0.9375rem;
+}
+
+body.bbox-docs-route [role="dialog"] input::placeholder {
+  color: #fff;
+  opacity: 1;
+}
+
+body.bbox-docs-route [role="dialog"] button {
+  border-color: #fff;
+}
+
+body.bbox-docs-route [role="dialog"] button[aria-selected="true"] {
+  background: #fff;
+  color: #000;
+}
+
+body.bbox-docs-route [role="dialog"] button[aria-selected="true"] * {
+  color: #000;
+}
+
+body.bbox-docs-route [role="dialog"] mark,
+body.bbox-docs-route [role="dialog"] a {
+  color: inherit;
+  text-decoration-color: currentColor;
+}
+
+body.bbox-docs-route [role="dialog"] .overflow-y-auto {
+  max-height: 20rem;
+  padding: 0.25rem;
+  scrollbar-color: #fff #000;
+}
+
+body.bbox-docs-route [role="dialog"] .overflow-y-auto > button {
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
 }
 
 input#email:autofill,

@@ -1,0 +1,43 @@
+---
+title: Guía para editores
+description: Crea un registro claro, establece continuidad de identidad y publica evidencia verificable.
+---
+
+Un buen registro permite entender el software sin depender de lenguaje publicitario. Debe ser actual, específico y estar conectado con fuentes primarias.
+
+## Antes de enviar
+
+Prepara:
+
+- **Nombre y resumen:** explica qué hace y para quién.
+- **Categoría y plataformas:** incluye únicamente plataformas compatibles.
+- **Repositorio:** enlaza la fuente pública canónica.
+- **Sitio y documentación:** utiliza dominios controlados por el proyecto.
+- **Licencia y versión:** deben coincidir con el repositorio y la versión estable actual.
+- **Recursos visuales:** logo y capturas del producto actual.
+- **Material de seguridad:** auditorías, firmas, hashes o builds reproducibles si existen.
+
+## Escribe una descripción útil
+
+Explica el problema, el enfoque, las dependencias relevantes y el nivel de madurez. Evita afirmaciones como «seguro» o «totalmente descentralizado» sin evidencia y límites claros.
+
+## Mantén continuidad del editor
+
+Utiliza una wallet y cuentas públicas que el proyecto pueda conservar de forma segura. Enlaza el registro desde el repositorio o sitio oficial para corroborar la propiedad en ambos sentidos.
+
+Protege especialmente la clave Taproot de BAR. Perderla puede impedir continuar la cadena canónica.
+
+## Define hitos revisables
+
+```text
+Entregable: beta Android con pago de facturas Lightning
+Aceptación: paga una factura de prueba y muestra errores
+Evidencia: versión etiquetada, hash APK, demo e instrucciones
+Dependencia: SDK upstream 3.2
+```
+
+## Mantén el registro actualizado
+
+Actualiza repositorios, dominios, versiones, plataformas e información de seguridad. Si cambia la propiedad, usa una transferencia explícita. En BAR, cada `update` debe apuntar a la última inscripción válida mediante `previous`.
+
+Activa el [Modo Desarrollador](/es/settings#developer-mode) para preparar un envío.

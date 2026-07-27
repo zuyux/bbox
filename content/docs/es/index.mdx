@@ -1,0 +1,56 @@
+---
+title: ¿Qué es BBOX?
+description: Entiende cómo BBOX ayuda a descubrir, evaluar y apoyar software de código abierto.
+---
+
+BBOX es una capa de coordinación de código abierto para descubrir, verificar y financiar software. Su enfoque inicial es el ecosistema Bitcoin: wallets, herramientas de Lightning y Nostr, software de privacidad, infraestructura para desarrolladores, capas de Bitcoin y otros proyectos de bien público.
+
+Las tiendas de aplicaciones tradicionales responden una pregunta limitada: **¿qué puedo instalar?** BBOX busca responder preguntas más amplias:
+
+- ¿Quién publica y mantiene el proyecto?
+- ¿Dónde está su código fuente?
+- ¿Qué versión, plataforma y licencia describe el registro?
+- ¿Qué evidencia respalda sus señales de verificación y reputación?
+- ¿Qué trabajo planea el equipo y cómo puede financiarse?
+- ¿Cómo ha cambiado el registro a lo largo del tiempo?
+
+## Las tres partes de BBOX
+
+### 1. Un índice de software legible
+
+Cada página reúne descripción, categoría, plataformas, repositorio, sitio web, editor, recursos visuales, calificaciones y estado de verificación. BBOX permite buscar y comparar estos registros sin ocultar los enlaces originales del proyecto.
+
+### 2. Una superficie de coordinación y financiación
+
+Los editores pueden describir el trabajo planeado como hitos observables. Los financiadores pueden inspeccionar el resultado previsto y su evidencia en lugar de evaluar un proyecto únicamente por su nombre y dirección de pago.
+
+### 3. Una capa soberana de metadatos
+
+El [Bitcoin App Registry (BAR)](/es/documentation/bar-protocol) define un formato mínimo de registros controlados por el editor y anclados mediante inscripciones Taproot de Bitcoin. BAR permite que indexadores independientes reconstruyan el estado actual y su historial.
+
+## Cómo encajan las piezas
+
+```text
+Editor
+  ├─ publica datos y recursos → BBOX / IPFS
+  ├─ ancla cambios canónicos → BAR en Bitcoin L1
+  └─ propone trabajo y evidencia → hitos
+
+Usuarios y financiadores
+  ├─ descubren proyectos → índice BBOX
+  ├─ revisan código, identidad, historial y reseñas
+  └─ deciden de forma independiente si instalar o apoyar
+```
+
+BBOX puede presentar datos de servicios web, IPFS, actividad comunitaria y registros blockchain. BAR es más específico: establece una cadena canónica de metadatos controlada por el editor. Ninguna capa demuestra por sí sola que el software sea seguro.
+
+## Qué significa «verificado»
+
+Un indicador de verificación es una señal adicional, no una garantía de seguridad. Conviene revisar la propiedad del repositorio, firmas de versiones, compilaciones reproducibles, auditorías, permisos y actividad reciente. Consulta [Confianza y verificación](/es/documentation/trust-and-verification).
+
+## Elige tu recorrido
+
+- Aprende el ciclo completo en [Cómo funciona BBOX](/es/documentation/how-it-works).
+- Prepara un registro confiable con la [Guía para editores](/es/documentation/publishers).
+- Evalúa proyectos con la [Guía para financiadores](/es/documentation/funders).
+- Lee la especificación técnica del [Protocolo BAR](/es/documentation/bar-protocol).

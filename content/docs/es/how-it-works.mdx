@@ -1,0 +1,56 @@
+---
+title: Cómo funciona BBOX
+description: Sigue un proyecto desde su primer registro hasta el descubrimiento, la verificación, la financiación y sus actualizaciones.
+---
+
+BBOX conecta editores, usuarios, revisores y financiadores alrededor de un registro compartido. Este registro enlaza afirmaciones con evidencia inspeccionable: repositorios, versiones, identidades, metadatos, hitos e historial.
+
+## El ciclo de un proyecto
+
+### 1. El editor crea un perfil
+
+El editor conecta una identidad y activa el Modo Desarrollador. El perfil indica quién es responsable del registro y puede enlazar cuentas públicas, repositorios y sitios oficiales.
+
+La wallet conectada sirve para autorizar acciones. Por sí sola no demuestra identidad legal, competencia ni propiedad de todos los enlaces externos.
+
+### 2. El editor prepara el registro
+
+Un registro útil incluye:
+
+- Descripción y categoría precisas
+- Plataformas compatibles y versión actual
+- Repositorio fuente y sitio oficial
+- Licencia e información de lanzamiento
+- Logo, capturas y documentación
+- Información del editor y de financiación
+
+Los metadatos y recursos pueden almacenarse fuera de la cadena, incluso en IPFS. Identificadores compactos, propiedad, hashes o transiciones de estado pueden registrarse on-chain.
+
+### 3. BBOX publica el registro para descubrirlo
+
+Los usuarios buscan por categoría e inspeccionan la página del proyecto. Calificaciones, reseñas, verificación, repositorios e identidad aportan distintos tipos de evidencia. Ninguna señal debe considerarse concluyente por sí sola.
+
+### 4. El editor describe el trabajo planeado
+
+Un hito debe expresar un resultado verificable. «Trabajar en soporte móvil» es ambiguo; «publicar una beta Android con flujos de envío y recepción, código etiquetado e instrucciones de prueba» se puede revisar.
+
+Un buen hito incluye el entregable, criterios de aceptación, evidencia, dependencias, riesgos y condiciones de pago cuando correspondan.
+
+### 5. Se acumulan evidencia y señales comunitarias
+
+Los editores adjuntan notas de versión, commits, builds etiquetados, demostraciones u otras pruebas. Reseñas y calificaciones aportan contexto, pero no sustituyen una revisión independiente.
+
+### 6. El registro evoluciona
+
+Nuevas versiones pueden cambiar metadatos, hashes, plataformas o propiedad. Las actualizaciones BAR enlazan cada estado canónico con el anterior, mientras BBOX presenta la vista actual y sus datos operativos.
+
+## Dónde viven los datos
+
+| Datos | Ubicación habitual | Propósito |
+| --- | --- | --- |
+| Descripciones, URLs y recursos | Base de datos BBOX e IPFS | Páginas ricas y legibles |
+| Metadatos canónicos del editor | Inscripciones BAR en Bitcoin L1 | Historial y propiedad verificables |
+| Estado compacto e interacción | Contrato Stacks/Clarity | Estado, hash, votos y calificaciones |
+| Código y versiones | Repositorio del editor | Código e historial inspeccionables |
+
+Estas capas se complementan; no todos los registros utilizan necesariamente todas las capas hoy.

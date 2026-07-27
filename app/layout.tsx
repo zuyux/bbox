@@ -16,6 +16,7 @@ import { defaultLocale, isLocale } from '@/lib/i18n';
 import { messages } from '@/lib/messages';
 import { getSiteUrl } from '@/lib/site';
 import { RootProvider as FumadocsProvider } from 'fumadocs-ui/provider/next';
+import { docsI18n } from '@/lib/docs-i18n';
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -117,14 +118,14 @@ export default async function RootLayout({
   const isDocumentation = routePath === '/documentation' || routePath.startsWith('/documentation/');
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${inter.variable} ${jersey10.variable} ${lacquer.variable} antialiased`}>
+      <body className={`${inter.variable} ${jersey10.variable} ${lacquer.variable} antialiased${isDocumentation ? ' bbox-docs-route' : ''}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
-        <FumadocsProvider theme={{ enabled: false }}>
+        <FumadocsProvider theme={{ enabled: false }} i18n={docsI18n.provider(locale)}>
         <I18nProvider locale={locale} messages={messages[locale]}>
         <GlobalErrorHandler />
         <WalletProvider>
