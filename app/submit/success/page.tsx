@@ -164,7 +164,7 @@ export default function SubmitSuccessPage() {
               <CardContent className="p-6">
                 <h3 className="font-bold mb-2 flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" />
-                  <LocalizedText>View Documentation
+                  <LocalizedText>View Docs
                 </LocalizedText></h3>
                 <p className="text-sm text-muted-foreground">
                   <LocalizedText>Learn more about BBOX features and how to optimize your app listing

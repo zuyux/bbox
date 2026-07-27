@@ -1,0 +1,164 @@
+---
+title: BAR Protocol
+description: Technical guide to the Bitcoin App Registry (brc-app), its inscription format, operations, and deterministic validation rules.
+---
+
+The **Bitcoin App Registry (BAR)** is a permissionless, publisher-controlled registry for open-source applications on Bitcoin Layer 1. BAR uses Taproot inscriptions to create an append-only history that independent indexers can validate.
+
+BAR is the protocol layer; BBOX is one application that can index and present BAR records alongside richer project, community, and funding information.
+
+## Design principles
+
+1. **No protocol gatekeeper:** A central operator is not required to accept an otherwise valid record.
+2. **Publisher sovereignty:** The current owner key authorizes updates and transfers.
+3. **Immutable history:** New state is appended rather than overwriting earlier inscriptions.
+4. **Independent indexing:** Deterministic rules allow honest indexers to reconstruct the same valid chain.
+
+## Protocol identity
+
+| Property | Value |
+| --- | --- |
+| Protocol identifier | `brc-app` |
+| Current specification | v1 |
+| Settlement layer | Bitcoin L1 |
+| Record mechanism | Taproot inscriptions (Ordinals) |
+| Coordination address | `bc1p0saw6z028y7h6eag3w6hx5an6mk5ta8qk7wx2d3gtqtrty243uvqvjzvew` |
+
+The coordination address is a discovery anchor, not an administrator. Ownership is established by the owner and inscription chain for each app.
+
+## Record format
+
+Each inscription contains valid JSON. A complete registration can look like this:
+
+```json
+{
+  "p": "brc-app",
+  "op": "register",
+  "app_id": "example-wallet",
+  "owner": "bc1p...publisher-taproot-address",
+  "name": "Example Wallet",
+  "repo": "https://github.com/example/wallet",
+  "description": "A self-custodial Bitcoin wallet.",
+  "license": "MIT",
+  "version": "1.4.0",
+  "build_hash": "sha256:0123456789abcdef...",
+  "platform": ["android", "linux"],
+  "chain_layer": "BTC",
+  "previous": null,
+  "timestamp": 1776556800
+}
+```
+
+### Field reference
+
+| Field | Meaning |
+| --- | --- |
+| `p` | Must be `brc-app` so indexers can identify the protocol |
+| `op` | One of `genesis`, `register`, `update`, or `transfer` |
+| `app_id` | Permanent unique identifier for the app chain |
+| `owner` | Taproot address authorized to control the current state |
+| `name` | Human-readable project name |
+| `repo` | Canonical public source repository URL |
+| `description` | Concise explanation of the software |
+| `license` | Software license identifier, such as `MIT` or `GPL-3.0` |
+| `version` | Current release; semantic versioning is recommended |
+| `build_hash` | Hash of a release artifact; `sha256:` format is recommended |
+| `platform` | Array such as `android`, `ios`, `web`, `linux`, or `windows` |
+| `chain_layer` | Primary integration: `none`, `BTC`, `LN`, `Stacks`, `Rootstock`, `Starknet`, or `other` |
+| `previous` | Previous valid inscription ID, or `null` at registration |
+| `timestamp` | Recommended Unix timestamp; ordering validity still comes from the inscription chain |
+
+## Operations
+
+### `genesis`
+
+Defines the registry protocol. This is a one-time protocol-level record rather than an individual app update.
+
+### `register`
+
+Starts the chain for a new `app_id`. The publisher address creating the inscription must match `owner`. The `previous` value may be `null` or reference the protocol genesis as supported by an indexer’s v1 interpretation.
+
+### `update`
+
+Publishes new metadata for an existing app. The inscription must be authorized by the current owner and `previous` must point to the last valid inscription for that `app_id`.
+
+```json
+{
+  "p": "brc-app",
+  "op": "update",
+  "app_id": "example-wallet",
+  "owner": "bc1p...current-owner",
+  "version": "1.5.0",
+  "build_hash": "sha256:fedcba9876543210...",
+  "previous": "<last-valid-inscription-id>"
+}
+```
+
+An update should carry the complete canonical state expected by consumers, not rely on every frontend correctly merging an ambiguous partial object.
+
+### `transfer`
+
+Changes control to a new Taproot owner. The current owner authorizes the transfer and references the last valid inscription. Subsequent updates are valid only when authorized by the new owner.
+
+## Deterministic indexer validation
+
+For each candidate inscription, an indexer should:
+
+1. Parse the content as valid JSON.
+2. Require `p` to equal `brc-app` and recognize the operation.
+3. Verify that the inscription creator corresponds to the stated current owner for operations requiring owner authorization.
+4. For `update` and `transfer`, require `previous` to identify the last valid inscription for the same `app_id`.
+5. Reject competing or stale updates that do not extend the accepted tip.
+6. Expose the latest valid inscription as current state while retaining the complete historical chain.
+
+```text
+register (owner A)
+    │
+    ├── update (owner A)
+    │       │
+    │       └── transfer (A → B)
+    │                   │
+    │                   └── update (owner B)  ← current state
+    │
+    └── stale update (owner A)                ← rejected fork
+```
+
+## What BAR guarantees
+
+Given correct validation and Bitcoin availability, BAR is intended to provide:
+
+- A public, append-only metadata history
+- Continuity of control through owner authorization
+- A canonical latest valid record for an `app_id`
+- The ability to operate independent compatible indexers
+
+## What BAR does not guarantee
+
+BAR does not prove that linked code is safe, that the publisher is a particular legal person, that a build matches its source, or that a project will deliver future work. It does not provide escrow, ratings, moderation, malware analysis, or automatic application distribution.
+
+Those concerns require additional evidence and application layers. See [Trust and verification](/documentation/trust-and-verification).
+
+## BAR and the BBOX contract
+
+The repository also contains a Stacks Clarity registry contract. It stores compact app state such as a publisher principal, IPFS metadata hash, status, verification flags, votes, ratings, and timestamps. This is distinct from BAR:
+
+| BAR | BBOX Clarity registry |
+| --- | --- |
+| Bitcoin L1 inscriptions | Stacks smart contract |
+| Publisher-controlled canonical metadata history | Operational app and engagement state |
+| `register`, `update`, and `transfer` chain | Submission, metadata hash updates, votes, and ratings |
+| Independently reconstructed by BAR indexers | Read from contract state |
+
+BBOX may combine both views, but integrations should preserve their different trust models and validation rules.
+
+## Implementation checklist
+
+An early BAR integration should include:
+
+- Strict schema and field-size validation
+- Taproot owner/creator verification
+- Previous-pointer and app-chain validation
+- Fork and duplicate handling
+- Full history storage plus current-state projection
+- Re-indexing from Bitcoin data without relying on BBOX
+- Test vectors for valid updates, stale updates, transfers, and malformed JSON

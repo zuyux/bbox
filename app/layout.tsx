@@ -15,6 +15,7 @@ import { headers } from 'next/headers';
 import { defaultLocale, isLocale } from '@/lib/i18n';
 import { messages } from '@/lib/messages';
 import { getSiteUrl } from '@/lib/site';
+import { RootProvider as FumadocsProvider } from 'fumadocs-ui/provider/next';
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -108,8 +109,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const requestedLocale = (await headers()).get('x-bbox-locale');
+  const requestHeaders = await headers();
+  const requestedLocale = requestHeaders.get('x-bbox-locale');
   const locale = isLocale(requestedLocale) ? requestedLocale : defaultLocale;
+  const pathname = requestHeaders.get('x-bbox-pathname') || '/';
+  const routePath = pathname.replace(/^\/(en|es|pt)(?=\/|$)/, '') || '/';
+  const isDocumentation = routePath === '/documentation' || routePath.startsWith('/documentation/');
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} ${jersey10.variable} ${lacquer.variable} antialiased`}>
@@ -119,6 +124,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+        <FumadocsProvider theme={{ enabled: false }}>
         <I18nProvider locale={locale} messages={messages[locale]}>
         <GlobalErrorHandler />
         <WalletProvider>
@@ -127,10 +133,15 @@ export default async function RootLayout({
               <a href="#main-content" className="skip-link">
                 {messages[locale].accessibility.skip}
               </a>
-              <GetInButton />
-              <Navbar />              
+              {!isDocumentation && <GetInButton />}
+              {!isDocumentation && <Navbar />}
               <WelcomeModal />
-              <main id="main-content" tabIndex={-1} className="pb-28" aria-label={messages[locale].accessibility.main}>
+              <main
+                id="main-content"
+                tabIndex={-1}
+                className={isDocumentation ? undefined : 'pb-28'}
+                aria-label={messages[locale].accessibility.main}
+              >
                 {children}
               </main>
               <Footer />
@@ -139,6 +150,7 @@ export default async function RootLayout({
         </WalletProvider>
         <Toaster />
         </I18nProvider>
+        </FumadocsProvider>
         </ThemeProvider>
       </body>
     </html>

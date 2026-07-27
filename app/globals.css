@@ -8,6 +8,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "leaflet/dist/leaflet.css";
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -204,6 +206,40 @@ body {
   outline: none;
 }
 
+.bbox-docs-theme {
+  color-scheme: dark;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  user-select: text;
+  -webkit-user-select: text;
+  background: linear-gradient(135deg, #000 0%, #101010 100%);
+  --color-fd-background: rgb(0 0 0 / 0.72);
+  --color-fd-foreground: #f5f5f5;
+  --color-fd-muted: rgb(24 24 24 / 0.82);
+  --color-fd-muted-foreground: #a3a3a3;
+  --color-fd-popover: #101010;
+  --color-fd-popover-foreground: #f5f5f5;
+  --color-fd-card: rgb(16 16 16 / 0.88);
+  --color-fd-card-foreground: #f5f5f5;
+  --color-fd-border: rgb(255 255 255 / 0.14);
+  --color-fd-primary: #ff5e00;
+  --color-fd-primary-foreground: #fff;
+  --color-fd-secondary: #171717;
+  --color-fd-secondary-foreground: #e5e5e5;
+  --color-fd-accent: #1f1f1f;
+  --color-fd-accent-foreground: #fff;
+}
+
+.bbox-docs-theme * {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.bbox-docs-theme #nd-sidebar,
+.bbox-docs-theme [data-sidebar-panel] {
+  background: linear-gradient(180deg, #000 0%, #101010 100%);
+  border-color: #555;
+}
+
 input#email:autofill,
 input#email:-webkit-autofill,
 input#password:autofill,
@@ -330,7 +366,7 @@ input#password:-webkit-autofill {
 }
 
 .dark .l-dotted-grid-background {
-  background-image: radial-gradient(#222 1px, transparent 1px);
+  background-image: radial-gradient(rgb(255 255 255 / 0.5) 1px, transparent 1px);
 }
 
 .font-work-sans {

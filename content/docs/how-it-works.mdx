@@ -1,0 +1,66 @@
+---
+title: How BBOX Works
+description: Follow a project from its first listing through discovery, verification, funding, and ongoing updates.
+---
+
+BBOX connects publishers, users, reviewers, and funders around a shared software record. The record is useful because it links claims to inspectable evidence: source repositories, releases, identities, metadata, milestones, and history.
+
+## The project lifecycle
+
+### 1. A publisher creates a profile
+
+A publisher connects an identity and enables Developer Mode. The profile tells users who is responsible for a listing. A project may also link public accounts such as a source-code identity or website.
+
+The connected wallet is an authorization mechanism. It does not, by itself, prove the publisher’s legal identity, competence, or ownership of every external link.
+
+### 2. The publisher prepares an app record
+
+The listing describes what the software does and where users can inspect it. A useful record includes:
+
+- A precise description and category
+- Supported platforms and current version
+- Source repository and official website
+- License and release information
+- Logo, screenshots, and documentation
+- Publisher and funding information
+
+Descriptive metadata and media may be stored outside the chain, including IPFS. Compact identifiers, ownership, hashes, or state transitions can be recorded on-chain.
+
+### 3. BBOX exposes the record for discovery
+
+Users browse or search by category and inspect the project page. Ratings, reviews, verification state, repository links, and publisher information provide different kinds of evidence. No single signal should be treated as decisive.
+
+### 4. The publisher describes planned work
+
+A funding milestone should describe a result that another person can verify. “Work on mobile support” is vague; “publish an Android beta that completes send and receive flows, with tagged source and test instructions” is reviewable.
+
+A good milestone includes:
+
+1. The expected deliverable
+2. Acceptance criteria
+3. Evidence that will demonstrate completion
+4. Dependencies and known risks
+5. Requested amount and payout conditions, when applicable
+
+### 5. Evidence and community signals accumulate
+
+Publishers attach release notes, commits, tagged builds, demonstrations, or other proof of delivery. Reviewers and users can add public signals such as ratings and comments. These signals build context; they do not replace independent review.
+
+### 6. The record evolves
+
+New releases may change metadata, build hashes, supported platforms, or ownership. BAR updates can link each canonical state to its predecessor, while BBOX presents the latest useful view and related operational data.
+
+## Where data lives
+
+| Data | Typical location | Purpose |
+| --- | --- | --- |
+| Descriptions, URLs, media | BBOX database and IPFS | Rich, readable app pages |
+| Publisher-controlled canonical metadata | BAR inscriptions on Bitcoin L1 | Independent history and ownership validation |
+| Compact registry state and engagement | Stacks/Clarity contract | App state, metadata hash, votes, and ratings |
+| Source and releases | Publisher repository | Inspectable code and build history |
+
+These layers complement one another. Their presence does not mean every listing uses every layer today.
+
+## Next steps
+
+Publishers should continue to the [Publisher guide](/documentation/publishers). Users and grant reviewers can use the [Funder guide](/documentation/funders) and [Trust and verification](/documentation/trust-and-verification).

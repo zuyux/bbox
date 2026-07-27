@@ -1,0 +1,52 @@
+---
+title: Publisher Guide
+description: Create a clear app listing, establish continuity of identity, and publish evidence that users can verify.
+---
+
+A strong listing helps a reader understand the software without relying on marketing language. It should be current, specific, and connected to primary sources.
+
+## Before you submit
+
+Prepare the following information:
+
+- **Name and summary:** Say what the software does and who it is for.
+- **Category and platforms:** Choose the closest category and list only supported platforms.
+- **Repository:** Link the canonical public source repository when the project is open source.
+- **Website and documentation:** Use domains controlled by the project.
+- **License:** Match the license file in the repository.
+- **Version:** Use the latest stable release, or clearly label preview software.
+- **Media:** Provide a recognizable logo and screenshots that represent the current product.
+- **Security material:** Link audits, signatures, hashes, or reproducible build instructions when available.
+
+## Write a useful description
+
+Explain the user problem, the software’s approach, important dependencies, and its current maturity. Avoid claims such as “secure,” “trustless,” or “fully decentralized” unless the record links to evidence and explains the relevant limits.
+
+## Establish publisher continuity
+
+Use a wallet and public accounts that the project can retain securely over time. Link the listing from an official repository or website so users can corroborate ownership in both directions.
+
+For a BAR record, protect the owner Taproot key carefully. Only the valid current owner can create the next accepted update or transfer. Losing the key may prevent the canonical chain from being continued.
+
+## Create reviewable milestones
+
+Write milestones around outcomes. For example:
+
+```text
+Deliverable: Android beta with Lightning invoice payment
+Acceptance: Pays a test invoice, reports failure states, and includes setup docs
+Evidence: Tagged source release, APK hash, demo, and test instructions
+Dependency: Upstream SDK version 3.2
+```
+
+State exclusions and risks early. This reduces ambiguity for reviewers and funders.
+
+## Keep the record current
+
+Update changed repositories, domains, release versions, supported platforms, and security information. If ownership changes, use an explicit transfer rather than sharing the previous publisher’s private key.
+
+When using BAR, each `update` should reference the last valid inscription in `previous`. See [BAR Protocol](/documentation/bar-protocol#operations) for the canonical sequence.
+
+## Submit through BBOX
+
+Enable [Developer Mode](/settings#developer-mode), prepare the listing, and review every external link before submitting. Publishing a record makes claims easier to inspect; it does not cause BBOX or Bitcoin to endorse those claims.

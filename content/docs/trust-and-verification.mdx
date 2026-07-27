@@ -1,0 +1,44 @@
+---
+title: Trust and Verification
+description: Learn what BBOX trust signals can tell you, what they cannot prove, and how to evaluate software safely.
+---
+
+BBOX collects evidence that can make software easier to evaluate. It does not ask users to replace judgment with a badge, score, or blockchain transaction.
+
+## Separate claims from evidence
+
+A project description is a publisher claim. A repository, signed release, reproducible build, independent audit, or completed milestone can provide evidence for specific parts of that claim.
+
+When reviewing a listing, ask:
+
+- Does the official website link back to the same repository and publisher?
+- Is the repository active, and do its tagged releases match the advertised version?
+- Is the license present in the repository?
+- Are binaries linked from a trustworthy release channel?
+- Are release signatures or reproducible build instructions available?
+- Do audits cover the version and components being used?
+- Are reviews detailed and recent, or only a numerical score?
+
+## Understanding common signals
+
+| Signal | Useful for | Does not prove |
+| --- | --- | --- |
+| Connected wallet | Authorization by the same key over time | Real-world identity or code safety |
+| BAR ownership chain | Which Taproot owner may update a canonical record | Quality of the linked software |
+| IPFS hash | Content-addressed integrity for a metadata object | Accuracy of claims inside that object |
+| Verified badge | A BBOX review or approval state | Absence of vulnerabilities |
+| Rating | Community sentiment | Expert security review |
+| Audit link | Findings from a particular scope and date | Safety of future or out-of-scope releases |
+| Build hash | Identity of a particular build artifact | That the artifact matches reviewed source without reproducible builds |
+
+## Verify before installing
+
+For wallets or software that handles sensitive data, prefer an official source, compare hashes or signatures, verify the domain, and review requested permissions. Test unfamiliar software with limited funds or isolated data first.
+
+## Verify before funding
+
+Read the milestone acceptance criteria and check whether the named evidence is independently accessible. Confirm which party controls funds and what conditions trigger a payout. A public roadmap is not the same as escrow or an enforceable agreement.
+
+## Report problems constructively
+
+When reporting a suspicious record, include the listing URL, the specific disputed claim, and evidence such as repository history, domain ownership changes, or conflicting release hashes. Avoid treating disagreement or inactivity as proof of malicious behavior.
