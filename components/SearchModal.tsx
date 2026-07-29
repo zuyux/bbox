@@ -107,10 +107,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
   };
 
   // Handle tab change
+  const hasSearchQuery = searchQuery.trim().length > 0;
+
   const handleTabChange = (tabId: TabType) => {
     setActiveTab(tabId);
 
-    if (!searchQuery.trim()) {
+    if (!hasSearchQuery) {
       setFilteredApps([]);
       setUsers([]);
       setLoading(false);
@@ -203,7 +205,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto bg-background/20 backdrop-blur-sm">
+        <div className={`overflow-y-auto bg-background/20 backdrop-blur-sm ${hasSearchQuery || loading ? 'flex-1' : ''}`}>
           {loading && (
             <div className="text-foreground text-center py-8"><LocalizedText>Loading...</LocalizedText></div>
           )}
@@ -263,13 +265,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                       </Link>
                     ))}
                     {!searchQuery.trim() ? (
-                      <div className="text-foreground text-center py-8">
-                        ...
+                      <div className="text-foreground/60 text-center py-8">
+                        <LocalizedText>Start typing to search apps and users.</LocalizedText>
                       </div>
                     ) : filteredApps.length === 0 ? (
                       <div className="text-foreground text-center py-8">
-                        <LocalizedText>No apps found matching your search
-                      </LocalizedText></div>
+                        <LocalizedText>No apps found matching your search</LocalizedText>
+                      </div>
                     ) : null}
                   </div>
                 </div>
