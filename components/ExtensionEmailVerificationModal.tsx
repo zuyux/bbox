@@ -4,7 +4,8 @@
 
 import { LocalizedText } from '@/components/LocalizedText';
 import { useState } from 'react';
-import { X, Mail } from 'lucide-react';
+import Image from 'next/image';
+import { X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -140,8 +141,8 @@ export default function ExtensionEmailVerificationModal({
     >
       <div className="w-full max-w-[360px] rounded-xl border border-border bg-background p-4 text-foreground shadow-2xl">
         <div className="grid grid-cols-[2.25rem_minmax(0,1fr)_1.25rem] items-start gap-3">
-          <div className="flex h-9 w-9 items-center justify-center text-foreground">
-            <Mail className="h-5 w-5" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0000ff]">
+            <Image src="/email-snow.svg" alt="" width={20} height={20} />
           </div>
           <div className="min-w-0 pt-0.5">
             <h2 className="text-base font-semibold leading-6"><LocalizedText>Verify your email</LocalizedText></h2>

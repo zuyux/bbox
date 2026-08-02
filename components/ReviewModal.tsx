@@ -4,7 +4,8 @@
 
 import { LocalizedText } from '@/components/LocalizedText';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Loader2, Star as StarIcon, X } from 'lucide-react';
+import Image from 'next/image';
+import { Loader2, X } from 'lucide-react';
 import { CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -234,10 +235,15 @@ export default function ReviewModal({ open, appId, appName, onRatingChange, onCl
                     key={star}
                     type="button"
                     onClick={() => setRating(star)}
-                    className={`rounded-full p-2 transition ${star <= rating ? 'bg-yellow-500 text-white' : 'bg-surface text-muted-foreground hover:bg-muted'}`}
+                    className={`rounded-full p-2 transition ${star <= rating ? 'bg-yellow-500/15' : 'bg-surface hover:bg-muted'}`}
                     aria-label={`${star} star${star > 1 ? 's' : ''}`}
                   >
-                    <StarIcon className="h-5 w-5" />
+                    <Image
+                      src={star <= rating ? '/review-star.svg' : '/review-star-0.svg'}
+                      alt=""
+                      width={40}
+                      height={40}
+                    />
                   </button>
                 ))}
               </div>
@@ -294,9 +300,12 @@ export default function ReviewModal({ open, appId, appName, onRatingChange, onCl
                     <div>
                       <div className="flex items-center gap-1 text-yellow-500">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <StarIcon
+                          <Image
                             key={star}
-                            className={`w-3.5 h-3.5 ${star <= comment.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                            src={star <= comment.rating ? '/review-star.svg' : '/review-star-0.svg'}
+                            alt=""
+                            width={28}
+                            height={28}
                           />
                         ))}
                       </div>

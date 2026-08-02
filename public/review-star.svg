@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="#ffffff"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="review-star.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="25.992287"
+     inkscape:cx="11.272575"
+     inkscape:cy="12.330581"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="32"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g2" />
+  <g
+     clip-path="url(#clip0_4418_8659)"
+     id="g2"
+     style="fill:#1a1a1a">
+    <path
+       d="m 21.11512,11.573724 -2.729432,2.630437 c -0.374767,0.360625 -0.629325,1.081874 -0.551543,1.598062 l 0.424292,3.082957 c 0.275772,1.972828 -0.947523,2.828427 -2.71529,1.909188 l -2.998133,-1.569777 c -0.502046,-0.261629 -1.322289,-0.247487 -1.810193,0.04243 L 8.1114546,20.801439 C 6.0396317,22.010592 4.8021948,21.098424 5.3537381,18.764972 L 6.1245057,15.505231 C 6.2659271,14.911261 6.0042976,14.098088 5.5588203,13.695037 L 3.0768755,11.453509 C 1.3020375,9.8483766 1.7970122,8.3917366 4.1870332,8.2078889 L 7.2134502,7.9816147 C 7.7791356,7.9391883 8.4650292,7.493711 8.7266304,6.9916935 L 10.296408,3.9794186 c 0.92631,-1.7606959 2.418305,-1.7536248 3.31633,0.021213 l 1.400072,2.7718586 c 0.240395,0.4666692 0.848507,0.9192176 1.364695,0.9969993 l 3.747666,0.6081119 c 2.022325,0.3394112 2.467802,1.7748376 0.989949,3.1961226 z"
+       id="path1"
+       style="fill:#eab308;stroke:#eab308;stroke-opacity:1;fill-opacity:1" />
+  </g>
+  <defs
+     id="defs2">
+    <clipPath
+       id="clip0_4418_8659">
+      <rect
+         width="24"
+         height="24"
+         fill="white"
+         id="rect2" />
+    </clipPath>
+  </defs>
+</svg>

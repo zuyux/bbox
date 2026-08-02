@@ -7,6 +7,10 @@ function getClientIp(request: NextRequest): string {
   const forwardedIp = request.headers.get('x-forwarded-for')?.split(',')[0];
   const ip = vercelIp?.split(',')[0] || realIp || forwardedIp;
 
+  if (!ip?.trim() && process.env.NODE_ENV !== 'production') {
+    return '127.0.0.1';
+  }
+
   if (!ip?.trim()) {
     throw new Error('Unable to determine client IP');
   }
@@ -16,7 +20,8 @@ function getClientIp(request: NextRequest): string {
 
 /** A stable, one-way visitor identifier. The raw IP never leaves this function. */
 export function getHashedIp(request: NextRequest): string {
-  const secret = process.env.IP_HASH_SECRET;
+  const secret = process.env.IP_HASH_SECRET
+    || (process.env.NODE_ENV !== 'production' ? 'bbox-local-development-only' : '');
 
   if (!secret) {
     throw new Error('IP_HASH_SECRET is not configured');

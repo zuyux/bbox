@@ -272,7 +272,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-4 pt-20 pb-12 max-w-4xl">
+      <div className="container mx-auto max-w-6xl px-4 pb-12 pt-20">
         {/* Back Button */}
         <Button variant="link" className="mb-4" asChild>
           <Link href="/apps">
@@ -280,18 +280,19 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
           </Link>
         </Button>
 
-        {/* App Header - Compact Design */}
-        <div className="mb-6">
-          <div className="flex gap-4 items-start mb-4">
+        <main className="px-5 py-6 sm:px-8 lg:px-10">
+        {/* App Header */}
+        <div className="mb-8 border-b border-border/60 pb-8">
+          <div className="grid gap-6 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-start">
             <div className="flex-shrink-0">
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-transparent rounded-2xl sm:rounded-3xl flex items-center justify-center text-foreground text-2xl sm:text-3xl font-bold overflow-hidden">
+              <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl border border-border/60 bg-muted/20 text-3xl font-bold text-foreground sm:h-28 sm:w-28">
                 {displayApp.imgCID ? (
                   <IPFSImage
                     src={displayApp.imgCID}
                     alt={`${displayApp.name} logo`}
                     className="object-contain"
                     fill
-                    sizes="96px"
+                    sizes="112px"
                   />
                 ) : (
                   displayApp.name.charAt(0)
@@ -299,45 +300,53 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
               </div>
             </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <h1 className="text-xl sm:text-2xl font-bold break-words">{displayApp.name}</h1>
+            <div className="min-w-0">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <h1 className="break-words text-3xl font-bold tracking-tight sm:text-4xl">{displayApp.name}</h1>
                 {displayApp.verified && (
-                  <Badge className="bg-transparent text-foreground hover:bg-green-600 flex-shrink-0 text-xs">
+                  <Badge className="flex-shrink-0 bg-transparent text-foreground hover:bg-green-600">
                     <Image src="/verified.svg" height={21} width={21} alt="Verified" />
                   </Badge>
                 )}
+                <Badge variant="secondary">{displayApp.category}</Badge>
               </div>
 
-              <p className="text-sm text-muted-foreground mb-2 break-words line-clamp-2">
+              <p className="max-w-3xl break-words text-base leading-7 text-muted-foreground">
                 {displayApp.description}
               </p>
 
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
-                <span className="break-words">{displayApp.link.replace(/^https?:\/\//, '')}</span>
-              </div>
-
-              <div className="flex items-center gap-4 text-sm mb-3">
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-semibold">{displayRating}</span>
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  {displayApp.category}
-                </Badge>
-                <Button
-                  className="h-6 px-4 py-1 bg-green-500 hover:bg-green-600 text-white text-xs"
-                  asChild
-                >
-                  <a href={displayApp.link} target="_blank" rel="noopener noreferrer" className="hover:underline-offset-3">
-                    VISIT
+                <span className="text-muted-foreground">{reviewCountLabel}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 md:justify-self-end">
+              {displayApp.githubUrl && (
+                <Button variant="outline" size="icon" asChild>
+                  <a
+                    href={displayApp.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`View ${displayApp.name} source code on GitHub`}
+                    title="View source code on GitHub"
+                  >
+                    <Github className="h-5 w-5" aria-hidden="true" />
                   </a>
                 </Button>
-              </div>
+              )}
+              <Button className="px-6" asChild>
+                <a href={displayApp.link} target="_blank" rel="noopener noreferrer">
+                  Visit
+                </a>
+              </Button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2">
             {displayApp.tags.map(tag => (
               <Badge key={tag} variant="outline" className="text-xs">
                 {tag}
@@ -351,36 +360,32 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
           </div>
         </div>
 
-        <div className="mb-6 pb-6 border-b">
-          <h3 className="text-base font-semibold mb-3">Ratings & Reviews</h3>
-          <div className="flex items-center gap-6 mb-3">
-            <div className="text-5xl font-bold">{displayRating}</div>
-            <div>
-              <div className="flex items-center gap-0.5 mb-1">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <Star
-                    key={i}
-                    className={`w-3.5 h-3.5 ${i <= Math.floor(displayApp.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                  />
-                ))}
+        <div className="mb-8 grid gap-4 border-b border-border/60 pb-8 lg:grid-cols-2">
+          <section className="rounded-2xl border border-border/60 bg-muted/30 p-5 sm:p-6">
+            <h2 className="mb-4 text-base font-semibold">Ratings & Reviews</h2>
+            <div className="mb-5 flex items-center gap-6">
+              <div className="text-5xl font-bold">{displayRating}</div>
+              <div>
+                <div className="mb-1 flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <Star
+                      key={i}
+                      className={`h-4 w-4 ${i <= Math.floor(displayApp.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground">Average from {reviewCountLabel}</p>
               </div>
-              <p className="text-xs text-muted-foreground">Average from {reviewCountLabel}</p>
             </div>
-          </div>
-          <Button
-            variant="link"
-            className="p-0 h-auto text-sm text-accent hover:text-accent/80"
-            onClick={() => setShowReviewModal(true)}
-          >
-            See all reviews / Add your review
-            <ArrowRight className="ml-1 h-3 w-3" />
-          </Button>
-        </div>
+            <Button variant="secondary" onClick={() => setShowReviewModal(true)}>
+              See reviews / Add review
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </section>
 
-        <div className="mb-6 pb-6 border-b">
-          <h3 className="text-base font-semibold mb-3">Information</h3>
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+          <section className="rounded-2xl border border-border/60 bg-muted/30 p-5 sm:p-6">
+            <h2 className="mb-4 text-base font-semibold">Information</h2>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-5 text-sm">
               <div>
                 <span className="text-muted-foreground text-xs">Category</span>
                 <div className="font-medium">{displayApp.category}</div>
@@ -399,11 +404,9 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                 <span className="text-muted-foreground text-xs">Verified</span>
                 <div className="font-medium">{displayApp.verified ? 'Yes' : 'No'}</div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-              <div>
+              <div className="col-span-2">
                 <span className="text-muted-foreground text-xs">Website</span>
-                <div className="font-medium text-sm break-all">
+                <div className="break-all text-sm font-medium">
                   <a
                     href={displayApp.link}
                     target="_blank"
@@ -414,24 +417,8 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                   </a>
                 </div>
               </div>
-              {displayApp.githubUrl && (
-                <div>
-                  <span className="text-muted-foreground text-xs">Source Code</span>
-                  <div className="font-medium text-sm break-all">
-                    <a
-                      href={displayApp.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-accent hover:text-accent/80 hover:underline"
-                    >
-                      <Github className="h-4 w-4 flex-shrink-0" />
-                      {displayApp.githubUrl}
-                    </a>
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
+          </section>
         </div>
 
         {relatedApps.length > 0 && (
@@ -500,6 +487,8 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                 </a>
               </Button>
             </div>
+
+        </main>
 
         {isAdmin && (
           <div className="mt-10 rounded-2xl border border-border/50 bg-surface p-6">
