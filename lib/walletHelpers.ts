@@ -1,7 +1,7 @@
 import { getStxAddress } from '@stacks/wallet-sdk';
 import { mnemonicToEntropy, validateMnemonic as isValidMnemonic, mnemonicToSeed, wordlists } from 'bip39';
 import { HDKey } from '@scure/bip32';
-import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
+import { getBitcoinTaprootAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
 import { getNostrPublicKeyFromPrivateKey } from './nostr';
 import { compressPrivateKey } from '@stacks/transactions';
 
@@ -17,7 +17,7 @@ function buildWalletFromPrivateKey(mnemonic: string, privateKey: string) {
   };
 
   const address = getStxAddress(account, 'mainnet');
-  const bitcoinAddress = getBitcoinAddressFromPrivateKey(privateKey, 'mainnet');
+  const bitcoinAddress = getBitcoinTaprootAddressFromPrivateKey(privateKey, 'mainnet');
   const rootstockAddress = getRootstockAddressFromPrivateKey(privateKey);
   const liquidAddress = getLiquidAddressFromPrivateKey(privateKey, 'mainnet');
   const nostrPublicKey = getNostrPublicKeyFromPrivateKey(privateKey);

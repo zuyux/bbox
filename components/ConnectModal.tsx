@@ -15,9 +15,9 @@ import { connectNostriaSigner } from '@/lib/nostriaSigner';
 import { connectOkxWallet } from '@/lib/okxWallet';
 import { connectWalletConnect } from '@/lib/walletConnectWallet';
 import {
-  requestLeatherMainnetStacksAddress,
+  requestLeatherMainnetAddresses,
   requestLeatherStacksSignIn,
-  requestXverseMainnetStacksAddress,
+  requestXverseMainnetAddresses,
   requestXverseStacksSignIn,
 } from '@/lib/stacksSignInMessage';
 import { useEncryptedWallet } from './EncryptedWalletProvider';
@@ -120,7 +120,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
   const [emailStatus, setEmailStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [emailMessage, setEmailMessage] = useState('');
   const [password, setPassword] = useState('');
-  const { setAddress, setWalletType } = useWallet();
+  const { setAddress, setWalletType, setBitcoinAddress } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
 
@@ -366,10 +366,12 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                                 typeof (provider as { request?: unknown }).request === "function"
                               ) {
                                 const leatherProvider = provider as { request: (method: string, params?: unknown) => Promise<unknown> };
-                                const stxAddress = await requestLeatherMainnetStacksAddress(leatherProvider);
+                                const { stacksAddress: stxAddress, bitcoinAddress } = await requestLeatherMainnetAddresses(leatherProvider);
                                 await requestLeatherStacksSignIn(leatherProvider, stxAddress);
                                 setAddress(stxAddress);
                                 setWalletType('leather');
+                                setBitcoinAddress(bitcoinAddress);
+                                persistCachedWalletState(stxAddress, 'leather', bitcoinAddress);
                                 await persistSessionForWallet(stxAddress, 'leather');
                                 onSuccess?.();
                                 onClose();
@@ -382,10 +384,12 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                               }
                             } else if (w.id === "xverse") {
                               try {
-                                const stxAddress = await requestXverseMainnetStacksAddress();
+                                const { stacksAddress: stxAddress, bitcoinAddress } = await requestXverseMainnetAddresses();
                                 await requestXverseStacksSignIn(stxAddress);
                                 setAddress(stxAddress);
                                 setWalletType('xverse');
+                                setBitcoinAddress(bitcoinAddress);
+                                persistCachedWalletState(stxAddress, 'xverse', bitcoinAddress);
                                 await persistSessionForWallet(stxAddress, 'xverse');
                                 onSuccess?.();
                                 onClose();

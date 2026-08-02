@@ -2,7 +2,7 @@ import { entropyToMnemonic, generateMnemonic, wordlists } from 'bip39';
 import { getStxAddress } from '@stacks/wallet-sdk';
 import { HDKey } from '@scure/bip32';
 import { mnemonicToSeed } from 'bip39';
-import { getBitcoinAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
+import { getBitcoinTaprootAddressFromPrivateKey, getRootstockAddressFromPrivateKey, getLiquidAddressFromPrivateKey } from './bitcoinWallet';
 import { getNostrPublicKeyFromPrivateKey } from './nostr';
 
 export type MnemonicLanguage = 'en' | 'es' | 'pt';
@@ -107,7 +107,7 @@ export async function createStacksAccount(
     };
     
     const address = getStxAddress(account, network);
-    const bitcoinAddress = getBitcoinAddressFromPrivateKey(
+    const bitcoinAddress = getBitcoinTaprootAddressFromPrivateKey(
       privateKeyHex,
       network === 'testnet' ? 'testnet' : 'mainnet'
     );

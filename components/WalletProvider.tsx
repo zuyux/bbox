@@ -5,6 +5,7 @@ export type WalletType = 'leather' | 'xverse' | 'alby' | 'nostria' | 'okx' | 'wa
 
 const WALLET_ADDRESS_STORAGE_KEY = 'walletAddress';
 const WALLET_TYPE_STORAGE_KEY = 'walletType';
+const BITCOIN_ADDRESS_STORAGE_KEY = 'walletBitcoinAddress';
 const WELCOME_MODAL_PENDING_STORAGE_KEY = 'bbox-welcome-modal-pending';
 export const WELCOME_MODAL_AFTER_SIGN_IN_EVENT = 'bbox-welcome-modal-after-sign-in';
 
@@ -13,6 +14,8 @@ interface WalletContextType {
   setAddress: (address: string | null) => void;
   walletType: WalletType | null;
   setWalletType: (type: WalletType | null) => void;
+  bitcoinAddress: string | null;
+  setBitcoinAddress: (address: string | null) => void;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -25,16 +28,17 @@ const normalizeWalletType = (value: string | null): WalletType | null => {
 
 export const getCachedWalletState = () => {
   if (typeof window === 'undefined') {
-    return { address: null, walletType: null };
+    return { address: null, walletType: null, bitcoinAddress: null };
   }
 
   return {
     address: localStorage.getItem(WALLET_ADDRESS_STORAGE_KEY),
     walletType: normalizeWalletType(localStorage.getItem(WALLET_TYPE_STORAGE_KEY)),
+    bitcoinAddress: localStorage.getItem(BITCOIN_ADDRESS_STORAGE_KEY),
   };
 };
 
-export const persistCachedWalletState = (address: string | null, walletType: WalletType | null) => {
+export const persistCachedWalletState = (address: string | null, walletType: WalletType | null, bitcoinAddress?: string | null) => {
   if (typeof window === 'undefined') return;
 
   if (address) {
@@ -47,6 +51,11 @@ export const persistCachedWalletState = (address: string | null, walletType: Wal
     localStorage.setItem(WALLET_TYPE_STORAGE_KEY, walletType);
   } else {
     localStorage.removeItem(WALLET_TYPE_STORAGE_KEY);
+  }
+
+  if (bitcoinAddress !== undefined) {
+    if (bitcoinAddress) localStorage.setItem(BITCOIN_ADDRESS_STORAGE_KEY, bitcoinAddress);
+    else localStorage.removeItem(BITCOIN_ADDRESS_STORAGE_KEY);
   }
 
   window.dispatchEvent(new Event('bbox-wallet-update'));
@@ -77,15 +86,17 @@ export const consumeQueuedWelcomeModalAddress = () => {
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<string | null>(() => getCachedWalletState().address);
   const [walletType, setWalletType] = useState<WalletType | null>(() => getCachedWalletState().walletType);
+  const [bitcoinAddress, setBitcoinAddress] = useState<string | null>(() => getCachedWalletState().bitcoinAddress);
 
   // Persist wallet address for Xverse and Leather
   const restoreWalletState = () => {
     if (typeof window === 'undefined') return;
 
-    const { address: savedAddress, walletType: savedType } = getCachedWalletState();
+    const { address: savedAddress, walletType: savedType, bitcoinAddress: savedBitcoinAddress } = getCachedWalletState();
 
     setAddress(savedAddress);
     setWalletType(savedType);
+    setBitcoinAddress(savedBitcoinAddress);
   };
 
   useEffect(() => {
@@ -93,7 +104,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     const handleStorage = (event: StorageEvent) => {
       if (event.storageArea !== localStorage) return;
-      if (event.key === WALLET_ADDRESS_STORAGE_KEY || event.key === WALLET_TYPE_STORAGE_KEY) {
+      if (event.key === WALLET_ADDRESS_STORAGE_KEY || event.key === WALLET_TYPE_STORAGE_KEY || event.key === BITCOIN_ADDRESS_STORAGE_KEY) {
         restoreWalletState();
       }
     };
@@ -107,11 +118,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, []); // Intentionally empty - only run on mount to restore saved address
 
   useEffect(() => {
-    persistCachedWalletState(address, walletType);
-  }, [address, walletType]);
+    if (walletType !== 'leather' && walletType !== 'xverse' && bitcoinAddress !== null) {
+      setBitcoinAddress(null);
+      return;
+    }
+    persistCachedWalletState(address, walletType, bitcoinAddress);
+  }, [address, walletType, bitcoinAddress]);
 
   return (
-    <WalletContext.Provider value={{ address, setAddress, walletType, setWalletType }}>
+    <WalletContext.Provider value={{ address, setAddress, walletType, setWalletType, bitcoinAddress, setBitcoinAddress }}>
       {children}
     </WalletContext.Provider>
   );

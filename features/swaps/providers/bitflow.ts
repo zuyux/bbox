@@ -4,6 +4,9 @@ import type { SwapProvider, SwapQuote, SwapRoute, SwapToken } from '../types';
 
 export const BITFLOW_QUOTE_TTL_MS = 15_000;
 
+const ENABLED_SWAP_SYMBOLS = ['stx', 'sbtc', 'usdcx'] as const;
+const normalizeSymbol = (symbol: string) => symbol.replace(/[^a-z0-9]/gi, '').toLowerCase();
+
 let sdkPromise: Promise<InstanceType<typeof import('@bitflowlabs/core-sdk').BitflowSDK>> | null = null;
 
 async function getSdk() {
@@ -83,10 +86,14 @@ async function getTokenPair(tokenIn: string, tokenOut: string) {
 
 export const bitflowProvider: SwapProvider = {
   async getTokens() {
-    return normalizeTokens(
+    const tokens = normalizeTokens(
       (await (await getSdk()).getAvailableTokens())
         .filter((token) => token.status.toLowerCase() !== 'disabled'),
     );
+    return tokens
+      .filter((token) => ENABLED_SWAP_SYMBOLS.includes(normalizeSymbol(token.symbol) as typeof ENABLED_SWAP_SYMBOLS[number]))
+      .sort((a, b) => ENABLED_SWAP_SYMBOLS.indexOf(normalizeSymbol(a.symbol) as typeof ENABLED_SWAP_SYMBOLS[number])
+        - ENABLED_SWAP_SYMBOLS.indexOf(normalizeSymbol(b.symbol) as typeof ENABLED_SWAP_SYMBOLS[number]));
   },
 
   async getRoutes({ tokenIn, tokenOut }) {

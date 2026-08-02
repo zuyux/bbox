@@ -4,7 +4,7 @@
 import { LocalizedText } from "@/components/LocalizedText";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { getStoredEncryptedWallet, retrieveEncryptedWallet, updateEncryptedWalletAddresses, type WalletData } from "@/lib/encryptedStorage";
-import { getBitcoinAddressFromPrivateKey, getLiquidAddressFromPrivateKey, getRootstockAddressFromPrivateKey } from "@/lib/bitcoinWallet";
+import { getBitcoinTaprootAddressFromPrivateKey, getLiquidAddressFromPrivateKey, getRootstockAddressFromPrivateKey } from "@/lib/bitcoinWallet";
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { PasswordSigningModal } from "@/components/PasswordSigningModal";
 import { PasswordInput } from "@/components/PasswordInput";
@@ -67,7 +67,7 @@ async function saveReceiveAddressesToSupabase(payload: ReceiveAddressPayload) {
 
 const RECEIVE_ASSET_LABELS: Record<ReceiveAsset, string> = {
   bitcoin: 'Bitcoin L1',
-  stacks: 'Stacks',
+  stacks: 'STX or sBTC',
   rootstock: 'Rootstock',
   liquid: 'Liquid',
 };
@@ -422,8 +422,8 @@ import { BitflowSwapPanel } from "@/features/swaps/components/BitflowSwapPanel";
 
 export default function WalletPage() {
   const address = useCurrentAddress() || "";
-  const { walletType, setAddress, setWalletType } = useWallet();
-  const { createEncryptedWallet } = useEncryptedWallet();
+  const { walletType, bitcoinAddress: connectedBitcoinAddress, setAddress, setWalletType } = useWallet();
+  const { createEncryptedWallet, isWalletEncrypted } = useEncryptedWallet();
   const isNostrLightningAccount = walletType === 'alby' || walletType === 'nostria' || address.startsWith('npub');
   const isOkxBitcoinAccount = walletType === 'okx';
   const isBitcoinOnlyAccount = walletType === 'okx';
@@ -561,6 +561,8 @@ export default function WalletPage() {
     ? undefined
     : `${selectedSendAsset.label} sends need chain-specific signing and broadcasting support before they can be enabled.`;
   const isLocalWallet = walletType === 'imported';
+  const isStacksExtensionWallet = walletType === 'leather' || walletType === 'xverse';
+  const canShowSwap = isStacksExtensionWallet || (isLocalWallet && isWalletEncrypted);
   const selectedAssetNeedsPassword = (sendAsset === 'sbtc' && !extensionAvailable) || (sendAsset === 'bitcoin' && isLocalWallet) || sendAsset === 'rootstock' || sendAsset === 'liquid';
   const selectedAssetCanUseCurrentSigner = sendAsset === 'bitcoin'
     ? !isLocalWallet || !!sendPassword
@@ -664,7 +666,7 @@ export default function WalletPage() {
     ? (sendAsset === 'bitcoin'
       ? isLocalWallet ? 'Send' : 'Send'
       : sendAsset === 'rootstock' ? 'Send'
-      : extensionAvailable ? 'Send via Extension' : 'Send')
+      : extensionAvailable ? 'Send' : 'Send')
     : 'Select Supported Asset';
   const summaryRecipientDisplay = trimmedRecipient ? abbreviateAddress(trimmedRecipient, 6) : 'Add recipient';
   const remainingBalanceDisplay = remainingBalanceValue !== null ? formatCompactBalance(Math.max(remainingBalanceValue, 0)) : null;
@@ -701,7 +703,7 @@ export default function WalletPage() {
       : 'Nostr account'
     : isBitcoinOnlyAccount
       ? 'Bitcoin balance'
-    : 'Satoshis';
+    : 'SATS';
 
   const resetSendForm = () => {
     setSendTo("");
@@ -719,10 +721,16 @@ export default function WalletPage() {
   const closeReceiveModal = () => setShowReceive(false);
 
   useEffect(() => {
-    if (isBitcoinOnlyAccount && receiveAsset !== 'bitcoin') {
+    if ((isBitcoinOnlyAccount || (isStacksExtensionWallet && (receiveAsset === 'rootstock' || receiveAsset === 'liquid'))) && receiveAsset !== 'bitcoin') {
       setReceiveAsset('bitcoin');
     }
-  }, [isBitcoinOnlyAccount, receiveAsset]);
+    if (!isBitcoinOnlyAccount && !btcAddressLoading && !btcAddress && receiveAsset === 'bitcoin') {
+      setReceiveAsset('stacks');
+    }
+    if (isStacksExtensionWallet && (sendAsset === 'rootstock' || sendAsset === 'liquid')) {
+      setSendAsset('bitcoin');
+    }
+  }, [btcAddress, btcAddressLoading, isBitcoinOnlyAccount, isStacksExtensionWallet, receiveAsset, sendAsset]);
 
   const handleReceiveAssetKeyDown = useCallback((event: React.KeyboardEvent<HTMLElement>, asset: ReceiveAsset) => {
     if (event.target !== event.currentTarget) return;
@@ -741,11 +749,17 @@ export default function WalletPage() {
   }, []);
 
   const openGenerateAddressModal = useCallback((layer: ReceiveLayer) => {
+    if (isStacksExtensionWallet) {
+      toast.error(layer === 'bitcoin'
+        ? 'Use the Bitcoin address supplied by your connected wallet.'
+        : `${RECEIVE_LAYER_LABELS[layer]} is not available for this connected wallet.`);
+      return;
+    }
     setGenerateAddressLayer(layer);
     setGenerateAddressAuthMode(getStoredEncryptedWallet() ? 'unlock' : 'create');
     setCreatePasskeyError(null);
     setShowGenerateAddressesModal(true);
-  }, []);
+  }, [isStacksExtensionWallet]);
 
   const closeGenerateAddressModal = useCallback(() => {
     if (generatingAddresses) return;
@@ -768,7 +782,7 @@ export default function WalletPage() {
     } = {};
 
     if (layer === 'bitcoin') {
-      const nextBitcoinAddress = wallet.bitcoinAddress || getBitcoinAddressFromPrivateKey(wallet.privateKey, bitcoinNetwork);
+      const nextBitcoinAddress = wallet.bitcoinAddress || getBitcoinTaprootAddressFromPrivateKey(wallet.privateKey, bitcoinNetwork);
       addressUpdates.bitcoinAddress = nextBitcoinAddress;
     }
 
@@ -993,27 +1007,14 @@ export default function WalletPage() {
     setSendAmount(value);
   }, [sendLoading]);
 
-  const sendMethodTitle = selectedSendAsset.supported
-    ? `Sending ${selectedSendAsset.label} ${sendAsset === 'bitcoin' && !isLocalWallet || extensionAvailable && sendAsset === 'sbtc' ? 'with Extension' : 'with Local Wallet'}`
-    : `${selectedSendAsset.label} selected`;
-  const sendMethodDescription = selectedSendAsset.supported
-    ? (sendAsset === 'bitcoin' && isLocalWallet
-      ? 'Your encrypted wallet password unlocks the local private key to sign and broadcast this BTC transfer.'
-      : sendAsset === 'bitcoin'
-      ? 'Your Bitcoin browser wallet will build, sign, fee, and broadcast this BTC transfer.'
-      : sendAsset === 'rootstock'
-      ? isLocalWallet
-        ? 'Your encrypted wallet password unlocks the local private key to sign and broadcast this native RBTC transfer on Rootstock.'
-        : 'Rootstock sends are available from local encrypted wallets. Create or unlock a local wallet to continue.'
-      : sendAsset === 'liquid'
-      ? isLocalWallet
-        ? 'Your encrypted wallet password unlocks the local private key to sign and broadcast this L-BTC transfer on Liquid.'
-        : 'Liquid sends are available from local encrypted wallets. Create or unlock a local wallet to continue.'
-      : extensionAvailable
-      ? 'Your connected browser wallet will handle signing, fees, and confirmation prompts for this transfer.'
-      : 'Your encrypted wallet password unlocks the private key locally to sign this transfer.')
-    : unsupportedSendAssetMessage;
   const primaryReceiveAddress = btcAddress;
+  const availableSendAssets = SEND_ASSETS.filter((asset) => {
+    if (asset.id === 'bitcoin') return Boolean(primaryReceiveAddress);
+    if (asset.id === 'sbtc') return Boolean(address) && !isBitcoinOnlyAccount && !isNostrLightningAccount;
+    if (asset.id === 'rootstock') return Boolean(rskAddress) && !isStacksExtensionWallet;
+    if (asset.id === 'liquid') return Boolean(liquidAddress) && !isStacksExtensionWallet;
+    return false;
+  });
   const selectedReceiveAddress = receiveAsset === 'bitcoin'
     ? isOkxBitcoinAccount
       ? selectedOkxBitcoinAddress || primaryReceiveAddress
@@ -1024,6 +1025,13 @@ export default function WalletPage() {
         ? rskAddress
         : liquidAddress;
   const selectedReceiveLabel = RECEIVE_ASSET_LABELS[receiveAsset];
+
+  useEffect(() => {
+    if (availableSendAssets.some((asset) => asset.id === sendAsset)) return;
+    const fallbackAsset = availableSendAssets[0]?.id;
+    if (fallbackAsset) setSendAsset(fallbackAsset);
+  }, [availableSendAssets, sendAsset]);
+
   const getReceiveCopyButtonClass = useCallback((asset: ReceiveAsset) => {
     const baseClass = 'shrink-0 text-sm p-2 rounded-lg transition';
     return receiveAsset === asset
@@ -1498,9 +1506,9 @@ export default function WalletPage() {
       })
       .then(data => {
         const btcInfo = data?.btc_address;
-        const derivedAddress = typeof btcInfo === 'string'
+        const derivedAddress = connectedBitcoinAddress || (typeof btcInfo === 'string'
           ? btcInfo
-          : btcInfo?.p2wpkh || btcInfo?.bech32 || btcInfo?.p2tr || null;
+          : btcInfo?.p2tr || btcInfo?.p2wpkh || btcInfo?.bech32 || null);
 
         const storedWallet = getStoredEncryptedWallet();
         const localBitcoinAddress = storedWallet?.bitcoinAddress ?? null;
@@ -1532,7 +1540,7 @@ export default function WalletPage() {
         }
       })
       .finally(() => setBtcAddressLoading(false));
-  }, [address, currentNetwork, isNostrLightningAccount, isBitcoinOnlyAccount]);
+  }, [address, connectedBitcoinAddress, currentNetwork, isNostrLightningAccount, isBitcoinOnlyAccount]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1722,7 +1730,7 @@ export default function WalletPage() {
                   ? abbreviateAddress(address, 8)
                   : primaryBalanceDisplay}
               </BalanceDisplay>
-              <div className="text-lg">{primaryBalanceLabel}</div>
+              <div className="text-sm">{primaryBalanceLabel}</div>
             </div>
           )}
         </div>
@@ -1748,35 +1756,38 @@ export default function WalletPage() {
         </LocalizedText></button>
       ) : isBitcoinOnlyAccount ? (
         <button
-          className="mb-8 w-full bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
+          className="mb-8 flex w-full items-center justify-center gap-2 bg-transparent border border-border text-foreground px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
           onClick={() => setShowReceive(true)}
         >
+          <Image src="/receive.svg" alt="" width={20} height={20} className="invert dark:invert-0" aria-hidden="true" />
           <LocalizedText>Receive
         </LocalizedText></button>
       ) : (
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button
-            className="border border-border bg-transparent text-foreground w-full px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
+            className="flex items-center justify-center gap-2 border border-border bg-transparent text-foreground w-full px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
             onClick={() => setShowSend(true)}
           >
+            <Image src="/send.svg" alt="" width={20} height={20} className="invert dark:invert-0" aria-hidden="true" />
             <LocalizedText>Send
           </LocalizedText></button>
           <button
-            className="border border-border bg-transparent text-foreground px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
+            className="flex items-center justify-center gap-2 border border-border bg-transparent text-foreground px-6 py-3 rounded-xl hover:bg-muted cursor-pointer select-none transition-all duration-200"
             onClick={() => setShowReceive(true)}
           >
+            <Image src="/receive.svg" alt="" width={20} height={20} className="invert dark:invert-0" aria-hidden="true" />
             <LocalizedText>Receive
           </LocalizedText></button>
         </div>
       )}
 
-      {!isNostrLightningAccount && !isBitcoinOnlyAccount && (
+      {canShowSwap && (
         <button
           type="button"
           className="mb-8 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-transparent px-6 py-3 text-foreground transition-all duration-200 hover:bg-muted"
           onClick={() => setShowSwap(true)}
         >
-          <Image src="/swap.svg" alt="" width={18} height={18} aria-hidden="true" />
+          <Image src="/swap.svg" alt="" width={18} height={18} className="invert dark:invert-0" aria-hidden="true" />
           <span><LocalizedText>Swap</LocalizedText></span>
         </button>
       )}
@@ -1839,7 +1850,7 @@ export default function WalletPage() {
             </div>
           ) : (
           <div className="space-y-4 p-4">
-            <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
+            {primaryReceiveAddress && <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Image src="/btc.svg" alt="Bitcoin" width={28} height={28} />
                 <div>
@@ -1853,11 +1864,27 @@ export default function WalletPage() {
                 </BalanceDisplay>
                 <div className="text-xs text-muted-foreground"><LocalizedText>Balance</LocalizedText></div>
               </div>
-            </div>
+            </div>}
 
             {!isBitcoinOnlyAccount && (
             <>
-            <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
+            {isStacksExtensionWallet && <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Image src="/btc.svg" alt="sBTC" width={28} height={28} />
+                <div>
+                  <div className="text-sm font-semibold">BTC</div>
+                  <div className="text-xs text-muted-foreground"><LocalizedText>Stacks Network</LocalizedText></div>
+                </div>
+              </div>
+              <div className="text-right">
+                <BalanceDisplay loading={loading} unavailable={sbtcBalance === '--'} onRefresh={refreshStacksBalance}>
+                  {sbtcBalance ?? '0'}
+                </BalanceDisplay>
+                <div className="text-xs text-muted-foreground"><LocalizedText>Balance</LocalizedText></div>
+              </div>
+            </div>}
+
+            {!isStacksExtensionWallet && <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Image src="/liquid.svg" alt="Liquid" width={28} height={28} />
                 <div>
@@ -1871,9 +1898,9 @@ export default function WalletPage() {
                 </BalanceDisplay>
                 <div className="text-xs text-muted-foreground"><LocalizedText>Balance</LocalizedText></div>
               </div>
-            </div>
+            </div>}
 
-            <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
+            {!isStacksExtensionWallet && <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Image src="/rsk.svg" alt="Rootstock" width={28} height={28} />
                 <div>
@@ -1887,7 +1914,7 @@ export default function WalletPage() {
                 </BalanceDisplay>
                 <div className="text-xs text-muted-foreground"><LocalizedText>Balance</LocalizedText></div>
               </div>
-            </div>
+            </div>}
 
             <div className="rounded-xl border border-border bg-transparent p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -1942,7 +1969,7 @@ export default function WalletPage() {
       </div>
 
       {/* Send Modal */}
-      {showSwap && (
+      {showSwap && canShowSwap && (
         <BitflowSwapPanel
           address={address}
           walletType={walletType}
@@ -1987,9 +2014,9 @@ export default function WalletPage() {
             </div>
 
             <form onSubmit={handleSend} className="min-h-0 space-y-5 overflow-y-auto overscroll-contain px-6 py-5">
-              <div>
+              {availableSendAssets.length > 1 && <div>
                 <label className="block text-sm font-medium mb-2" htmlFor="send-asset">
-                  <LocalizedText>Asset
+                  <LocalizedText>Network
                 </LocalizedText></label>
                 <select
                   id="send-asset"
@@ -1998,29 +2025,11 @@ export default function WalletPage() {
                   onChange={(event) => setSendAsset(event.target.value as SendAsset)}
                   disabled={sendLoading}
                 >
-                  {SEND_ASSETS.map((asset) => (
-                    <option key={asset.id} value={asset.id}>
-                      {asset.label} - {getSendAssetBalanceDisplay(asset.id)}
-                    </option>
+                  {availableSendAssets.map((asset) => (
+                    <option key={asset.id} value={asset.id}>{asset.label}</option>
                   ))}
                 </select>
-              </div>
-
-              <div className="rounded-xl border border-border bg-transparent p-4 text-sm">
-                <p className="font-medium">{sendMethodTitle}</p>
-                <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{sendMethodDescription}</p>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  <LocalizedText>Available balance:
-                  </LocalizedText><BalanceDisplay
-                    loading={selectedAssetBalanceLoading}
-                    unavailable={selectedAssetBalanceUnavailable}
-                    onRefresh={refreshSelectedSendAssetBalance}
-                    className="ml-1 align-middle text-xs font-semibold"
-                  >
-                    {selectedAssetBalanceDisplay}
-                  </BalanceDisplay>
-                </p>
-              </div>
+              </div>}
 
               <div>
                 <label className="block text-sm font-medium mb-2" htmlFor="send-recipient">
@@ -2252,7 +2261,7 @@ export default function WalletPage() {
                   ) : (
                     <>
                       <div className="text-sm"><LocalizedText>No </LocalizedText>{selectedReceiveLabel} <LocalizedText>address yet</LocalizedText></div>
-                      {receiveAsset !== "stacks" && !isBitcoinOnlyAccount && (
+                      {receiveAsset !== "stacks" && !isBitcoinOnlyAccount && !(receiveAsset === 'bitcoin' && isStacksExtensionWallet) && (
                         <button
                           type="button"
                           className="rounded-lg border border-border bg-transparent px-4 py-2 text-xs font-medium text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
@@ -2313,7 +2322,7 @@ export default function WalletPage() {
                     );
                   })}
                 </div>
-              ) : (
+              ) : primaryReceiveAddress ? (
               <div
                 role="button"
                 tabIndex={0}
@@ -2323,7 +2332,7 @@ export default function WalletPage() {
               >
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <span className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground"><LocalizedText>Bitcoin L1</LocalizedText></span>
-                  {!btcAddressLoading && !primaryReceiveAddress && !isBitcoinOnlyAccount && (
+                  {!btcAddressLoading && !primaryReceiveAddress && !isBitcoinOnlyAccount && !isStacksExtensionWallet && (
                     <button
                       type="button"
                       className="rounded-lg border h-full border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
@@ -2358,7 +2367,7 @@ export default function WalletPage() {
                   <div className="text-sm text-destructive">{btcAddressError || "No Bitcoin address available."}</div>
                 )}
               </div>
-              )}
+              ) : null}
 
               {!isBitcoinOnlyAccount && (
               <div className="grid gap-3 text-left">
@@ -2386,7 +2395,7 @@ export default function WalletPage() {
                   </div>
                 </div>
 
-                <div
+                {!isStacksExtensionWallet && <div
                   role="button"
                   tabIndex={0}
                   className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "rootstock" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-muted'}`}
@@ -2430,9 +2439,9 @@ export default function WalletPage() {
                       </LocalizedText></button>
                     </div>
                   )}
-                </div>
+                </div>}
 
-                <div
+                {!isStacksExtensionWallet && <div
                   role="button"
                   tabIndex={0}
                   className={`p-4 rounded-2xl border text-left text-sm transition ${receiveAsset === "liquid" ? 'border-foreground bg-transparent text-foreground' : 'border-border bg-transparent text-foreground hover:bg-muted'}`}
@@ -2476,7 +2485,7 @@ export default function WalletPage() {
                       </LocalizedText></button>
                     </div>
                   )}
-                </div>
+                </div>}
               </div>
               )}
             </div>

@@ -111,8 +111,12 @@ const normalizeSignInError = (error: unknown, walletLabel: string) => {
 };
 
 export const requestXverseMainnetStacksAddress = async (): Promise<string> => {
+  return (await requestXverseMainnetAddresses()).stacksAddress;
+};
+
+export const requestXverseMainnetAddresses = async (): Promise<{ stacksAddress: string; bitcoinAddress: string }> => {
   const response = await satsRequest('wallet_connect', {
-    addresses: [AddressPurpose.Stacks],
+    addresses: [AddressPurpose.Stacks, AddressPurpose.Payment],
     network: BBOX_SIGN_IN_NETWORK,
   }) as WalletConnectResponse;
 
@@ -130,10 +134,19 @@ export const requestXverseMainnetStacksAddress = async (): Promise<string> => {
 
   assertMainnetStacksAddress(stacksAddress, 'Xverse');
 
-  return stacksAddress;
+  const bitcoinAddress = (response.result?.addresses ?? response.addresses)?.find(
+    (address) => address.purpose === AddressPurpose.Payment
+  )?.address;
+  if (!bitcoinAddress) throw new Error('No mainnet Bitcoin payment address found in Xverse.');
+
+  return { stacksAddress, bitcoinAddress };
 };
 
 export const requestLeatherMainnetStacksAddress = async (provider: RpcCapableProvider): Promise<string> => {
+  return (await requestLeatherMainnetAddresses(provider)).stacksAddress;
+};
+
+export const requestLeatherMainnetAddresses = async (provider: RpcCapableProvider): Promise<{ stacksAddress: string; bitcoinAddress: string }> => {
   const requests: Array<[string, unknown?]> = [
     ['stx_getAddresses', { network: 'mainnet' }],
     ['getAddresses', { network: 'mainnet' }],
@@ -150,10 +163,14 @@ export const requestLeatherMainnetStacksAddress = async (provider: RpcCapablePro
 
       if (stacksAddress) {
         assertMainnetStacksAddress(stacksAddress, 'Leather');
-        return stacksAddress;
+        const bitcoinAddress = addresses.find(
+          (address) => address.address && address.address !== stacksAddress && /^(bc1|[13])/i.test(address.address)
+        )?.address;
+        if (!bitcoinAddress) throw new Error('No mainnet Bitcoin address found in Leather.');
+        return { stacksAddress, bitcoinAddress };
       }
     } catch (error) {
-      if (error instanceof Error && /testnet Stacks address/i.test(error.message)) {
+      if (error instanceof Error && /(testnet Stacks address|No mainnet Bitcoin address)/i.test(error.message)) {
         throw error;
       }
     }

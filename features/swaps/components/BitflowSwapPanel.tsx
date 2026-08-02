@@ -119,8 +119,8 @@ export function BitflowSwapPanel({ address, walletType, network, onClose, onComp
     : undefined;
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-[#111]/95 px-4 py-6" onClick={onClose}>
-      <div className="max-h-[calc(100vh-3rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-[#111] p-6 shadow-xl" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 px-4 py-6 backdrop-blur-sm" onClick={onClose}>
+      <div className="max-h-[calc(100vh-3rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-background p-6 text-foreground shadow-xl" onClick={(event) => event.stopPropagation()}>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold">Swap</h2>
@@ -132,10 +132,10 @@ export function BitflowSwapPanel({ address, walletType, network, onClose, onComp
         {tokensLoading ? (
           <div className="flex min-h-48 items-center justify-center"><LoaderCircle className="animate-spin" /></div>
         ) : tokenError ? (
-          <div className="rounded-xl border border-red-500/30 p-4 text-sm text-red-300">{tokenError}</div>
+          <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">{tokenError}</div>
         ) : submitted ? (
           <div className="space-y-4 rounded-xl border border-emerald-500/30 p-5">
-            <div className="font-semibold text-emerald-300">Swap submitted</div>
+            <div className="font-semibold text-emerald-700 dark:text-emerald-300">Swap submitted</div>
             <p className="text-sm text-muted-foreground">The transaction is pending. Your balances will refresh while it confirms.</p>
             {explorerUrl && <a href={explorerUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm underline">View transaction <ExternalLink size={14} /></a>}
           </div>
@@ -144,8 +144,8 @@ export function BitflowSwapPanel({ address, walletType, network, onClose, onComp
             <div className="rounded-xl border border-border p-4">
               <label className="text-xs text-muted-foreground" htmlFor="bitflow-token-in">You pay</label>
               <div className="mt-2 flex gap-3">
-                <input id="bitflow-amount" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="0.00" className="min-w-0 flex-1 bg-transparent text-2xl outline-none" />
-                <select id="bitflow-token-in" value={tokenIn} onChange={(event) => setTokenIn(event.target.value)} className="max-w-36 rounded-lg border border-border bg-[#111] px-3 py-2">
+                <input id="bitflow-amount" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="0.00" className="min-w-0 flex-1 bg-transparent text-2xl text-foreground placeholder:text-muted-foreground outline-none" />
+                <select id="bitflow-token-in" value={tokenIn} onChange={(event) => setTokenIn(event.target.value)} className="max-w-36 rounded-lg border border-border bg-background px-3 py-2 text-foreground">
                   {tokens.filter((token) => token.id !== tokenOut).map((token) => <option key={token.id} value={token.id}>{token.symbol}</option>)}
                 </select>
               </div>
@@ -157,7 +157,7 @@ export function BitflowSwapPanel({ address, walletType, network, onClose, onComp
               <label className="text-xs text-muted-foreground" htmlFor="bitflow-token-out">You receive</label>
               <div className="mt-2 flex items-center gap-3">
                 <div className="min-w-0 flex-1 text-2xl">{quoteQuery.isFetching ? <LoaderCircle className="animate-spin" size={22} /> : quote ? `≈ ${formatAmount(quote.expectedOutput)}` : '—'}</div>
-                <select id="bitflow-token-out" value={tokenOut} onChange={(event) => setTokenOut(event.target.value)} className="max-w-36 rounded-lg border border-border bg-[#111] px-3 py-2">
+                <select id="bitflow-token-out" value={tokenOut} onChange={(event) => setTokenOut(event.target.value)} className="max-w-36 rounded-lg border border-border bg-background px-3 py-2 text-foreground">
                   {tokens.filter((token) => token.id !== tokenIn).map((token) => <option key={token.id} value={token.id}>{token.symbol}</option>)}
                 </select>
               </div>
@@ -177,15 +177,15 @@ export function BitflowSwapPanel({ address, walletType, network, onClose, onComp
               <div className="mb-2 text-sm">Slippage tolerance</div>
               <div className="grid grid-cols-3 gap-2">
                 {SLIPPAGE_OPTIONS.map((option) => (
-                  <button key={option} type="button" onClick={() => setSlippage(option)} className={`rounded-lg border px-3 py-2 text-sm ${slippage === option ? 'border-foreground' : 'border-border text-muted-foreground'}`}>{option * 100}%</button>
+                  <button key={option} type="button" onClick={() => setSlippage(option)} className={`rounded-lg border px-3 py-2 text-sm transition hover:bg-muted ${slippage === option ? 'border-foreground bg-muted text-foreground' : 'border-border text-muted-foreground'}`}>{option * 100}%</button>
                 ))}
               </div>
             </div>
 
-            {(quoteQuery.error || submissionError) && <div className="rounded-lg border border-red-500/30 p-3 text-sm text-red-300">{submissionError || errorMessage(quoteQuery.error)}</div>}
-            {!canExecute && <p className="text-xs text-amber-300">Connect Leather or Xverse to sign this swap. Imported/passkey signing is not yet supported for Bitflow contract calls.</p>}
+            {(quoteQuery.error || submissionError) && <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">{submissionError || errorMessage(quoteQuery.error)}</div>}
+            {!canExecute && <p className="text-xs text-amber-700 dark:text-amber-300">Connect Leather or Xverse to sign this swap. Imported/passkey signing is not yet supported for Bitflow contract calls.</p>}
 
-            <button type="button" onClick={execute} disabled={!quote || quoteQuery.isFetching || submitting || !selectedInput || Number(amount) <= 0} className="flex w-full items-center justify-center gap-2 rounded-xl border border-border px-5 py-3 font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40">
+            <button type="button" onClick={execute} disabled={!quote || quoteQuery.isFetching || submitting || !selectedInput || Number(amount) <= 0} className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-foreground px-5 py-3 font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100">
               {submitting ? <><LoaderCircle size={17} className="animate-spin" /> Refreshing quote…</> : 'Review swap in wallet'}
             </button>
             <button type="button" onClick={() => quoteQuery.refetch()} disabled={!debouncedAmount || quoteQuery.isFetching} className="flex w-full items-center justify-center gap-2 text-xs text-muted-foreground disabled:opacity-40"><RefreshCw size={13} /> Refresh quote</button>
