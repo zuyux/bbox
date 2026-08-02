@@ -25,7 +25,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#ffffff',
+  themeColor: '#0f172a',
 };
 
 const inter = Inter({
@@ -121,7 +121,7 @@ export default async function RootLayout({
       <body className={`${inter.variable} ${jersey10.variable} ${lacquer.variable} antialiased${isDocumentation ? ' bbox-docs-route' : ''}`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
