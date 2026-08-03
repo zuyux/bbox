@@ -147,7 +147,7 @@ export default function WalletRecoveryPage() {
         await fetch('/api/wallet-connect/account-created', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, bitcoinAddress: walletData.bitcoinAddress, mnemonic }),
+          body: JSON.stringify({ email, bitcoinAddress: walletData.bitcoinAddress }),
         });
       } catch (e) {
         console.warn('Failed to send account info email:', e);

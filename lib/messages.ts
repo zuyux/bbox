@@ -11,7 +11,7 @@ const en = {
   footer: { tagline: 'Our Open App Store' },
   accessibility: { skip: 'Skip to main content', main: 'Main content' },
   home: {
-    badge: 'HUMANS SANDBOX', title: 'BBOX is the open App Store for everyone',
+    badge: 'HUMANS SANDBOX', title: 'Our Open App Store',
     lead: 'Discover useful apps, compare trusted details, and support projects openly instead of relying on hidden gatekeepers.',
     exploreApps: 'Explore Apps', applyFunding: 'Apply for funding', protocol: 'App Registry Protocol', listedApps: 'listed apps', categories: 'categories', anchored: 'Bitcoin anchored', publicGoods: 'public goods',
     loading: 'Loading apps from the public app database...', what: 'What BBOX does', whatTitle: 'Discovery, coordination, and funding in one place.',

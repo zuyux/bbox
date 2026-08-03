@@ -156,7 +156,7 @@ export default function WelcomePage() {
               </div>
               <CardTitle className="text-2xl text-foreground mb-2"><LocalizedText>Back Up Your Recovery Phrase</LocalizedText></CardTitle>
               <p className="text-muted-foreground">
-                <LocalizedText>This 24-word phrase is the only way to restore your encrypted wallet if browser storage is lost. Write it down offline and keep it private.
+                <LocalizedText>This 12-word phrase is the only way to restore your encrypted wallet if browser storage is lost. Write it down offline and keep it private.
               </LocalizedText></p>
             </CardHeader>
 
