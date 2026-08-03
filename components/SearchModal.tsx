@@ -242,7 +242,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                           <div className="flex items-center gap-2 mb-1">
                             <div className="text-foreground font-medium text-sm truncate">{app.name}</div>
                             {app.verified && (
-                              <Shield size={12} className="text-blue-400" />
+                              <Shield size={12} className="text-orange-400" />
                             )}
                           </div>
                           <div className="text-foreground text-xs truncate">
@@ -298,7 +298,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center">
+                            <div className="w-full h-full bg-gradient-to-br from-green-500 to-orange-500 flex items-center justify-center">
                               <User size={16} className="text-foreground" />
                             </div>
                           )}

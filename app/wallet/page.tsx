@@ -435,8 +435,14 @@ export default function WalletPage() {
     status: 'idle',
   });
   const [profileLightningAddress, setProfileLightningAddress] = useState<string | null>(null);
-  const [currentNetwork, setCurrentNetwork] = useState<Network>(() => getPersistedNetwork());
+  // Use a deterministic value for SSR and the first client render. The saved
+  // browser preference is restored after hydration below.
+  const [currentNetwork, setCurrentNetwork] = useState<Network>('mainnet');
   const sbtcContractId = useMemo(() => getSBTCContract(currentNetwork), [currentNetwork]);
+
+  useEffect(() => {
+    setCurrentNetwork(getPersistedNetwork());
+  }, []);
 
   type WalletAsset = {
     id: string;

@@ -57,7 +57,7 @@
      fill-rule="evenodd"
      clip-rule="evenodd"
      d="M 20.25,5.25 H 3.75 L 3,6 v 12 l 0.75,0.75 h 16.5 L 21,18 V 6 L 20.25,5.25 M 4.5,7.6955 V 17.25 h 15 V 7.69525 c 0,0 -4.121386,6.818342 -7.5001,6.81835 C 8.621291,14.513608 4.5,7.6955 4.5,7.6955 Z M 18.3099,6.75 H 5.68986 c 0,0 3.4674494,5.736404 6.31004,5.7364 2.842581,-4e-6 6.31,-5.7364 6.31,-5.7364 z"
-     fill="#080341"
+     fill="#0C0F0A"
      id="path1"
      sodipodi:nodetypes="cccccccccccccscccsc"
      style="fill:#ffffff;stroke:#ffffff;stroke-opacity:1;stroke-width:0.99999;stroke-dasharray:none;stroke-linecap:round;paint-order:stroke fill markers;stroke-linejoin:round" />

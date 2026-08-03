@@ -359,7 +359,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                       </div>
                       {canAttemptConnect ? (
                       <Button
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-lg text-sm font-semibold cursor-pointer"
+                        className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1 rounded-lg text-sm font-semibold cursor-pointer"
                         onClick={async () => {
                             setWalletError(null);
                           try {

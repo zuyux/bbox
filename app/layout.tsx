@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Jersey_10, Lacquer } from "next/font/google";
-import { Navbar } from "@/components/Navbar";
-import { GetInButton } from "@/components/GetIn";
+import { SiteNavigation } from '@/components/SiteNavigation';
 import Footer from "@/components/Footer";
 import { Providers } from '@/components/ui/provider';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -25,7 +24,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#0f172a',
+  themeColor: '#0C0F0A',
 };
 
 const inter = Inter({
@@ -134,8 +133,7 @@ export default async function RootLayout({
               <a href="#main-content" className="skip-link">
                 {messages[locale].accessibility.skip}
               </a>
-              {!isDocumentation && <GetInButton />}
-              {!isDocumentation && <Navbar />}
+              <SiteNavigation />
               <WelcomeModal />
               <main
                 id="main-content"

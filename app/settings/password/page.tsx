@@ -127,7 +127,7 @@ export default function PasswordPage() {
           <div>
             <label className="block mb-2 text-sm font-semibold"><LocalizedText>Current Password</LocalizedText></label>
             <input
-              className="w-full px-4 py-2 rounded-xl border border-[#333] bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded-xl border border-[#333] bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
               type="password"
               value={currentPassword}
               onChange={e => setCurrentPassword(e.target.value)}
@@ -141,7 +141,7 @@ export default function PasswordPage() {
         <div>
           <label className="block mb-2 text-sm font-semibold"><LocalizedText>New Password</LocalizedText></label>
           <input
-            className="w-full px-4 py-2 rounded-xl border border-[#333] bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 rounded-xl border border-[#333] bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
             type="password"
             value={newPassword}
             onChange={e => setNewPassword(e.target.value)}
@@ -185,7 +185,7 @@ export default function PasswordPage() {
         <div>
           <label className="block mb-2 text-sm font-semibold"><LocalizedText>Confirm New Password</LocalizedText></label>
           <input
-            className="w-full px-4 py-2 rounded-xl border border-[#333] bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 rounded-xl border border-[#333] bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
             type="password"
             value={confirmPassword}
             onChange={e => setConfirmPassword(e.target.value)}
@@ -211,7 +211,7 @@ export default function PasswordPage() {
         <button
           type="submit"
           disabled={saving || !passwordStrength.isValid || newPassword !== confirmPassword}
-          className="w-full py-3 px-4 rounded-xl border-[1px] border-[#00b6e3] bg-[#00b6e3] text-white hover:bg-white hover:text-[#00b6e3] transition-all duration-200 focus:outline-none cursor-pointer select-none font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#00b6e3] disabled:hover:text-white"
+          className="w-full py-3 px-4 rounded-xl border-[1px] border-[#ff6a00ff] bg-[#ff6a00ff] text-white hover:bg-white hover:text-[#ff6a00ff] transition-all duration-200 focus:outline-none cursor-pointer select-none font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#ff6a00ff] disabled:hover:text-white"
         >
           {saving ? "Changing Password..." : "Change Password"}
         </button>

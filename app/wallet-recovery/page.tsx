@@ -157,7 +157,7 @@ export default function WalletRecoveryPage() {
       <div className="min-h-screen bg-[#111] flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-[#181818] border-gray-700">
           <CardContent className="flex flex-col items-center p-8">
-            <Loader className="w-8 h-8 animate-spin text-blue-500 mb-4" />
+            <Loader className="w-8 h-8 animate-spin text-orange-500 mb-4" />
             <p className="text-gray-300"><LocalizedText>Validating recovery link...</LocalizedText></p>
           </CardContent>
         </Card>
@@ -196,8 +196,8 @@ export default function WalletRecoveryPage() {
         {step === 'create' && (
           <>
             <CardHeader className="text-center pb-6">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Key className="w-8 h-8 text-blue-400" />
+              <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Key className="w-8 h-8 text-orange-400" />
               </div>
               <CardTitle className="text-2xl text-white mb-2"><LocalizedText>Create Your Wallet</LocalizedText></CardTitle>
               <p className="text-gray-400 text-sm">
@@ -207,12 +207,12 @@ export default function WalletRecoveryPage() {
 
             <CardContent className="space-y-6 px-6 pb-6">
               {/* Email and Timer Info */}
-              <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-4">
+              <div className="bg-orange-900/30 border border-orange-700/50 rounded-lg p-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-blue-300">
+                  <span className="text-orange-300">
                     <strong>{email}</strong>
                   </span>
-                  <div className="flex items-center text-blue-400">
+                  <div className="flex items-center text-orange-400">
                     <Timer className="w-4 h-4 mr-1" />
                     <span className="font-mono">{timeLeft}</span>
                   </div>
@@ -260,7 +260,7 @@ export default function WalletRecoveryPage() {
               {/* Continue Button */}
               <Button
                 onClick={handleContinueToPassphrase}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 cursor-pointer transition-colors"
+                className="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold py-3 cursor-pointer transition-colors"
               >
                 <Key className="w-4 h-4 mr-2" />
                 <LocalizedText>Continue to Set Passphrase
@@ -292,7 +292,7 @@ export default function WalletRecoveryPage() {
                   value={passphrase}
                   onChange={(e) => setPassphrase(e.target.value)}
                   placeholder="Enter a strong passphrase"
-                  className="bg-[#2a2a2a] border-gray-600 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
+                  className="bg-[#2a2a2a] border-gray-600 text-white placeholder-gray-500 focus:border-orange-500 focus:ring-orange-500/20"
                   disabled={isCreatingWallet}
                 />
               </div>
@@ -307,7 +307,7 @@ export default function WalletRecoveryPage() {
                   value={confirmPassphrase}
                   onChange={(e) => setConfirmPassphrase(e.target.value)}
                   placeholder="Confirm your passphrase"
-                  className="bg-[#2a2a2a] border-gray-600 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
+                  className="bg-[#2a2a2a] border-gray-600 text-white placeholder-gray-500 focus:border-orange-500 focus:ring-orange-500/20"
                   disabled={isCreatingWallet}
                 />
               </div>

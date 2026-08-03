@@ -73,7 +73,7 @@ export default function AccountCreatedPage() {
         </div>
         <Button
           onClick={handleConfirm}
-          className="w-full mt-4 bg-[#2563eb] text-white font-semibold rounded-xl py-6 hover:bg-[#1d4ed8] cursor-pointer select-none flex items-center justify-center"
+          className="w-full mt-4 bg-[#ff6a00ff] text-white font-semibold rounded-xl py-6 hover:bg-[#e65f00] cursor-pointer select-none flex items-center justify-center"
           disabled={loading}
         >
           {loading ? (

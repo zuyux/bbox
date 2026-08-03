@@ -769,29 +769,29 @@ export default function PublishPage() {
           )}
 
           {submitStatus === "uploading" && (
-            <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
+            <Card className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
-                  <span className="text-blue-800 dark:text-blue-200">
+                  <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
+                  <span className="text-orange-800 dark:text-orange-200">
                     <LocalizedText>Finalizing your submission...
                   </LocalizedText></span>
                 </div>
-                <p className="text-xs text-blue-700 dark:text-blue-300 mt-2 ml-7">
+                <p className="text-xs text-orange-700 dark:text-orange-300 mt-2 ml-7">
                   <LocalizedText>Saving metadata and transaction details to the database
                 </LocalizedText></p>
                 {metadataCid && (
-                  <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-2 ml-7 break-all">
+                  <p className="text-[11px] text-orange-700 dark:text-orange-300 mt-2 ml-7 break-all">
                     <LocalizedText>Metadata CID: </LocalizedText><span className="font-mono">{metadataCid}</span>
                   </p>
                 )}
                 {contractTxId && (
-                  <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1 ml-7 break-all">
+                  <p className="text-[11px] text-orange-700 dark:text-orange-300 mt-1 ml-7 break-all">
                     <LocalizedText>Contract TX: </LocalizedText><span className="font-mono">{contractTxId}</span>
                   </p>
                 )}
                 {barTxId && (
-                  <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1 ml-7 break-all">
+                  <p className="text-[11px] text-orange-700 dark:text-orange-300 mt-1 ml-7 break-all">
                     <LocalizedText>BAR TX: </LocalizedText><span className="font-mono">{barTxId}</span>
                   </p>
                 )}

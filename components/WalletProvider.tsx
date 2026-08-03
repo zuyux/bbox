@@ -84,9 +84,13 @@ export const consumeQueuedWelcomeModalAddress = () => {
 };
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [address, setAddress] = useState<string | null>(() => getCachedWalletState().address);
-  const [walletType, setWalletType] = useState<WalletType | null>(() => getCachedWalletState().walletType);
-  const [bitcoinAddress, setBitcoinAddress] = useState<string | null>(() => getCachedWalletState().bitcoinAddress);
+  // Keep the server render and the browser's first render identical. Reading
+  // localStorage in a state initializer makes a signed-in browser render a
+  // different tree while React is hydrating the server's signed-out markup.
+  const [address, setAddress] = useState<string | null>(null);
+  const [walletType, setWalletType] = useState<WalletType | null>(null);
+  const [bitcoinAddress, setBitcoinAddress] = useState<string | null>(null);
+  const [hasRestoredCache, setHasRestoredCache] = useState(false);
 
   // Persist wallet address for Xverse and Leather
   const restoreWalletState = () => {
@@ -97,6 +101,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setAddress(savedAddress);
     setWalletType(savedType);
     setBitcoinAddress(savedBitcoinAddress);
+    setHasRestoredCache(true);
   };
 
   useEffect(() => {
@@ -118,12 +123,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, []); // Intentionally empty - only run on mount to restore saved address
 
   useEffect(() => {
+    if (!hasRestoredCache) return;
+
     if (walletType !== 'leather' && walletType !== 'xverse' && bitcoinAddress !== null) {
       setBitcoinAddress(null);
       return;
     }
     persistCachedWalletState(address, walletType, bitcoinAddress);
-  }, [address, walletType, bitcoinAddress]);
+  }, [address, walletType, bitcoinAddress, hasRestoredCache]);
 
   return (
     <WalletContext.Provider value={{ address, setAddress, walletType, setWalletType, bitcoinAddress, setBitcoinAddress }}>

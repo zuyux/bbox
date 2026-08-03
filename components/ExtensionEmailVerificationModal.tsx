@@ -143,7 +143,7 @@ export default function ExtensionEmailVerificationModal({
     >
       <div className="w-full max-w-[360px] rounded-xl border border-border bg-background p-4 text-foreground shadow-2xl">
         <div className="grid grid-cols-[2.25rem_minmax(0,1fr)_1.25rem] items-start gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0000ff]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#6320EE]">
             <Image src="/email-snow.svg" alt="" width={20} height={20} />
           </div>
           <div className="min-w-0 pt-0.5">
@@ -197,7 +197,7 @@ export default function ExtensionEmailVerificationModal({
               type="button"
               onClick={handlePrimaryAction}
               disabled={loading || !emailValid || (codeSent && !codeValid)}
-              className="h-10 w-full bg-[#0000ff] text-white hover:bg-[#0000ff]"
+              className="h-10 w-full bg-[#6320EE] text-white hover:bg-[#6320EE]"
             >
               {loading ? (codeSent ? "Verifying..." : "Sending...") : codeSent ? "Verify Email" : "Send Code"}
             </Button>

@@ -146,7 +146,7 @@ export const emailTemplates = {
           <h3 style="margin-top:0;color:#ff8a00;">Verify your email</h3>
           <p style="margin:8px 0 18px;color:#e5e5e5;">Click below to confirm this email belongs to you. Verification is optional, but it helps us keep your account safer.</p>
           <div style="text-align:center;margin-bottom:18px;">
-            <a href="${verifyUrl}" style="display:inline-block;padding:12px 26px;background:#00c2ff;color:#050505;border-radius:8px;font-weight:600;text-decoration:none;">Verify Email</a>
+            <a href="${verifyUrl}" style="display:inline-block;padding:12px 26px;background:#ff6a00;color:#050505;border-radius:8px;font-weight:600;text-decoration:none;">Verify Email</a>
           </div>
           <p style="margin:0;font-size:13px;color:#9ca3af;">If you don't verify but also don't remove this email within ${expiresInHours} hours, we'll automatically treat it as verified.</p>
         </div>
@@ -243,7 +243,7 @@ export const emailTemplates = {
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${connectionUrl}" 
-               style="display: inline-block; background: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
+               style="display: inline-block; background: #ff6a00; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
               Connect Account
             </a>
           </div>

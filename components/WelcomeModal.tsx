@@ -154,8 +154,8 @@ export default function WelcomeModal() {
 
         <div className="flex justify-center">
           <div className="relative flex h-24 w-40 items-center justify-center">
-            <div className="absolute bottom-2 h-2 w-28 rounded-full bg-cyan-300/30 blur-sm" />
-            <div className="relative flex h-20 w-28 items-center justify-center rounded-md border border-cyan-200/70 bg-slate-100 shadow-[0_0_24px_rgba(45,212,191,0.25)]">
+            <div className="absolute bottom-2 h-2 w-28 rounded-full bg-orange-300/30 blur-sm" />
+            <div className="relative flex h-20 w-28 items-center justify-center rounded-md border border-orange-200/70 bg-slate-100 shadow-[0_0_24px_rgba(255,106,0,0.25)]">
               <Image
                 src="/bbox.png"
                 alt=""

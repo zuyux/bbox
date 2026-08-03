@@ -49,14 +49,14 @@ const es: typeof en = {
   nav: { primary: 'Navegación principal', home: 'Inicio de BBOX', search: 'Buscar aplicaciones', searchPlaceholder: 'BUSCAR APLICACIONES...', openSearch: 'Abrir búsqueda' },
   footer: { tagline: 'Nuestra tienda de aplicaciones' }, accessibility: { skip: 'Ir al contenido principal', main: 'Contenido principal' },
   home: {
-    badge: 'SÓLO PARA TERRÍCOLAS', title: 'SI ESTÁS AQUÍ, ES PORQUE TOMASTE LA PASTILLA', lead: 'Descubre aplicaciones útiles, compara información confiable y apoya proyectos abiertamente, sin depender de las grandes corporaciones.',
+    badge: 'SÓLO PARA TERRÍCOLAS', title: 'la caja para salir de la caja', lead: 'Descubre aplicaciones útiles, compara información confiable y apoya proyectos abiertamente, sin depender de las grandes corporaciones.',
     exploreApps: 'Explorar aplicaciones', applyFunding: 'Solicitar financiamiento', protocol: 'Protocolo de registro de aplicaciones', listedApps: 'aplicaciones registradas', categories: 'categorías', anchored: 'Anclado en Bitcoin', publicGoods: 'bienes públicos', loading: 'Cargando aplicaciones desde la base de datos pública...',
     what: 'Qué hace BBOX', whatTitle: 'Descubrimiento, coordinación y financiamiento en un solo lugar.', whatLead: 'BBOX organiza software de código abierto de alta integridad con perfiles, reseñas, subvenciones e hitos verificables anclados por el Bitcoin App Registry.',
     ecosystemPillars: [
       { label: 'Registro universal', detail: 'Metadatos controlados por los editores para aplicaciones de código abierto en Bitcoin, otras cadenas y software independiente fuera de la cadena.' },
       { label: 'Perfiles de aplicaciones', detail: 'Fichas claras con contenido multimedia, reseñas, enlaces al código fuente y la información necesaria antes de probar algo nuevo.' },
       { label: 'Capa de financiamiento', detail: 'Los hitos y el contexto de financiamiento facilitan evaluar subvenciones, investigación y apoyo a bienes públicos antes de transferir fondos.' },
-      { label: 'Bienes comunes de código abierto', detail: 'Un espacio neutral donde usuarios, colaboradores, comunidades y DAO pueden coordinarse en torno a software de alta integridad.' },
+      { label: 'Bienes comunes de código abierto', detail: 'Un espacio neutral donde usuarios, colaboradores, comunidades y DAOs pueden coordinarse en torno a software de alta integridad.' },
     ],
     map: 'Explora el mapa', browseCategory: 'Explorar por categoría', categoriesLabel: 'Categorías de aplicaciones de código abierto', apps: 'aplicaciones', featured: 'Aplicaciones destacadas', featuredLead: 'Aplicaciones mejor valoradas por categoría para descubrirlas rápidamente.', browseAll: 'Ver todas', topCategoryApps: 'Mejores aplicaciones de {category}', top: 'Mejores', exploreMore: 'Explorar más', submitted: 'Proyectos enviados', contributors: 'Colaboradores',
     faqBadge: 'Respuestas útiles', faqTitle: 'Preguntas frecuentes', faqLead: 'Todo lo que necesitas saber sobre BBOX. ¿No encuentras tu respuesta? Consulta la documentación o explora el registro.',

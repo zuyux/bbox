@@ -243,7 +243,7 @@ export default function UserModal({ onClose }: UserModalProps) {
             </button>
           </div>
         </div>
-        <div className="w-full mb-4">
+        <div className="w-full mb-1">
           <div className="flex items-center justify-between bg-white/5 backdrop-blur-sm rounded-xl px-6 py-4 mb-2 border border-white/10">
             <button
               onClick={() => { onClose(); router.push('/wallet'); }}

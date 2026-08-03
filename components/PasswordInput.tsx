@@ -193,7 +193,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   const getStrengthColor = (score: number): string => {
     if (score <= 2) return 'bg-red-500';
     if (score <= 4) return 'bg-yellow-500';
-    if (score <= 6) return 'bg-blue-500';
+    if (score <= 6) return 'bg-orange-500';
     return 'bg-green-500';
   };
 
@@ -233,7 +233,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
                 type="button"
                 onClick={handleRequestEmailCode}
                 disabled={!emailValid || isBusy || Boolean(verifiedEmailToken)}
-                className="flex-1 text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {emailCodeSent ? 'Resend Code' : 'Send Code'}
               </Button>
@@ -276,7 +276,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
                   type="button"
                   onClick={handleVerifyEmailCode}
                   disabled={emailCode.length !== 6 || isBusy || Boolean(verifiedEmailToken)}
-                  className="text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Verify
                 </Button>
@@ -368,7 +368,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           <Button
             type="submit"
             disabled={!isFormValid || isBusy}
-            className="flex-1 text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="flex-1 text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isBusy ? (
               <div className="flex items-center gap-2">

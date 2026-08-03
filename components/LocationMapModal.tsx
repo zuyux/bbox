@@ -216,7 +216,7 @@ export default function LocationMapModal({
                     }
                   }}
                   disabled={!currentLat || !currentLng || isNaN(parseFloat(currentLat)) || isNaN(parseFloat(currentLng))}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <LocalizedText>Set Location
                 </LocalizedText></Button>

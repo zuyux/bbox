@@ -50,7 +50,7 @@ export default function VerifyEmailPage() {
   }, [searchParams]);
 
   const icon = {
-    loading: <Loader2 className="w-12 h-12 text-blue-400 animate-spin" />,
+    loading: <Loader2 className="w-12 h-12 text-orange-400 animate-spin" />,
     success: <CheckCircle className="w-12 h-12 text-green-400" />,
     error: <AlertTriangle className="w-12 h-12 text-red-400" />,
   }[status];

@@ -12,11 +12,12 @@ export default function Footer() {
     <footer data-site-footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black/80 py-2 text-xs text-white backdrop-blur-md">
       <div className="mx-auto h-full px-3 sm:px-4">
         <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
-          <Link href="/about" className='flex items-center gap-1'>
-            <span className="open-sans text-left truncate">
-              BBOX <span className="hidden sm:inline hover:text-[#fff]/70 text-[#555] ml-2">{messages.footer.tagline}</span>
-            </span>
-          </Link>
+          <div className="open-sans flex items-center text-left">
+            <Link href="/" className="truncate">BBOX</Link>
+            <Link href="/about" className="ml-2 hidden truncate text-[#555] hover:text-[#fff]/70 sm:inline">
+              {messages.footer.tagline}
+            </Link>
+          </div>
           <div className="flex items-center gap-3 sm:gap-5">
             <Link href="/documentation" className="hover:text-[#fff] text-[#777]">{messages.common.learn}</Link>
             <Link href="/build" className="hover:text-[#fff] text-[#777]">{messages.common.build}</Link>

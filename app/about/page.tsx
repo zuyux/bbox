@@ -20,6 +20,11 @@ export default function AboutPage() {
         <LocalizedText>This project received a grant from the </LocalizedText><strong><LocalizedText>Stacks Foundation</LocalizedText></strong> <LocalizedText>through the </LocalizedText><a href="https://degrants.xyz/" target="_blank" rel="noopener noreferrer" className="underline"><LocalizedText>degrants.xyz</LocalizedText></a> <LocalizedText>initiative in October 2025, supporting its mission to advance open-source and decentralized technologies.
       </LocalizedText></p>
       <p className="mb-4">
+        <Link href="/documentation" className="font-semibold text-accent underline underline-offset-4">
+          BBOX <LocalizedText>Documentation</LocalizedText>
+        </Link>
+      </p>
+      <p className="mb-4">
         <LocalizedText>You can explore the source code, contribute, or report issues on our GitHub repository:
         </LocalizedText><br />
         <Link href="https://github.com/zuyux/bbox">

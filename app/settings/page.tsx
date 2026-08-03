@@ -874,7 +874,7 @@ export default function SettingsPage() {
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Username</LocalizedText></label>
                     <div className="flex gap-2">
                       <input
-                        className="min-w-0 flex-1 rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:border-transparent focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="min-w-0 flex-1 rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:border-transparent focus:ring-2 focus:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
                         type="text"
                         value={username}
                         onChange={e => setUsername(e.target.value)}
@@ -902,7 +902,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Email</LocalizedText></label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="email"
                       value={email}
                       onChange={e => resetEmailVerification(e.target.value)}
@@ -915,14 +915,14 @@ export default function SettingsPage() {
                             type="button"
                             onClick={handleRequestEmailCode}
                             disabled={emailCodeLoading || !address}
-                            className="h-9 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                            className="h-9 bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50"
                           >
                             {emailCodeSent ? "Resend Code" : "Send Code"}
                           </Button>
                           {emailCodeSent && (
                             <>
                               <input
-                                className="min-w-0 flex-1 px-3 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="min-w-0 flex-1 px-3 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                 type="text"
                                 inputMode="numeric"
                                 value={emailCode}
@@ -939,7 +939,7 @@ export default function SettingsPage() {
                                 type="button"
                                 onClick={handleVerifyEmailCode}
                                 disabled={emailCodeLoading || emailCode.length !== 6 || Boolean(emailCodeToken)}
-                                className="h-9 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                                className="h-9 bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50"
                               >
                                 <LocalizedText>Verify
                               </LocalizedText></Button>
@@ -959,7 +959,7 @@ export default function SettingsPage() {
                     <label htmlFor="profile-lightning-address" className="block mb-2 text-sm font-medium"><LocalizedText>Lightning Address</LocalizedText></label>
                     <input
                       id="profile-lightning-address"
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="email"
                       value={lightningAddress}
                       onChange={e => setLightningAddress(e.target.value)}
@@ -977,7 +977,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Display Name</LocalizedText></label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="text"
                       value={displayName}
                       onChange={e => setDisplayName(e.target.value)}
@@ -989,7 +989,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Location</LocalizedText></label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="text"
                       value={location}
                       onChange={e => setLocation(e.target.value)}
@@ -1002,7 +1002,7 @@ export default function SettingsPage() {
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Nostr Public Key</LocalizedText></label>
                     <div className="flex gap-2 items-center">
                       <input
-                        className="flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         type="text"
                         readOnly
                         value={currentWallet?.nostrPublicKey || ''}
@@ -1083,7 +1083,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Website</LocalizedText></label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="url"
                       value={website}
                       onChange={e => setWebsite(e.target.value)}
@@ -1094,7 +1094,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium">X</label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="text"
                       value={twitter}
                       onChange={e => setTwitter(e.target.value)}
@@ -1105,7 +1105,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Discord</LocalizedText></label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="text"
                       value={discord}
                       onChange={e => setDiscord(e.target.value)}
@@ -1117,7 +1117,7 @@ export default function SettingsPage() {
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>GitHub</LocalizedText></label>
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <input
-                        className="min-w-0 flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="min-w-0 flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         type="text"
                         value={githubUrl}
                         onChange={e => setGithubUrl(e.target.value)}
@@ -1144,7 +1144,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Instagram</LocalizedText></label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="text"
                       value={instagram}
                       onChange={e => setInstagram(e.target.value)}
@@ -1155,7 +1155,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>LinkedIn</LocalizedText></label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="text"
                       value={linkedin}
                       onChange={e => setLinkedin(e.target.value)}
@@ -1201,7 +1201,7 @@ export default function SettingsPage() {
                     <div>
                       <label className="block mb-2 text-sm font-medium"><LocalizedText>Occupation</LocalizedText></label>
                       <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         type="text"
                         value={occupation}
                         onChange={e => setOccupation(e.target.value)}
@@ -1212,7 +1212,7 @@ export default function SettingsPage() {
                     <div>
                       <label className="block mb-2 text-sm font-medium"><LocalizedText>Company</LocalizedText></label>
                       <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         type="text"
                         value={company}
                         onChange={e => setCompany(e.target.value)}
@@ -1223,7 +1223,7 @@ export default function SettingsPage() {
                     <div>
                       <label className="block mb-2 text-sm font-medium"><LocalizedText>Years of Experience</LocalizedText></label>
                       <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         type="number"
                         min="0"
                         max="50"
@@ -1238,7 +1238,7 @@ export default function SettingsPage() {
                     <div>
                       <label className="block mb-2 text-sm font-medium"><LocalizedText>Bitcoin Experience Level</LocalizedText></label>
                       <select
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         value={bitcoinExperienceLevel}
                         onChange={e => setBitcoinExperienceLevel(e.target.value)}
                       >
@@ -1253,7 +1253,7 @@ export default function SettingsPage() {
                     <div>
                       <label className="block mb-2 text-sm font-medium"><LocalizedText>Bitcoin Tech Stack</LocalizedText></label>
                       <input
-                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         type="text"
                         value={bitcoinTechStack}
                         onChange={e => setBitcoinTechStack(e.target.value)}
@@ -1265,7 +1265,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block mb-2 text-sm font-medium"><LocalizedText>Bitcoin Project URL</LocalizedText></label>
                     <input
-                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="url"
                       value={bitcoinProjectUrl}
                       onChange={e => setBitcoinProjectUrl(e.target.value)}
@@ -1286,7 +1286,7 @@ export default function SettingsPage() {
                                 variant={selectedSkills.includes(skill) ? "default" : "outline"}
                                 className={`cursor-pointer transition-colors ${
                                   selectedSkills.includes(skill)
-                                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                    ? "bg-orange-600 hover:bg-orange-700 text-white"
                                     : "bg-accent-background hover:bg-[#333] text-foreground border-[#222]"
                                 }`}
                                 onClick={() => toggleSkill(skill)}
@@ -1305,7 +1305,7 @@ export default function SettingsPage() {
                           {selectedSkills.map((skill) => (
                             <Badge
                               key={skill}
-                              className="bg-blue-600 text-white"
+                              className="bg-orange-600 text-white"
                             >
                               {skill}
                             </Badge>
@@ -1384,6 +1384,71 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
+            {isExtensionWallet && !isNostrLightningWallet && !isBitcoinOnlyExtensionWallet && (
+              <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
+                <CardHeader>
+                  <CardTitle><LocalizedText>Wallet Proof Linking</LocalizedText></CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-gray-400">
+                    <LocalizedText>Link your Stacks browser wallet address to your Nostr public key for ownership proof.
+                  </LocalizedText></p>
+
+                  {!isNostrKeyAvailable && (
+                    <div className="rounded-lg bg-yellow-100 dark:bg-yellow-900/20 p-4 text-yellow-900 dark:text-yellow-100">
+                      <LocalizedText>No valid Nostr public key is available. Unlock your encrypted wallet or configure your Nostr key first.
+                    </LocalizedText></div>
+                  )}
+
+                  {isNostrKeyAvailable && (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-xs font-medium uppercase text-gray-500"><LocalizedText>Stacks Wallet</LocalizedText></label>
+                          <p className="mt-1 text-sm text-foreground">{address}</p>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium uppercase text-gray-500"><LocalizedText>Nostr Public Key</LocalizedText></label>
+                          <p className="mt-1 text-sm text-foreground break-all">{currentWallet?.nostrPublicKey}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <Button
+                          type="button"
+                          onClick={handleCreateWalletProof}
+                          disabled={!canLinkWallet || walletLinking}
+                          className="w-full bg-slate-700 hover:bg-slate-800 text-white"
+                        >
+                          <LocalizedText>Create Proof
+                        </LocalizedText></Button>
+                        <Button
+                          type="button"
+                          onClick={handleLinkWallet}
+                          disabled={!walletProofResult || walletLinking}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          {walletLinking ? "Linking..." : "Link Wallet"}
+                        </Button>
+                      </div>
+
+                      {walletLinkStatus && (
+                        <div className="rounded-lg bg-green-100 dark:bg-green-900/20 p-3 text-green-900 dark:text-green-100 text-sm">
+                          {walletLinkStatus}
+                        </div>
+                      )}
+
+                      {walletLinkError && (
+                        <div className="rounded-lg bg-red-100 dark:bg-red-900/20 p-3 text-red-900 dark:text-red-100 text-sm">
+                          {walletLinkError}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {!isExtensionWallet && (
               <Card className="bg-accent-background border-gray-200 dark:border-gray-700 text-foreground">
                 <CardHeader>
@@ -1426,7 +1491,7 @@ export default function SettingsPage() {
 
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <input
-                      className="min-w-0 flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="min-w-0 flex-1 px-4 py-2 rounded-lg bg-accent-background text-foreground border border-[#222] focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       type="password"
                       value={recoveryPassword}
                       onChange={event => setRecoveryPassword(event.target.value)}
@@ -1569,76 +1634,11 @@ export default function SettingsPage() {
             )}
           </TabsContent>
 
-          {isExtensionWallet && !isNostrLightningWallet && !isBitcoinOnlyExtensionWallet && (
-            <Card className="bg-accent-background border-gray-200 dark:border-gray-700 mt-8">
-              <CardHeader>
-                <CardTitle><LocalizedText>Wallet Proof Linking</LocalizedText></CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-gray-400">
-                  <LocalizedText>Link your Stacks browser wallet address to your Nostr public key for ownership proof.
-                </LocalizedText></p>
-
-                {!isNostrKeyAvailable && (
-                  <div className="rounded-lg bg-yellow-100 dark:bg-yellow-900/20 p-4 text-yellow-900 dark:text-yellow-100">
-                    <LocalizedText>No valid Nostr public key is available. Unlock your encrypted wallet or configure your Nostr key first.
-                  </LocalizedText></div>
-                )}
-
-                {isNostrKeyAvailable && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <div>
-                        <label className="block text-xs font-medium uppercase text-gray-500"><LocalizedText>Stacks Wallet</LocalizedText></label>
-                        <p className="mt-1 text-sm text-foreground">{address}</p>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium uppercase text-gray-500"><LocalizedText>Nostr Public Key</LocalizedText></label>
-                        <p className="mt-1 text-sm text-foreground break-all">{currentWallet?.nostrPublicKey}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <Button
-                        type="button"
-                        onClick={handleCreateWalletProof}
-                        disabled={!canLinkWallet || walletLinking}
-                        className="w-full bg-slate-700 hover:bg-slate-800 text-white"
-                      >
-                        <LocalizedText>Create Proof
-                      </LocalizedText></Button>
-                      <Button
-                        type="button"
-                        onClick={handleLinkWallet}
-                        disabled={!walletProofResult || walletLinking}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                      >
-                        {walletLinking ? "Linking..." : "Link Wallet"}
-                      </Button>
-                    </div>
-
-                    {walletLinkStatus && (
-                      <div className="rounded-lg bg-green-100 dark:bg-green-900/20 p-3 text-green-900 dark:text-green-100 text-sm">
-                        {walletLinkStatus}
-                      </div>
-                    )}
-
-                    {walletLinkError && (
-                      <div className="rounded-lg bg-red-100 dark:bg-red-900/20 p-3 text-red-900 dark:text-red-100 text-sm">
-                        {walletLinkError}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
           <div className="mt-8 flex gap-4">
             <Button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-6 cursor-pointer"
+              className="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-6 cursor-pointer"
             >
               {saving ? "Saving..." : "Save Changes"}
             </Button>

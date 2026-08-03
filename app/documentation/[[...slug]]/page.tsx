@@ -38,6 +38,7 @@ export default async function DocumentationPage({ params }: DocumentationPagePro
       toc={page.data.toc}
       breadcrumb={{ includeRoot: true, includePage: true }}
       tableOfContent={{ style: 'clerk' }}
+      footer={{ className: '[&_p]:mb-0 [&_p]:leading-normal' }}
     >
       {coverImage && (
         <div className="relative mb-4 aspect-[1672/941] w-full overflow-hidden rounded-xl border border-fd-border">

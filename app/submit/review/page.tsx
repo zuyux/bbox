@@ -334,7 +334,7 @@ export default function SubmittedAppsPage() {
                         </LocalizedText></Badge>
                       )}
                       {app.verified && (
-                        <Badge variant="outline" className="text-sky-600 border-sky-200 dark:border-sky-900 dark:text-sky-300">
+                        <Badge variant="outline" className="text-orange-600 border-orange-200 dark:border-orange-900 dark:text-orange-300">
                           <LocalizedText>Verified
                         </LocalizedText></Badge>
                       )}

@@ -3,7 +3,6 @@
 import { useI18n } from '@/components/I18nProvider';
 
 
-import { LocalizedText } from '@/components/LocalizedText';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -13,10 +12,10 @@ import { Button } from '@/components/ui/button';
 import { H1, Lead } from '@/components/ui/typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowRight, Blocks, ChevronDown, Code2, Layers3, Sparkles, Store, Users } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import type { BitcoinApp } from '@/lib/appsUtils';
-import { getCategoryStats, getAppStats } from '@/lib/appsUtils';
+import { getCategoryStats } from '@/lib/appsUtils';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import { isDeveloperModeEnabled, setDeveloperModeEnabled } from '@/lib/developerMode';
 import { getProfileDeveloperMode } from '@/lib/profileApi';
@@ -41,25 +40,7 @@ const categoryIcons: Record<string, string> = {
 
 const defaultCategoryIcon = '/icons/explore.svg';
 
-const bboxHighlights = [
-  {
-    title: 'Discover sovereign software',
-    description: 'Browse Bitcoin apps, privacy tools, safe AI projects, and open-source systems in one verified index.',
-    iconSrc: '/telescope.svg',
-  },
-  {
-    title: 'Fund visible progress',
-    description: 'Support open-source teams through milestone-based funding, public roadmaps, and transparent delivery signals.',
-    iconSrc: '/fund.svg',
-  },
-  {
-    title: 'Choose with confidence',
-    description: 'Compare source links, reviews, app metadata, and public history before you install, fund, or recommend an app.',
-    iconSrc: '/shield.svg',
-  },
-];
-
-const ecosystemPillarIcons = [Store, Code2, Layers3, Users];
+const ecosystemPillarIcons = ['/global.svg', '/code.svg', '/layer.svg', '/os-users.svg'];
 
 const calculateCategories = (apps: BitcoinApp[]) => {
   const categoryCount = getCategoryStats(apps);
@@ -449,7 +430,6 @@ export default function HomePage() {
     .slice(0, 10)
     .map((category) => category.name), [categories]);
   const duplicatedCategories = useMemo(() => [...categories, ...categories], [categories]);
-  const appStats = useMemo(() => getAppStats(apps), [apps]);
   const featuredAppsByCategory = useMemo(() =>
     Object.entries(
       apps.reduce<Record<string, BitcoinApp[]>>((acc, app) => {
@@ -458,6 +438,7 @@ export default function HomePage() {
         return acc;
       }, {})
     )
+      .filter(([category]) => category.toLowerCase() !== 'gaming')
       .map(([category, categoryApps]) => ({
         category,
         apps: categoryApps
@@ -488,19 +469,23 @@ export default function HomePage() {
     <div className="bg-background l-dotted-grid-background min-h-screen">
       <div className="container mx-auto px-4 pt-24 pb-16">
         {/* Hero Section */}
-        <section className="mb-16 grid min-h-[64vh] items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="max-w-3xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-orange-500/25 bg-orange-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-orange-600 dark:text-orange-300">
-              <Blocks className="h-4 w-4" />
+        <section className="relative isolate mb-16 grid min-h-[64vh] place-items-center overflow-hidden bg-transparent p-6 shadow-2xl shadow-black/10 sm:mx-0 sm:rounded-xl md:p-10 lg:bg-[url('/bbox-hero.png')] lg:bg-[length:50%_auto] lg:bg-left-top lg:bg-no-repeat lg:p-14">
+          <div className="relative -mx-6 -mt-6 aspect-[3/2] overflow-hidden md:-mx-10 md:-mt-10 lg:hidden">
+            <Image src="/bbox-hero.png" alt="Bitcoin rocket flying toward the moon" fill priority className="object-cover" sizes="(max-width: 1023px) 100vw, 0px" />
+          </div>
+          <div className="absolute inset-0 -z-10 hidden bg-gradient-to-r from-background/50 via-background/65 to-background/35 lg:block" aria-hidden="true" />
+          <div className="mx-auto flex max-w-4xl flex-col items-center text-center lg:mt-42">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-md border border-orange-500 bg-orange-500/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-orange-500 dark:text-orange-500">
+              <Image src="/box.svg" height={15} width={15} alt="" className="h-4 w-4" aria-hidden="true" />
               {copy.badge}
             </div>
-            <H1 className="title mb-6 max-w-4xl text-left text-5xl leading-[0.95] md:text-7xl lg:text-8xl">
+            <H1 className="title mb-0 max-w-4xl text-center text-5xl leading-[0.95] md:text-7xl lg:text-8xl">
               {copy.title}
             </H1>
-            <Lead className="mb-8 max-w-2xl text-left text-base text-muted-foreground md:text-xl">
+            <Lead className="mb-8 max-w-2xl text-center text-base text-muted-foreground md:text-xl">
               {copy.lead}
             </Lead>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col justify-center gap-3 sm:flex-row">
               <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600" asChild>
                 <Link href="/apps">
                   {copy.exploreApps}
@@ -515,46 +500,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 rounded-lg border border-orange-500/20 bg-orange-500/5 translate-x-3 translate-y-3" aria-hidden="true" />
-            <div className="relative overflow-hidden rounded-lg border border-border bg-card/95 shadow-2xl shadow-black/10">
-              <div className="flex items-center justify-between border-b border-border px-5">
-                  <Sparkles className="h-5 w-5 text-orange-500" />
-                  <p className="font-mono text-xs pt-2">{copy.protocol}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-px bg-border">
-                <div className="bg-card p-5">
-                  <p className="title text-4xl text-orange-500">{appStats.totalApps}+</p>
-                  <p className="mb-0 text-sm text-muted-foreground">{copy.listedApps}</p>
-                </div>
-                <div className="bg-card p-5">
-                  <p className="title text-4xl text-orange-500">{categories.length || 13}</p>
-                  <p className="mb-0 text-sm text-muted-foreground">{copy.categories}</p>
-                </div>
-                <div className="bg-card p-5">
-                  <p className="title text-4xl text-orange-500"><LocalizedText>BAR</LocalizedText></p>
-                  <p className="mb-0 text-sm text-muted-foreground">{copy.anchored}</p>
-                </div>
-                <div className="bg-card p-5">
-                  <p className="title text-4xl text-orange-500"><LocalizedText>OSS</LocalizedText></p>
-                  <p className="mb-0 text-sm text-muted-foreground">{copy.publicGoods}</p>
-                </div>
-              </div>
-              <div className="space-y-3 p-5">
-                {bboxHighlights.map(({ title, description, iconSrc }) => (
-                  <div key={title} className="flex gap-3 rounded-md border border-border bg-background/70 p-4">
-                    <span className="mt-0.5 mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-500">
-                      <Image src={iconSrc} alt="" width={36} height={36} className="h-full w-full object-contain" aria-hidden="true" />
-                    </span>
-                    <div>
-                      <h2 className="mb-1 text-sm font-semibold">{title}</h2>
-                      <p className="mb-0 text-sm leading-6 text-muted-foreground">{description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </section>
 
         {appsError && (
@@ -569,18 +514,15 @@ export default function HomePage() {
               <p className="text-sm uppercase tracking-[0.28em] text-orange-500">{copy.what}</p>
               <h2 className="title text-3xl font-bold md:text-4xl">{copy.whatTitle}</h2>
             </div>
-            <p className="mb-0 max-w-xl text-sm leading-6 text-muted-foreground">
-              {copy.whatLead}
-            </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {copy.ecosystemPillars.map(({ label, detail }, index) => {
-              const Icon = ecosystemPillarIcons[index];
+              const iconSrc = ecosystemPillarIcons[index];
 
               return (
               <article key={label} className="rounded-lg border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-orange-500/50 hover:shadow-lg">
                 <span className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-md bg-foreground text-background">
-                  <Icon className="h-5 w-5" />
+                  <Image src={iconSrc} alt="" width={20} height={20} className="h-5 w-5 dark:invert" aria-hidden="true" />
                 </span>
                 <h3 className="mb-2 text-base font-semibold">{label}</h3>
                 <p className="mb-0 text-sm leading-6 text-muted-foreground">{detail}</p>
@@ -744,7 +686,7 @@ export default function HomePage() {
                             <Link
                               href={`/apps/${app.id}`}
                               aria-label={`View ${app.name}`}
-                              className="flex flex-col items-center justify-center bg-background p-4 text-center transition hover:-translate-y-0.5 hover:shadow-lg"
+                              className="flex flex-col items-center justify-center bg-background p-4 text-center transition hover:-translate-y-0.5"
                             >
                               <div className="relative w-24 h-24 mb-4 overflow-hidden rounded-lg bg-muted/10 transition-transform duration-200 hover:scale-105">
                                 {!isLoaded && (
@@ -777,24 +719,6 @@ export default function HomePage() {
               ))}
             </div>
           </TooltipProvider>
-        </div>
-
-        {/* Stats Section */}
-        <div className="bg-card/85 rounded-lg border border-border p-8 mb-12 my-24 shadow-sm">
-          <div className="title grid grid-cols-2 md:grid-cols-3 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">{appStats.totalApps}+</div>
-              <div className="text-sm text-muted-foreground">{copy.apps}</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">3</div>
-              <div className="text-sm text-muted-foreground">{copy.submitted}</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-orange-500 mb-2">10+</div>
-              <div className="text-sm text-muted-foreground">{copy.contributors}</div>
-            </div>
-          </div>
         </div>
 
         {/* FAQ Section */}

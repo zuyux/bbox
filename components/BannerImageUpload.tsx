@@ -236,7 +236,7 @@ export function BannerImageUpload({
             type="button"
             onClick={handleUpload}
             disabled={isUploading}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-background rounded-lg transition-colors text-sm cursor-pointer"
+            className="px-6 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-600/50 text-background rounded-lg transition-colors text-sm cursor-pointer"
           >
             {isUploading ? (
               <>

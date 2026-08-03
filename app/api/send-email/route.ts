@@ -270,13 +270,13 @@ export async function POST(request: NextRequest) {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #222; max-width: 680px; margin: 0 auto; padding: 20px; background-color: #f6f7f9;">
-            <div style="background: #0f172a; color: #f8fafc; padding: 24px; border-radius: 10px 10px 0 0;">
+            <div style="background: #0C0F0A; color: #f8fafc; padding: 24px; border-radius: 10px 10px 0 0;">
               <h1 style="margin: 0; font-size: 22px;">Ownership Claim</h1>
               <p style="margin: 8px 0 0; color: #cbd5e1;">BBOX app ownership verification request</p>
             </div>
 
             <div style="background: #ffffff; padding: 28px; border-radius: 0 0 10px 10px; border: 1px solid #e2e8f0;">
-              <h2 style="margin-top: 0; color: #0f172a;">${appName}</h2>
+              <h2 style="margin-top: 0; color: #0C0F0A;">${appName}</h2>
 
               <table style="width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px;">
                 <tr>

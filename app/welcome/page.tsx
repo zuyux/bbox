@@ -103,7 +103,7 @@ export default function WelcomePage() {
 
             <CardContent className="space-y-6 px-6 pb-6">
               {/* Account Info */}
-              <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-6">
+              <div className="bg-orange-900/30 border border-orange-700/50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                   <Wallet className="w-5 h-5 mr-2" />
                   <LocalizedText>Your Account Details
@@ -256,8 +256,8 @@ export default function WelcomePage() {
         {step === "security" && (
           <>
             <CardHeader className="text-center pb-6">
-              <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto my-4">
-                <Image src="/shield-sec.svg" height={50} width={50} alt="" className='text-blue-500'/>
+              <div className="w-20 h-20 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto my-4">
+                <Image src="/shield-sec.svg" height={50} width={50} alt="" className='text-orange-500'/>
               </div>
               <CardTitle className="text-2xl text-foreground mb-2"><LocalizedText>Security Best Practices</LocalizedText></CardTitle>
               <p className="text-muted-foreground">
@@ -294,12 +294,12 @@ export default function WelcomePage() {
               </div>
 
               {/* Getting Started */}
-              <div className="border border-blue-700/50 rounded-lg p-4">
-                <h4 className="text-blue-500 font-medium mb-3"><LocalizedText>Ready to Get Started?</LocalizedText></h4>
-                <p className="text-blue-500/80 text-sm mb-3">
+              <div className="border border-orange-700/50 rounded-lg p-4">
+                <h4 className="text-orange-500 font-medium mb-3"><LocalizedText>Ready to Get Started?</LocalizedText></h4>
+                <p className="text-orange-500/80 text-sm mb-3">
                   <LocalizedText>Your wallet is configured and ready to use. You can start receiving Satoshis and interact with the Bitcoin Layers.
                 </LocalizedText></p>
-                <p className="text-blue-500/80 text-sm">
+                <p className="text-orange-500/80 text-sm">
                   <LocalizedText>Visit your profile to view wallet details and transaction history.
                 </LocalizedText></p>
               </div>

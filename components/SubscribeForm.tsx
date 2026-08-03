@@ -77,7 +77,7 @@ export default function SubscribeForm() {
       <button
         type="submit"
         disabled={state === 'submitting'}
-        className="h-7 shrink-0 rounded bg-[#ff5e00] px-3 text-xs font-semibold text-white transition hover:bg-[#ff7a1a] focus:outline-none focus:ring-2 focus:ring-[#ff9a45] focus:ring-offset-1 focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-60"
+        className="h-7 shrink-0 rounded bg-[#ff6a00ff] px-3 text-xs font-semibold text-white transition hover:bg-[#ff7a1a] focus:outline-none focus:ring-2 focus:ring-[#ff9a45] focus:ring-offset-1 focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-60"
       >
         {state === 'submitting' ? messages.common.sending : messages.common.subscribe}
       </button>
