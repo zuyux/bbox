@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHash } from 'crypto';
-
-import { decryptPortableEncryptedWallet, type PortableEncryptedWalletData } from '@/lib/encryptedStorage';
 import { supabaseAdmin } from '@/lib/supabaseClient';
-import { linkVisitorToAddress } from '@/lib/visitorIdentity';
+import { enforceApiUsage, ApiUsageError } from '@/lib/server/apiUsage';
+import { verifyPassword } from '@/lib/server/passwordVerifier';
+import { createHash } from 'crypto';
 
 interface ConnectedAccountRecord {
   email: string;
@@ -18,23 +17,21 @@ interface ConnectedAccountRecord {
   bitcoin_address: string | null;
   rootstock_address: string | null;
   liquid_address: string | null;
+  password_hash: string | null;
+  password_salt: string | null;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const { identifier, email, password } = await request.json();
     const suppliedIdentifier = identifier ?? email;
+    if (typeof password !== 'string' || !password || password.length > 1024) {
+      return NextResponse.json({ error: 'Invalid username, email, or password' }, { status: 401 });
+    }
 
     if (!suppliedIdentifier || typeof suppliedIdentifier !== 'string') {
       return NextResponse.json(
         { error: 'Username or email is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!password || typeof password !== 'string') {
-      return NextResponse.json(
-        { error: 'Password is required' },
         { status: 400 }
       );
     }
@@ -46,6 +43,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    const identifierHash = createHash('sha256').update(normalizedIdentifier).digest('hex');
+    await enforceApiUsage({ request, scope: 'wallet-login', address: identifierHash, windowSeconds: 15 * 60, maxRequests: 5 });
 
     let accountAddress: string | null = null;
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedIdentifier);
@@ -69,7 +68,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from('connected_accounts')
       .select(
-        'email,address,passkey,encrypted_private_key,encrypted_mnemonic,encryption_salt,encryption_iv,encryption_version,wallet_label,bitcoin_address,rootstock_address,liquid_address'
+        'email,address,passkey,encrypted_private_key,encrypted_mnemonic,encryption_salt,encryption_iv,encryption_version,wallet_label,bitcoin_address,rootstock_address,liquid_address,password_hash,password_salt'
       )
       .ilike(isEmail ? 'email' : 'address', isEmail ? normalizedIdentifier : accountAddress!)
       .single<ConnectedAccountRecord>();
@@ -99,65 +98,28 @@ export async function POST(request: NextRequest) {
         { status: 422 }
       );
     }
-
-    let decryptedWallet;
-    try {
-      const payload: PortableEncryptedWalletData = {
-        encryptedMnemonic: data.encrypted_mnemonic,
-        encryptedPrivateKey: data.encrypted_private_key,
-        address: data.address,
-        label: data.wallet_label ?? 'BBOX Wallet',
-        salt: data.encryption_salt,
-        iv: data.encryption_iv,
-        version: data.encryption_version ?? '1.0.0',
-        bitcoinAddress: data.bitcoin_address ?? undefined,
-        rootstockAddress: data.rootstock_address ?? undefined,
-        liquidAddress: data.liquid_address ?? undefined,
-      };
-
-      decryptedWallet = decryptPortableEncryptedWallet(payload, password);
-    } catch (decryptError) {
-      console.warn('Failed to decrypt wallet during email login:', decryptError);
-      return NextResponse.json(
-        { error: 'Invalid username, email, or password' },
-        { status: 401 }
-      );
-    }
-
-    const passkeyHash = createHash('sha256')
-      .update(decryptedWallet.privateKey + password)
-      .digest('hex');
-
-    if (passkeyHash !== data.passkey) {
-      return NextResponse.json(
-        { error: 'Invalid username, email, or password' },
-        { status: 401 }
-      );
-    }
-
-    try {
-      await linkVisitorToAddress(request, data.address);
-    } catch (linkError) {
-      console.warn('Unable to link visitor interests during sign in:', linkError);
+    if (!data.password_hash || !data.password_salt || !(await verifyPassword(password, data.password_salt, data.password_hash))) {
+      return NextResponse.json({ error: 'Invalid username, email, or password' }, { status: 401 });
     }
 
     return NextResponse.json({
-      wallet: {
-        address: decryptedWallet.address,
-        privateKey: decryptedWallet.privateKey,
-        mnemonic: decryptedWallet.mnemonic,
-        label: decryptedWallet.label,
-        bitcoinAddress: decryptedWallet.bitcoinAddress,
-        rootstockAddress: decryptedWallet.rootstockAddress,
-        liquidAddress: decryptedWallet.liquidAddress,
-      },
       account: {
         email: data.email,
         address: data.address,
+        passkey: data.passkey,
+        encryptedPrivateKey: data.encrypted_private_key,
+        encryptedMnemonic: data.encrypted_mnemonic,
+        encryptionSalt: data.encryption_salt,
+        encryptionIv: data.encryption_iv,
+        encryptionVersion: data.encryption_version ?? '1.0.0',
         walletLabel: data.wallet_label ?? 'BBOX Wallet',
+        bitcoinAddress: data.bitcoin_address,
+        rootstockAddress: data.rootstock_address,
+        liquidAddress: data.liquid_address,
       },
     });
   } catch (error) {
+    if (error instanceof ApiUsageError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error('Account login lookup failed:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

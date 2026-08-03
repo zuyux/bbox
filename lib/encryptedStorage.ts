@@ -73,7 +73,42 @@ export interface SessionConfig {
 const STORAGE_KEY = 'bbox_encrypted_session';
 const CONFIG_KEY = 'bbox_session_config';
 const SESSION_LOCK_KEY = 'bbox_session_locked';
-const CURRENT_VERSION = '1.0.0';
+const CURRENT_VERSION = '2.0.0';
+const PBKDF2_ITERATIONS = 600_000;
+
+const bytesToBase64 = (bytes: Uint8Array) => {
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+};
+const base64ToBytes = (value: string) => Uint8Array.from(atob(value), char => char.charCodeAt(0));
+
+async function deriveGcmKey(passphrase: string, salt: string) {
+  const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', hash: 'SHA-256', salt: base64ToBytes(salt), iterations: PBKDF2_ITERATIONS },
+    material, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'],
+  );
+}
+
+async function encryptGcm(value: string, key: CryptoKey, associatedData: string) {
+  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: nonce, additionalData: new TextEncoder().encode(associatedData), tagLength: 128 },
+    key, new TextEncoder().encode(value),
+  );
+  return `${bytesToBase64(nonce)}.${bytesToBase64(new Uint8Array(ciphertext))}`;
+}
+
+async function decryptGcm(value: string, key: CryptoKey, associatedData: string) {
+  const [nonce, ciphertext] = value.split('.');
+  if (!nonce || !ciphertext) throw new Error('Invalid AES-GCM payload');
+  const plaintext = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: base64ToBytes(nonce), additionalData: new TextEncoder().encode(associatedData), tagLength: 128 },
+    key, base64ToBytes(ciphertext),
+  );
+  return new TextDecoder().decode(plaintext);
+}
 
 // Default session configuration
 const DEFAULT_CONFIG: SessionConfig = {
@@ -81,20 +116,6 @@ const DEFAULT_CONFIG: SessionConfig = {
   autoLock: true,
   requirePassphraseOnTransaction: true,
 };
-
-/**
- * Generate a random salt for encryption
- */
-function generateSalt(): string {
-  return CryptoJS.lib.WordArray.random(128/8).toString();
-}
-
-/**
- * Generate a random initialization vector
- */
-function generateIV(): string {
-  return CryptoJS.lib.WordArray.random(128/8).toString();
-}
 
 /**
  * Derive encryption key from passphrase using PBKDF2
@@ -105,18 +126,6 @@ function deriveKey(passphrase: string, salt: string): string {
     iterations: 10000,
     hasher: CryptoJS.algo.SHA256
   }).toString();
-}
-
-/**
- * Encrypt data using AES-256-CBC
- */
-function encryptData(data: string, key: string, iv: string): string {
-  const encrypted = CryptoJS.AES.encrypt(data, key, {
-    iv: CryptoJS.enc.Hex.parse(iv),
-    mode: CryptoJS.mode.CBC,
-    padding: CryptoJS.pad.Pkcs7
-  });
-  return encrypted.toString();
 }
 
 /**
@@ -131,12 +140,12 @@ function decryptData(encryptedData: string, key: string, iv: string): string {
   return decrypted.toString(CryptoJS.enc.Utf8);
 }
 
-function buildEncryptedWalletData(walletData: WalletData, passphrase: string): EncryptedWalletData {
-  const salt = generateSalt();
-  const iv = generateIV();
-  const key = deriveKey(passphrase, salt);
-  const encryptedMnemonic = encryptData(walletData.mnemonic, key, iv);
-  const encryptedPrivateKey = encryptData(walletData.privateKey, key, iv);
+async function buildEncryptedWalletData(walletData: WalletData, passphrase: string): Promise<EncryptedWalletData> {
+  const salt = bytesToBase64(crypto.getRandomValues(new Uint8Array(16)));
+  const iv = bytesToBase64(crypto.getRandomValues(new Uint8Array(12)));
+  const key = await deriveGcmKey(passphrase, salt);
+  const encryptedMnemonic = await encryptGcm(walletData.mnemonic, key, `${CURRENT_VERSION}:${walletData.address}:mnemonic`);
+  const encryptedPrivateKey = await encryptGcm(walletData.privateKey, key, `${CURRENT_VERSION}:${walletData.address}:privateKey`);
   const timestamp = Date.now();
 
   return {
@@ -157,11 +166,11 @@ function buildEncryptedWalletData(walletData: WalletData, passphrase: string): E
 }
 
 /** Build a server-portable encrypted wallet without writing secrets to storage. */
-export function createPortableEncryptedWalletData(
+export async function createPortableEncryptedWalletData(
   walletData: WalletData,
   passphrase: string
-): PortableEncryptedWalletData {
-  return toPortableEncryptedWalletData(buildEncryptedWalletData(walletData, passphrase));
+): Promise<PortableEncryptedWalletData> {
+  return toPortableEncryptedWalletData(await buildEncryptedWalletData(walletData, passphrase));
 }
 
 /**
@@ -219,7 +228,7 @@ export async function storeEncryptedWallet(
     throw new Error(`Weak passphrase: ${feedback.join(', ')}`);
   }
 
-  const encryptedWalletData = buildEncryptedWalletData(walletData, passphrase);
+  const encryptedWalletData = await buildEncryptedWalletData(walletData, passphrase);
 
   // Delete any previous session before creating a new one
   localStorage.removeItem(STORAGE_KEY);
@@ -276,11 +285,13 @@ export async function retrieveEncryptedWallet(passphrase: string): Promise<Walle
   }
 
   try {
-    const key = deriveKey(passphrase, encryptedData.salt);
-
-    // Decrypt sensitive data
-    const mnemonic = decryptData(encryptedData.encryptedMnemonic, key, encryptedData.iv);
-    const privateKey = decryptData(encryptedData.encryptedPrivateKey, key, encryptedData.iv);
+    const isGcm = encryptedData.version === CURRENT_VERSION;
+    const mnemonic = isGcm
+      ? await decryptGcm(encryptedData.encryptedMnemonic, await deriveGcmKey(passphrase, encryptedData.salt), `${CURRENT_VERSION}:${encryptedData.address}:mnemonic`)
+      : decryptData(encryptedData.encryptedMnemonic, deriveKey(passphrase, encryptedData.salt), encryptedData.iv);
+    const privateKey = isGcm
+      ? await decryptGcm(encryptedData.encryptedPrivateKey, await deriveGcmKey(passphrase, encryptedData.salt), `${CURRENT_VERSION}:${encryptedData.address}:privateKey`)
+      : decryptData(encryptedData.encryptedPrivateKey, deriveKey(passphrase, encryptedData.salt), encryptedData.iv);
 
     // Verify decryption success (check if decrypted data looks valid)
     if (!mnemonic && !privateKey) {
@@ -304,7 +315,13 @@ export async function retrieveEncryptedWallet(passphrase: string): Promise<Walle
       );
     }
 
-    // Update last accessed time
+    if (!isGcm) {
+      encryptedData = await buildEncryptedWalletData({
+        mnemonic, privateKey, address: encryptedData.address, label: encryptedData.label,
+        bitcoinAddress: encryptedData.bitcoinAddress, rootstockAddress: encryptedData.rootstockAddress,
+        liquidAddress: encryptedData.liquidAddress, nostrPublicKey: encryptedData.nostrPublicKey,
+      }, passphrase);
+    }
     encryptedData.lastAccessed = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(encryptedData));
 
@@ -605,13 +622,17 @@ export function toPortableEncryptedWalletData(data: EncryptedWalletData): Portab
   };
 }
 
-export function decryptPortableEncryptedWallet(
+export async function decryptPortableEncryptedWallet(
   payload: PortableEncryptedWalletData,
   passphrase: string
-): WalletData {
-  const key = deriveKey(passphrase, payload.salt);
-  const mnemonic = decryptData(payload.encryptedMnemonic, key, payload.iv);
-  const privateKey = decryptData(payload.encryptedPrivateKey, key, payload.iv);
+): Promise<WalletData> {
+  const isGcm = payload.version === CURRENT_VERSION;
+  const mnemonic = isGcm
+    ? await decryptGcm(payload.encryptedMnemonic, await deriveGcmKey(passphrase, payload.salt), `${CURRENT_VERSION}:${payload.address}:mnemonic`)
+    : decryptData(payload.encryptedMnemonic, deriveKey(passphrase, payload.salt), payload.iv);
+  const privateKey = isGcm
+    ? await decryptGcm(payload.encryptedPrivateKey, await deriveGcmKey(passphrase, payload.salt), `${CURRENT_VERSION}:${payload.address}:privateKey`)
+    : decryptData(payload.encryptedPrivateKey, deriveKey(passphrase, payload.salt), payload.iv);
 
   if (!mnemonic || !privateKey) {
     throw new Error('Failed to decrypt wallet data');

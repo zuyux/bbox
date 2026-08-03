@@ -10,6 +10,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { upsertProfile, type Profile } from '@/lib/profileApi';
+import { useWallet } from '@/components/WalletProvider';
 
 interface ExtensionEmailVerificationModalProps {
   address: string;
@@ -25,6 +26,7 @@ export default function ExtensionEmailVerificationModal({
   onClose,
   onVerified,
 }: ExtensionEmailVerificationModalProps) {
+  const { walletType } = useWallet();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
@@ -111,7 +113,7 @@ export default function ExtensionEmailVerificationModal({
         address,
         email: trimmedEmail,
         verifiedEmailToken: result.verifiedEmailToken,
-      });
+      }, walletType);
       onVerified(profile);
       onClose();
     } catch (verifyError) {

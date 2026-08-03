@@ -1,6 +1,7 @@
 
 import { LocalizedText } from "@/components/LocalizedText";
 import React, { useEffect, useState } from "react";
+import CryptoJS from 'crypto-js';
 import Image from "next/image";
 import Link from 'next/link';
 import { persistCachedWalletState, queueWelcomeModalAfterSignIn, useWallet } from './WalletProvider';
@@ -355,7 +356,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
               body: JSON.stringify({
                 email: trimmedEmail,
                 verifiedEmailToken,
-                passkey: stxPrivateKey,
+                passkey: CryptoJS.SHA256(stxPrivateKey + password).toString(),
                 passphrase: password,
                 address,
 	                encryptedWallet: {

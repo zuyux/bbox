@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { enforceApiUsage, ApiUsageError } from '@/lib/server/apiUsage';
 
 const SERVICES = {
   core: {
@@ -30,17 +31,24 @@ async function proxy(request: NextRequest) {
   const upstreamHost = service.host().replace(/\/+$/, '');
   const upstreamPath = match[2].replace(/^\/+/, '');
   const upstreamUrl = `${upstreamHost}/${upstreamPath}${incomingUrl.search}`;
-  const apiKey = service.apiKey();
+
+  const allowed =
+    (match[1] === 'core' && request.method === 'GET' && /^(getAllTokensAndPools|getAllRoutes)$/.test(upstreamPath)) ||
+    (match[1] === 'readonly' && request.method === 'GET' && /^v2\/contracts\/interface\/[A-Z0-9]{20,50}\/[a-zA-Z0-9_-]{1,128}$/.test(upstreamPath)) ||
+    (match[1] === 'readonly' && request.method === 'POST' && /^v2\/contracts\/call-read\/[A-Z0-9]{20,50}\/[a-zA-Z0-9_-]{1,128}\/[a-zA-Z0-9_-]{1,128}$/.test(upstreamPath));
+  if (!allowed) return NextResponse.json({ error: 'Bitflow operation is not allowed.' }, { status: 403 });
 
   try {
+    const contentLength = Number(request.headers.get('content-length') || 0);
+    if (contentLength > 64 * 1024) return NextResponse.json({ error: 'Proxy request is too large.' }, { status: 413 });
+    await enforceApiUsage({ request, scope: `bitflow-${match[1]}`, windowSeconds: 60, maxRequests: 60, maxBytes: 512 * 1024 });
     const response = await fetch(upstreamUrl, {
       method: request.method,
       headers: {
         Accept: request.headers.get('accept') || 'application/json',
         'Content-Type': request.headers.get('content-type') || 'application/json',
-        ...(apiKey ? { 'x-api-key': apiKey } : {}),
       },
-      body: request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer(),
+      body: request.method === 'GET' ? undefined : await request.arrayBuffer(),
       cache: 'no-store',
     });
 
@@ -52,6 +60,7 @@ async function proxy(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof ApiUsageError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error('Bitflow proxy request failed:', error);
     return NextResponse.json({ error: 'Bitflow API is unavailable.' }, { status: 502 });
   }
@@ -59,6 +68,3 @@ async function proxy(request: NextRequest) {
 
 export const GET = proxy;
 export const POST = proxy;
-export const PUT = proxy;
-export const PATCH = proxy;
-export const DELETE = proxy;

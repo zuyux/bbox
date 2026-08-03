@@ -68,6 +68,9 @@ interface EmailAccountPayload {
     encryptionIv: string;
     encryptionVersion?: string;
     walletLabel?: string;
+    bitcoinAddress?: string;
+    rootstockAddress?: string;
+    liquidAddress?: string;
   };
 }
 
@@ -265,10 +268,13 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
           salt: account.encryptionSalt,
           iv: account.encryptionIv,
           version: account.encryptionVersion,
+          bitcoinAddress: account.bitcoinAddress,
+          rootstockAddress: account.rootstockAddress,
+          liquidAddress: account.liquidAddress,
         };
 
         try {
-          unlockedWallet = decryptPortableEncryptedWallet(walletPayload, password);
+          unlockedWallet = await decryptPortableEncryptedWallet(walletPayload, password);
         } catch {
           throw new Error('Invalid username, email, or password');
         }

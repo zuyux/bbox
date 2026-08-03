@@ -125,7 +125,7 @@ export default function ImportWalletModal({ onBack, onImported }: ImportWalletMo
     }
     try {
       setBusy(true);
-      const encryptedWallet = createPortableEncryptedWalletData(wallet, password);
+      const encryptedWallet = await createPortableEncryptedWalletData(wallet, password);
       const passkey = CryptoJS.SHA256(wallet.privateKey + password).toString();
       const proofPayload = JSON.stringify({
         address: wallet.address,
@@ -147,6 +147,7 @@ export default function ImportWalletModal({ onBack, onImported }: ImportWalletMo
           rootstockAddress: wallet.rootstockAddress,
           liquidAddress: wallet.liquidAddress,
           passkey,
+          passphrase: password,
           signature,
           encryptedWallet,
         }),

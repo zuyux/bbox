@@ -19,6 +19,7 @@ import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useWallet } from '@/components/WalletProvider';
 import { signStacksMessage } from '@/lib/commentSigning';
 import { ADMIN_ADDRESS } from '@/lib/admin';
+import { authorizeProfilePayload } from '@/lib/profileApi';
 import { AlertTriangle, ArrowLeft, CheckCircle, ExternalLink, Upload } from 'lucide-react';
 
 const CATEGORY_OPTIONS = [
@@ -143,11 +144,25 @@ export default function AdminSubmitPage() {
 
     try {
       setIconUploadStatus('uploading');
-      setIconUploadMessage('Uploading image to Pinata...');
+      setIconUploadMessage('Authorize the image upload in your wallet...');
+
+      const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+      const sha256 = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      const authorizedPayload = await authorizeProfilePayload(
+        'POST',
+        '/api/admin/upload-image',
+        {
+          address: currentAddress,
+          file: { name: file.name, size: file.size, type: file.type, sha256 },
+        },
+        walletType,
+      );
 
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('address', currentAddress);
+      uploadFormData.append('profileMutationProof', JSON.stringify(authorizedPayload.profileMutationProof));
+      setIconUploadMessage('Uploading image to Pinata...');
 
       const response = await fetch('/api/admin/upload-image', {
         method: 'POST',

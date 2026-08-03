@@ -3,6 +3,7 @@
 
 import { LocalizedText } from "@/components/LocalizedText";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import CryptoJS from 'crypto-js';
 import { getStoredEncryptedWallet, retrieveEncryptedWallet, updateEncryptedWalletAddresses, type WalletData } from "@/lib/encryptedStorage";
 import { getBitcoinTaprootAddressFromPrivateKey, getLiquidAddressFromPrivateKey, getRootstockAddressFromPrivateKey } from "@/lib/bitcoinWallet";
 import { useCurrentAddress } from '@/hooks/useCurrentAddress';
@@ -932,7 +933,7 @@ export default function WalletPage() {
         body: JSON.stringify({
           email: trimmedEmail,
           verifiedEmailToken,
-          passkey: stxPrivateKey,
+          passkey: CryptoJS.SHA256(stxPrivateKey + password).toString(),
           passphrase: password,
           address: walletData.address,
           encryptedWallet: {

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
 import { assertVerifiedEmailToken, VerifiedEmailTokenError } from '@/lib/emailCodeAuth';
-import crypto from 'crypto';
 import { getHashedIp } from '@/lib/visitorIdentity';
 import { sendAccountActivityNotification } from '@/lib/accountActivityNotifications';
+import { createPasswordVerifier } from '@/lib/server/passwordVerifier';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,6 +14,12 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required fields' },
         { status: 400 }
       );
+    }
+    if (typeof passphrase !== 'string' || passphrase.length < 8 || passphrase.length > 1024) {
+      return NextResponse.json({ error: 'Invalid password' }, { status: 400 });
+    }
+    if (typeof passkey !== 'string' || !/^[0-9a-f]{64}$/i.test(passkey)) {
+      return NextResponse.json({ error: 'Invalid account verifier' }, { status: 400 });
     }
 
     const {
@@ -59,12 +65,6 @@ export async function POST(request: NextRequest) {
 
       throw tokenError;
     }
-
-    // Hash the private key with the passphrase to create the passkey
-    const hashedPasskey = crypto
-      .createHash('sha256')
-      .update(passkey + passphrase)
-      .digest('hex');
 
     const [existingAccountResult, existingProfileResult] = await Promise.all([
       supabaseAdmin
@@ -133,9 +133,10 @@ export async function POST(request: NextRequest) {
 
     // Save to Supabase
     const hashedIp = getHashedIp(request);
+    const passwordVerifier = await createPasswordVerifier(passphrase);
     const connectedAccountPayload = {
       email: normalizedEmail,
-      passkey: hashedPasskey,
+      passkey,
       address,
       encrypted_private_key: encryptedPrivateKey,
       encrypted_mnemonic: encryptedMnemonic,
@@ -147,6 +148,9 @@ export async function POST(request: NextRequest) {
       rootstock_address: rootstockAddress || null,
       liquid_address: liquidAddress || null,
       hashed_ip: hashedIp,
+      password_hash: passwordVerifier.passwordHash,
+      password_salt: passwordVerifier.passwordSalt,
+      password_kdf: 'scrypt-N32768-r8-p1',
     };
 
     const { data, error } = accountMatchesCurrentAddress

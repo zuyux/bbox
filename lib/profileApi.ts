@@ -1,4 +1,30 @@
 import { supabase } from '@/lib/supabaseClient';
+import { createUnsignedProfileProof, profileProofMessage, type ProfileMutationProof } from '@/lib/profileMutationProof';
+import { signStacksMessage, type SupportedWalletType } from '@/lib/commentSigning';
+
+export async function authorizeProfilePayload(method: string, path: string, payload: Record<string, unknown>, walletType: SupportedWalletType, privateKey?: string) {
+  const address = typeof payload.address === 'string' ? payload.address : '';
+  if (!walletType) throw new Error('Connect a wallet to authorize this profile change');
+  const unsigned = createUnsignedProfileProof(method, path, address, payload);
+  const message = profileProofMessage(unsigned);
+  const signed = walletType === 'imported' && privateKey
+    ? await (async () => {
+        const { signMessageHashRsv, privateKeyToPublic } = await import('@stacks/transactions');
+        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
+        const messageHash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+        const derivedPublicKey = privateKeyToPublic(privateKey);
+        const publicKey = typeof derivedPublicKey === 'string'
+          ? derivedPublicKey
+          : Array.from(derivedPublicKey, byte => byte.toString(16).padStart(2, '0')).join('');
+        return { signature: signMessageHashRsv({ messageHash, privateKey }), signedPayload: message, walletType: 'imported', publicKey };
+      })()
+    : await signStacksMessage(message, walletType);
+  if (!signed.publicKey) throw new Error('The wallet did not provide a public key for authorization');
+  return { ...payload, profileMutationProof: {
+    ...unsigned, signature: signed.signature, publicKey: signed.publicKey,
+    walletType: signed.walletType, signedPayload: signed.signedPayload,
+  } satisfies ProfileMutationProof };
+}
 
 // Test Supabase connectivity
 export async function testSupabaseConnection() {
@@ -114,16 +140,14 @@ export async function getProfileDeveloperMode(address: string): Promise<boolean>
   return Boolean(body?.developer_mode);
 }
 
-export async function updateProfileDeveloperMode(address: string, developerMode: boolean): Promise<boolean> {
+export async function updateProfileDeveloperMode(address: string, developerMode: boolean, walletType: SupportedWalletType, privateKey?: string): Promise<boolean> {
+  const payload = await authorizeProfilePayload('POST', '/api/profile/developer-mode', { address, developer_mode: developerMode }, walletType, privateKey);
   const response = await fetch('/api/profile/developer-mode', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      address,
-      developer_mode: developerMode,
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -168,13 +192,14 @@ export async function getProfile(address: string): Promise<Profile | null> {
   }
 }
 
-export async function upsertProfile(profile: Record<string, unknown> & { address: string }): Promise<Profile> {
+export async function upsertProfile(profile: Record<string, unknown> & { address: string }, walletType: SupportedWalletType, privateKey?: string): Promise<Profile> {
+  const payload = await authorizeProfilePayload('POST', '/api/profile', profile, walletType, privateKey);
   const response = await fetch('/api/profile', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(profile),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -196,13 +221,14 @@ export interface WalletLinkProof {
   proofTimestamp: string;
 }
 
-export async function createWalletLinkProof(proof: WalletLinkProof): Promise<void> {
+export async function createWalletLinkProof(proof: WalletLinkProof, walletType: SupportedWalletType, privateKey?: string): Promise<void> {
+  const payload = await authorizeProfilePayload('POST', '/api/profile/link', proof as unknown as Record<string, unknown>, walletType, privateKey);
   const response = await fetch('/api/profile/link', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(proof),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -211,33 +237,14 @@ export async function createWalletLinkProof(proof: WalletLinkProof): Promise<voi
   }
 }
 
-export async function updateProfileField(address: string, field: keyof Profile, value: unknown): Promise<void> {
-  try {
-    // First, find existing profile with case-insensitive search
-    const { data: existingProfiles } = await supabase
-      .from('profiles')
-      .select('id')
-      .ilike('address', address);
-
-    if (!existingProfiles || existingProfiles.length === 0) {
-      throw new Error('Profile not found');
-    }
-
-    // Update the existing profile
-    const { error } = await supabase
-      .from('profiles')
-      .update({ 
-        [field]: value,
-        last_active: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', existingProfiles[0].id);
-    
-    if (error) throw error;
-  } catch (error) {
-    console.error('Error updating profile field:', error);
-    throw error;
-  }
+export async function updateProfileField(
+  address: string,
+  field: keyof Profile,
+  value: unknown,
+  walletType: SupportedWalletType,
+  privateKey?: string,
+): Promise<void> {
+  await upsertProfile({ address, [field]: value }, walletType, privateKey);
 }
 
 export async function getProfileStats(address: string) {

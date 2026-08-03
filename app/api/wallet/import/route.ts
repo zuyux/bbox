@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getAddressFromPublicKey, publicKeyFromSignatureRsv } from '@stacks/transactions';
 import { supabaseAdmin } from '@/lib/supabaseClient';
+import { createPasswordVerifier } from '@/lib/server/passwordVerifier';
 
 type RecoveryAddresses = {
   address: string;
@@ -86,11 +87,12 @@ export async function POST(request: NextRequest) {
     }
 
     const passkey = typeof body.passkey === 'string' ? body.passkey : '';
+    const passphrase = typeof body.passphrase === 'string' ? body.passphrase : '';
     const signature = typeof body.signature === 'string' ? body.signature : '';
     const encryptedWallet = body.encryptedWallet && typeof body.encryptedWallet === 'object' && !Array.isArray(body.encryptedWallet)
       ? body.encryptedWallet as Record<string, unknown>
       : null;
-    if (!/^[0-9a-f]{64}$/i.test(passkey) || !signature || !encryptedWallet) {
+    if (!/^[0-9a-f]{64}$/i.test(passkey) || passphrase.length < 8 || passphrase.length > 1024 || !signature || !encryptedWallet) {
       return NextResponse.json({ error: 'Invalid recovery data.' }, { status: 400 });
     }
 
@@ -124,6 +126,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'The recovered wallet does not match this account profile.' }, { status: 403 });
     }
 
+    const passwordVerifier = await createPasswordVerifier(passphrase);
     const { error: updateError } = await supabaseAdmin
       .from('connected_accounts')
       .update({
@@ -136,6 +139,9 @@ export async function POST(request: NextRequest) {
         bitcoin_address: typeof encryptedWallet.bitcoinAddress === 'string' ? encryptedWallet.bitcoinAddress : null,
         rootstock_address: typeof encryptedWallet.rootstockAddress === 'string' ? encryptedWallet.rootstockAddress : null,
         liquid_address: typeof encryptedWallet.liquidAddress === 'string' ? encryptedWallet.liquidAddress : null,
+        password_hash: passwordVerifier.passwordHash,
+        password_salt: passwordVerifier.passwordSalt,
+        password_kdf: 'scrypt-N32768-r8-p1',
       })
       .eq('id', account.id);
     if (updateError) throw updateError;

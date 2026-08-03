@@ -3,6 +3,9 @@ import Image from 'next/image';
 import { Upload, X, ImageIcon, Loader2 } from 'lucide-react';
 import { getIPFSUrl } from '@/lib/pinataUpload';
 import SafariOptimizedImage from './SafariOptimizedImage';
+import { useWallet } from '@/components/WalletProvider';
+import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
+import { authorizeProfilePayload } from '@/lib/profileApi';
 
 interface BannerImageUploadProps {
   currentBannerUrl?: string;
@@ -19,6 +22,8 @@ export function BannerImageUpload({
   onUploadSuccess,
   onRemoveSuccess
 }: BannerImageUploadProps) {
+  const { walletType } = useWallet();
+  const { currentWallet } = useEncryptedWallet();
   const [isUploading, setIsUploading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -60,9 +65,15 @@ export function BannerImageUpload({
     setError(null);
 
     try {
+      const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+      const sha256 = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      const authorized = await authorizeProfilePayload('POST', '/api/upload-banner', {
+        address, file: { name: file.name, size: file.size, type: file.type, sha256 },
+      }, walletType, currentWallet?.privateKey);
       const formData = new FormData();
       formData.append('file', file);
       formData.append('address', address);
+      formData.append('profileMutationProof', JSON.stringify(authorized.profileMutationProof));
 
       const response = await fetch('/api/upload-banner', {
         method: 'POST',
@@ -100,15 +111,15 @@ export function BannerImageUpload({
     setError(null);
 
     try {
+      const payload = await authorizeProfilePayload('POST', '/api/remove-banner', {
+        cid: currentBannerCid, address,
+      }, walletType, currentWallet?.privateKey);
       const response = await fetch('/api/remove-banner', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          cid: currentBannerCid,
-          address: address
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {

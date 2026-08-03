@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileToPinata, unpinFromPinata, getIPFSUrl } from '@/lib/pinataUpload';
+import { createHash } from 'crypto';
+import { authorizeProfileMutation, ProfileMutationAuthError } from '@/lib/server/profileMutationAuth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,6 +9,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
     const address = formData.get('address') as string;
     const oldCid = formData.get('oldCid') as string;
+    const rawProof = formData.get('profileMutationProof');
 
     if (!file || !address) {
       return NextResponse.json(
@@ -14,6 +17,15 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const fileBuffer = await file.arrayBuffer();
+    const body = {
+      address,
+      oldCid: oldCid || '',
+      file: { name: file.name, size: file.size, type: file.type, sha256: createHash('sha256').update(Buffer.from(fileBuffer)).digest('hex') },
+      profileMutationProof: typeof rawProof === 'string' ? JSON.parse(rawProof) : undefined,
+    };
+    await authorizeProfileMutation({ body, method: 'POST', path: '/api/profile/avatar', address });
 
     // Upload new file to Pinata
     const uploadResult = await uploadFileToPinata(file);
@@ -42,6 +54,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof ProfileMutationAuthError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error('Profile picture upload error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -52,9 +65,9 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const address = searchParams.get('address');
-    const cid = searchParams.get('cid');
+    const body = await request.json() as Record<string, unknown>;
+    const address = typeof body.address === 'string' ? body.address : '';
+    const cid = typeof body.cid === 'string' ? body.cid : '';
 
     if (!address || !cid) {
       return NextResponse.json(
@@ -62,6 +75,8 @@ export async function DELETE(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    await authorizeProfileMutation({ body, method: 'DELETE', path: '/api/profile/avatar', address });
 
     const unpinSuccess = await unpinFromPinata(cid);
     if (!unpinSuccess) {
@@ -74,6 +89,7 @@ export async function DELETE(request: NextRequest) {
     });
 
   } catch (error) {
+    if (error instanceof ProfileMutationAuthError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error('Profile picture deletion error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

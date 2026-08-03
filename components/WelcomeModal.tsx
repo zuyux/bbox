@@ -11,7 +11,7 @@ import {
   WELCOME_MODAL_AFTER_SIGN_IN_EVENT,
 } from '@/components/WalletProvider';
 import { Button } from '@/components/ui/button';
-import { getProfile, upsertProfile } from '@/lib/profileApi';
+import { getProfile } from '@/lib/profileApi';
 import { cn } from '@/lib/utils';
 
 const slides = [
@@ -117,14 +117,8 @@ export default function WelcomeModal() {
         localStorage.setItem(localStorageKey, 'true');
       }
 
-      try {
-        await upsertProfile({
-          address,
-          hide_welcome_modal: true,
-        });
-      } catch (error) {
-        console.warn('Unable to save welcome modal preference:', error);
-      }
+      // Keep this preference local. A remote mutation requires an explicit,
+      // fresh wallet signature and should not interrupt modal dismissal.
     }
   };
 

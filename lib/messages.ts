@@ -49,7 +49,7 @@ const es: typeof en = {
   nav: { primary: 'Navegación principal', home: 'Inicio de BBOX', search: 'Buscar aplicaciones', searchPlaceholder: 'BUSCAR APLICACIONES...', openSearch: 'Abrir búsqueda' },
   footer: { tagline: 'Nuestra tienda de aplicaciones' }, accessibility: { skip: 'Ir al contenido principal', main: 'Contenido principal' },
   home: {
-    badge: 'ESPACIO PARA TERRÍCOLAS', title: 'APPS DE CÓDIGO ABIERTO PARA TODOS', lead: 'Descubre aplicaciones útiles, compara información confiable y apoya proyectos abiertamente, sin depender de intermediarios bboomers.',
+    badge: 'SÓLO PARA TERRÍCOLAS', title: 'SI ESTÁS AQUÍ, ES PORQUE TOMASTE LA PASTILLA', lead: 'Descubre aplicaciones útiles, compara información confiable y apoya proyectos abiertamente, sin depender de las grandes corporaciones.',
     exploreApps: 'Explorar aplicaciones', applyFunding: 'Solicitar financiamiento', protocol: 'Protocolo de registro de aplicaciones', listedApps: 'aplicaciones registradas', categories: 'categorías', anchored: 'Anclado en Bitcoin', publicGoods: 'bienes públicos', loading: 'Cargando aplicaciones desde la base de datos pública...',
     what: 'Qué hace BBOX', whatTitle: 'Descubrimiento, coordinación y financiamiento en un solo lugar.', whatLead: 'BBOX organiza software de código abierto de alta integridad con perfiles, reseñas, subvenciones e hitos verificables anclados por el Bitcoin App Registry.',
     ecosystemPillars: [

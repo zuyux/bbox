@@ -15,6 +15,7 @@ import {
   getSkillCategories,
   getProfileDeveloperMode,
   updateProfileDeveloperMode,
+  authorizeProfilePayload,
   Profile
 } from '@/lib/profileApi';
 import { buildWalletProofMessage, createWalletProof } from '@/lib/commentSigning';
@@ -212,7 +213,38 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [githubConnecting, setGithubConnecting] = useState(false);
   const githubAuthStatus = searchParams.get('github');
+
+  const handleGitHubConnect = async () => {
+    if (!address || githubConnecting) return;
+    setGithubConnecting(true);
+    setError('');
+    try {
+      const payload = await authorizeProfilePayload(
+        'POST',
+        '/api/github/authorize',
+        { address },
+        walletType,
+        currentWallet?.privateKey,
+      );
+      const response = await fetch('/api/github/authorize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (!response.ok || typeof result.authorizeUrl !== 'string') {
+        throw new Error(result.error || 'Unable to start GitHub authorization');
+      }
+      window.location.assign(result.authorizeUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to start GitHub authorization';
+      setError(message);
+      toast.error(message);
+      setGithubConnecting(false);
+    }
+  };
 
   useEffect(() => {
     setPrivateKeyMnemonicLanguage(getDeviceMnemonicLanguage());
@@ -651,7 +683,7 @@ export default function SettingsPage() {
         profileData.verifiedEmailToken = emailCodeToken;
       }
 
-      await upsertProfile(profileData);
+      await upsertProfile(profileData, walletType, currentWallet?.privateKey);
       setOriginalEmail(email);
       setEmailVerified(Boolean(optionalText(email)));
       setEmailCode('');
@@ -733,7 +765,7 @@ export default function SettingsPage() {
         walletPublicKey: walletProofResult.walletPublicKey,
         proofMessage: buildWalletProofMessage(address, linkedNostrPublicKey, walletProofResult.proofTimestamp),
         proofTimestamp: walletProofResult.proofTimestamp,
-      });
+      }, walletType, currentWallet?.privateKey);
 
       setWalletLinkStatus('Wallet proof linked successfully!');
       toast.success("Wallet linked to Nostr key");
@@ -766,7 +798,7 @@ export default function SettingsPage() {
     setSavingDeveloperMode(true);
 
     try {
-      const savedDeveloperMode = await updateProfileDeveloperMode(address, enabled);
+      const savedDeveloperMode = await updateProfileDeveloperMode(address, enabled, walletType, currentWallet?.privateKey);
       setDeveloperMode(savedDeveloperMode);
       setDeveloperModeEnabled(savedDeveloperMode);
       toast.success(savedDeveloperMode ? 'Developer Mode enabled' : 'Developer Mode disabled');
@@ -1092,15 +1124,14 @@ export default function SettingsPage() {
                         placeholder={"github.com/username"}
                       />
                       <Button
-                        asChild
                         type="button"
                         variant="outline"
                         className="shrink-0 border-[#222] text-foreground hover:bg-muted"
+                        onClick={handleGitHubConnect}
+                        disabled={githubConnecting || !address}
                       >
-                        <Link href={`/api/github/authorize?address=${encodeURIComponent(address)}`}>
-                          <Github className="h-4 w-4" />
-                          {githubUrl ? "Reconnect" : "Connect"}
-                        </Link>
+                        <Github className="h-4 w-4" />
+                        {githubConnecting ? "Signing..." : githubUrl ? "Reconnect" : "Connect"}
                       </Button>
                     </div>
                     {githubUrl && (

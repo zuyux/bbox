@@ -5,6 +5,7 @@ import {
   VerifiedEmailTokenError,
   assertVerifiedEmailToken,
 } from '@/lib/emailCodeAuth';
+import { authorizeProfileMutation, ProfileMutationAuthError } from '@/lib/server/profileMutationAuth';
 
 const PROFILE_FIELDS = [
   'address',
@@ -90,6 +91,8 @@ export async function POST(request: NextRequest) {
     if (!address) {
       return NextResponse.json({ error: 'Address is required' }, { status: 400 });
     }
+
+    await authorizeProfileMutation({ body: profileBody, method: 'POST', path: '/api/profile', address });
 
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -200,6 +203,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, profile: data });
   } catch (error) {
+    if (error instanceof ProfileMutationAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error('Unexpected profile save error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

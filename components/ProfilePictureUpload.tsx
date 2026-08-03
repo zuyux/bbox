@@ -2,6 +2,9 @@ import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { Upload, X, User, Loader2 } from 'lucide-react';
 import { getIPFSUrl } from '@/lib/pinataUpload';
+import { useWallet } from '@/components/WalletProvider';
+import { authorizeProfilePayload } from '@/lib/profileApi';
+import { useEncryptedWallet } from '@/components/EncryptedWalletProvider';
 
 interface ProfilePictureUploadProps {
   currentAvatarUrl?: string;
@@ -18,6 +21,8 @@ export function ProfilePictureUpload({
   onUploadSuccess,
   onRemoveSuccess
 }: ProfilePictureUploadProps) {
+  const { walletType } = useWallet();
+  const { currentWallet } = useEncryptedWallet();
   const [isUploading, setIsUploading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -57,12 +62,20 @@ export function ProfilePictureUpload({
     setError(null);
 
     try {
+      const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+      const sha256 = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      const authPayload = await authorizeProfilePayload('POST', '/api/profile/avatar', {
+        address,
+        oldCid: currentAvatarCid || '',
+        file: { name: file.name, size: file.size, type: file.type, sha256 },
+      }, walletType, currentWallet?.privateKey);
       const formData = new FormData();
       formData.append('file', file);
       formData.append('address', address);
       if (currentAvatarCid) {
         formData.append('oldCid', currentAvatarCid);
       }
+      formData.append('profileMutationProof', JSON.stringify(authPayload.profileMutationProof));
 
       const response = await fetch('/api/profile/avatar', {
         method: 'POST',
@@ -101,12 +114,12 @@ export function ProfilePictureUpload({
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/profile/avatar?address=${encodeURIComponent(address)}&cid=${encodeURIComponent(currentAvatarCid)}`,
-        {
-          method: 'DELETE',
-        }
-      );
+      const payload = await authorizeProfilePayload('DELETE', '/api/profile/avatar', {
+        address, cid: currentAvatarCid,
+      }, walletType, currentWallet?.privateKey);
+      const response = await fetch('/api/profile/avatar', {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      });
 
       const result = await response.json();
       const errorMessage = typeof result.error === 'string'

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
+import { authorizeProfileMutation, ProfileMutationAuthError } from '@/lib/server/profileMutationAuth';
 
 type DeveloperModePayload = {
   address?: string;
@@ -34,6 +35,9 @@ export async function GET(request: NextRequest) {
       developer_mode: normalizeDeveloperMode(data?.developer_mode),
     });
   } catch (error) {
+    if (error instanceof ProfileMutationAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error('Unexpected error loading Developer Mode:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -48,6 +52,8 @@ export async function POST(request: NextRequest) {
     if (!address) {
       return NextResponse.json({ error: 'Address is required' }, { status: 400 });
     }
+
+    await authorizeProfileMutation({ body: body as Record<string, unknown>, method: 'POST', path: '/api/profile/developer-mode', address });
 
     const now = new Date().toISOString();
     const { data: existingProfiles, error: lookupError } = await supabaseAdmin
@@ -98,6 +104,9 @@ export async function POST(request: NextRequest) {
       developer_mode: normalizeDeveloperMode(result.data?.developer_mode),
     });
   } catch (error) {
+    if (error instanceof ProfileMutationAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error('Unexpected error saving Developer Mode:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

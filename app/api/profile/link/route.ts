@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
+import { authorizeProfileMutation, ProfileMutationAuthError } from '@/lib/server/profileMutationAuth';
 
 type WalletLinkPayload = {
   address?: string;
@@ -28,6 +29,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required wallet proof fields' }, { status: 400 });
     }
 
+    await authorizeProfileMutation({ body: body as Record<string, unknown>, method: 'POST', path: '/api/profile/link', address });
+
     const now = new Date().toISOString();
     const payload = {
       address,
@@ -51,6 +54,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof ProfileMutationAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error('Unexpected error saving wallet link proof:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
