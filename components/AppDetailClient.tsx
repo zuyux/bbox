@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -16,12 +16,16 @@ import { useCurrentAddress } from '@/hooks/useCurrentAddress';
 import { useWallet } from '@/components/WalletProvider';
 import { signStacksMessage } from '@/lib/commentSigning';
 import { ADMIN_ADDRESS } from '@/lib/admin';
+import { authorizeProfilePayload } from '@/lib/profileApi';
+import { sha256 } from '@noble/hashes/sha2';
+import { processAppIcon } from '@/lib/processAppIcon';
 import {
   Star,
   ArrowLeft,
   ArrowRight,
   Github,
   Loader2,
+  Upload,
   X
 } from 'lucide-react';
 import type { BitcoinApp } from '@/lib/appsUtils';
@@ -53,6 +57,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
   const currentAddress = useCurrentAddress();
   const { walletType } = useWallet();
   const isAdmin = currentAddress === ADMIN_ADDRESS;
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showOwnershipModal, setShowOwnershipModal] = useState(false);
@@ -60,6 +65,9 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
   const [claimMessage, setClaimMessage] = useState('');
   const [editStatus, setEditStatus] = useState<'idle' | 'signing' | 'submitting' | 'success' | 'error'>('idle');
   const [editMessage, setEditMessage] = useState('');
+  const [imageUploadStatus, setImageUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [imageUploadMessage, setImageUploadMessage] = useState('');
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('');
   const [appState, setAppState] = useState(app);
   const [claimData, setClaimData] = useState({
     name: '',
@@ -114,6 +122,73 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
         ? [...prev.platforms, platform]
         : prev.platforms.filter((option) => option !== platform),
     }));
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setEditStatus('idle');
+    setEditMessage('');
+
+    if (!currentAddress || !isAdmin) {
+      setImageUploadStatus('error');
+      setImageUploadMessage('Connect the admin wallet before uploading an image.');
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setImageUploadStatus('error');
+      setImageUploadMessage('Upload a JPEG, PNG, GIF, or WebP image.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setImageUploadStatus('error');
+      setImageUploadMessage('Image must be 10MB or smaller.');
+      return;
+    }
+
+    try {
+      setImageUploadStatus('uploading');
+      setImageUploadMessage('Cropping and resizing image to 512×512...');
+
+      const processedFile = await processAppIcon(file);
+      setImageUploadMessage('Authorize the image upload in your wallet...');
+
+      const fileHash = sha256(new Uint8Array(await processedFile.arrayBuffer()));
+      const sha256Hex = Array.from(fileHash, (byte) => byte.toString(16).padStart(2, '0')).join('');
+      const authorizedPayload = await authorizeProfilePayload(
+        'POST',
+        '/api/admin/upload-image',
+        {
+          address: currentAddress,
+          file: { name: processedFile.name, size: processedFile.size, type: processedFile.type, sha256: sha256Hex },
+        },
+        walletType,
+      );
+
+      const formData = new FormData();
+      formData.append('file', processedFile);
+      formData.append('address', currentAddress);
+      formData.append('profileMutationProof', JSON.stringify(authorizedPayload.profileMutationProof));
+      setImageUploadMessage('Uploading image to IPFS...');
+
+      const response = await fetch('/api/admin/upload-image', { method: 'POST', body: formData });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Image upload failed.');
+      }
+
+      setEditData((prev) => ({ ...prev, imgCID: result.cid }));
+      setImagePreviewUrl(result.url || '');
+      setImageUploadStatus('success');
+      setImageUploadMessage(`Uploaded to IPFS: ${result.cid}`);
+    } catch (error) {
+      setImageUploadStatus('error');
+      setImageUploadMessage(error instanceof Error ? error.message : 'Unexpected error uploading image.');
+    }
   };
 
   const closeOwnershipModal = () => {
@@ -595,13 +670,71 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                     />
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="edit-imgcid">Image CID</Label>
-                  <Input
-                    id="edit-imgcid"
-                    value={editData.imgCID}
-                    onChange={(event) => updateField('imgCID', event.target.value)}
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="edit-image-file">Upload image</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="edit-image-file"
+                        ref={imageFileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                        onChange={handleImageUpload}
+                        disabled={imageUploadStatus === 'uploading'}
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => imageFileInputRef.current?.click()}
+                        disabled={imageUploadStatus === 'uploading'}
+                        aria-label="Upload image to IPFS"
+                      >
+                        {imageUploadStatus === 'uploading'
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <Upload className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    {imageUploadMessage && (
+                      <p className={`mt-1 break-all text-xs ${imageUploadStatus === 'error' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                        {imageUploadMessage}
+                      </p>
+                    )}
+                    {imagePreviewUrl && (
+                      <div className="mt-3 flex items-center gap-3">
+                        <IPFSImage
+                          src={imagePreviewUrl}
+                          alt={`${editData.name || 'App'} image preview`}
+                          width={56}
+                          height={56}
+                          className="h-14 w-14 rounded-md border object-cover"
+                        />
+                        <a href={imagePreviewUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline-offset-4 hover:underline">
+                          View IPFS image
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-imgcid">Image CID</Label>
+                    <Input
+                      id="edit-imgcid"
+                      value={editData.imgCID}
+                      onChange={(event) => {
+                        updateField('imgCID', event.target.value);
+                        setImagePreviewUrl('');
+                        setImageUploadStatus(event.target.value.trim() ? 'success' : 'idle');
+                        setImageUploadMessage(event.target.value.trim() ? 'CID ready to save.' : '');
+                      }}
+                      placeholder="Qm..."
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Filled automatically after upload, or paste an existing IPFS CID.
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Uploaded images are center-cropped and resized to a 512×512 PNG icon.
+                    </p>
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="edit-tags">Tags</Label>
@@ -630,7 +763,7 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                   </div>
                 </fieldset>
                 <div className="flex flex-col gap-2">
-                  <Button type="submit" disabled={editStatus === 'signing' || editStatus === 'submitting'}>
+                  <Button type="submit" disabled={editStatus === 'signing' || editStatus === 'submitting' || imageUploadStatus === 'uploading'}>
                     {editStatus === 'signing'
                       ? 'Signing...'
                       : editStatus === 'submitting'

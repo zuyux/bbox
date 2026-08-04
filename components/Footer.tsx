@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { ModeToggle } from './modeToggle';
 import SubscribeForm from './SubscribeForm';
 import { LocaleSwitcher } from './LocaleSwitcher';
@@ -25,6 +26,16 @@ export default function Footer() {
             <Link href="/terms-of-service" className="hidden md:inline hover:text-[#fff] text-[#777]">{messages.common.terms}</Link>
           </div>
           <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:flex-none">
+            <Link
+              href="https://njump.me/npub1q2puy4swyp723h4guxl7ee9qm33t0glnvhd7tquuer5lwvt29euqatvt6k"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="BBOX on Nostr"
+              title="BBOX on Nostr"
+              className="shrink-0 opacity-60 transition-opacity hover:opacity-100"
+            >
+              <Image src="/nostr.svg" width={18} height={18} alt="" />
+            </Link>
             <SubscribeForm />
             <LocaleSwitcher />
             <ModeToggle />

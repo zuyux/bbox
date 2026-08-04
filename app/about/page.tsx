@@ -25,6 +25,17 @@ export default function AboutPage() {
         </Link>
       </p>
       <p className="mb-4">
+        <LocalizedText>Follow BBOX on Nostr:</LocalizedText><br />
+        <Link
+          href="https://njump.me/npub1q2puy4swyp723h4guxl7ee9qm33t0glnvhd7tquuer5lwvt29euqatvt6k"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="break-all font-medium text-accent underline underline-offset-4"
+        >
+          npub1q2puy4swyp723h4guxl7ee9qm33t0glnvhd7tquuer5lwvt29euqatvt6k
+        </Link>
+      </p>
+      <p className="mb-4">
         <LocalizedText>You can explore the source code, contribute, or report issues on our GitHub repository:
         </LocalizedText><br />
         <Link href="https://github.com/zuyux/bbox">

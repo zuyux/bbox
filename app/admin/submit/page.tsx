@@ -20,6 +20,8 @@ import { useWallet } from '@/components/WalletProvider';
 import { signStacksMessage } from '@/lib/commentSigning';
 import { ADMIN_ADDRESS } from '@/lib/admin';
 import { authorizeProfilePayload } from '@/lib/profileApi';
+import { sha256 } from '@noble/hashes/sha2';
+import { processAppIcon } from '@/lib/processAppIcon';
 import { AlertTriangle, ArrowLeft, CheckCircle, ExternalLink, Upload } from 'lucide-react';
 
 const CATEGORY_OPTIONS = [
@@ -144,22 +146,25 @@ export default function AdminSubmitPage() {
 
     try {
       setIconUploadStatus('uploading');
+      setIconUploadMessage('Cropping and resizing image to 512×512...');
+
+      const processedFile = await processAppIcon(file);
       setIconUploadMessage('Authorize the image upload in your wallet...');
 
-      const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
-      const sha256 = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      const fileHash = sha256(new Uint8Array(await processedFile.arrayBuffer()));
+      const sha256Hex = Array.from(fileHash, byte => byte.toString(16).padStart(2, '0')).join('');
       const authorizedPayload = await authorizeProfilePayload(
         'POST',
         '/api/admin/upload-image',
         {
           address: currentAddress,
-          file: { name: file.name, size: file.size, type: file.type, sha256 },
+          file: { name: processedFile.name, size: processedFile.size, type: processedFile.type, sha256: sha256Hex },
         },
         walletType,
       );
 
       const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
+      uploadFormData.append('file', processedFile);
       uploadFormData.append('address', currentAddress);
       uploadFormData.append('profileMutationProof', JSON.stringify(authorizedPayload.profileMutationProof));
       setIconUploadMessage('Uploading image to Pinata...');

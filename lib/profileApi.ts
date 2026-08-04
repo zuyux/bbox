@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabaseClient';
 import { createUnsignedProfileProof, profileProofMessage, type ProfileMutationProof } from '@/lib/profileMutationProof';
 import { signStacksMessage, type SupportedWalletType } from '@/lib/commentSigning';
+import { sha256 } from '@noble/hashes/sha2';
 
 export async function authorizeProfilePayload(method: string, path: string, payload: Record<string, unknown>, walletType: SupportedWalletType, privateKey?: string) {
   const address = typeof payload.address === 'string' ? payload.address : '';
@@ -10,8 +11,8 @@ export async function authorizeProfilePayload(method: string, path: string, payl
   const signed = walletType === 'imported' && privateKey
     ? await (async () => {
         const { signMessageHashRsv, privateKeyToPublic } = await import('@stacks/transactions');
-        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
-        const messageHash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+        const digest = sha256(new TextEncoder().encode(message));
+        const messageHash = Array.from(digest, byte => byte.toString(16).padStart(2, '0')).join('');
         const derivedPublicKey = privateKeyToPublic(privateKey);
         const publicKey = typeof derivedPublicKey === 'string'
           ? derivedPublicKey
