@@ -40,7 +40,7 @@ export default function SubmitSuccessPage() {
               </LocalizedText></h1>
               
               <p className="text-xl text-muted-foreground mb-6">
-                <LocalizedText>Your app has been submitted to BBOX for review
+                <LocalizedText>Your app has been submitted to BBOXX for review
               </LocalizedText></p>
 
               {explorerUrl && (
@@ -94,7 +94,7 @@ export default function SubmitSuccessPage() {
                     <div>
                       <h3 className="font-semibold mb-1"><LocalizedText>Go Live!</LocalizedText></h3>
                       <p className="text-sm text-muted-foreground">
-                        <LocalizedText>Once approved, your app will be live on BBOX and discoverable by the sovereign software community. You can update it anytime from your dashboard.
+                        <LocalizedText>Once approved, your app will be live on BBOXX and discoverable by the sovereign software community. You can update it anytime from your dashboard.
                       </LocalizedText></p>
                     </div>
                   </div>
@@ -167,7 +167,7 @@ export default function SubmitSuccessPage() {
                   <LocalizedText>View Docs
                 </LocalizedText></h3>
                 <p className="text-sm text-muted-foreground">
-                  <LocalizedText>Learn more about BBOX features and how to optimize your app listing
+                  <LocalizedText>Learn more about BBOXX features and how to optimize your app listing
                 </LocalizedText></p>
               </CardContent>
             </Card>

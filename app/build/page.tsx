@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const metadata: Metadata = {
-  title: 'Build on Bitcoin | BBOX',
+  title: 'Build on Bitcoin | BBOXX',
   description: 'Curated launchpad for Bitcoin Layer 1 and Layer 2 developer documentation, SDKs, and sandboxes.'
 };
 
@@ -115,7 +115,7 @@ export default function BuildPage() {
           <p className="text-sm uppercase tracking-[0.35em] text-orange-500 mb-4"><LocalizedText>Start Building</LocalizedText></p>
           <h1 className="title text-4xl md:text-5xl font-bold mb-6"><LocalizedText>Everything You Need to Ship Sovereign Software</LocalizedText></h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            <LocalizedText>Start with the Bitcoin Layer 1 and Layer 2 foundations that anchor BBOX, then extend into the wallets,
+            <LocalizedText>Start with the Bitcoin Layer 1 and Layer 2 foundations that anchor BBOXX, then extend into the wallets,
             protocols, scaling systems, and SDKs that power production sovereign apps.
           </LocalizedText></p>
         </section>
@@ -136,7 +136,7 @@ export default function BuildPage() {
           <div className="mb-6 text-center md:text-left">
             <p className="text-sm uppercase tracking-[0.4em] text-orange-500 mb-2"><LocalizedText>Toolkits & Sandboxes</LocalizedText></p>
             <p className="text-muted-foreground text-base max-w-2xl">
-              <LocalizedText>Production-ready SDKs and reference stacks that plug directly into BBOX submissions and milestone reviews.
+              <LocalizedText>Production-ready SDKs and reference stacks that plug directly into BBOXX submissions and milestone reviews.
             </LocalizedText></p>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
@@ -169,7 +169,7 @@ export default function BuildPage() {
             </CardHeader>
             <CardContent>
               <Button variant="outline" asChild>
-                <Link href="mailto:team@bbox.build"><LocalizedText>Submit a resource</LocalizedText></Link>
+                <Link href="mailto:team@bboxx.app"><LocalizedText>Submit a resource</LocalizedText></Link>
               </Button>
             </CardContent>
           </Card>

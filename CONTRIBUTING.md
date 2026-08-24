@@ -1,6 +1,6 @@
-# Contributing to BBOX
+# Contributing to BBOXX
 
-Thanks for helping improve BBOX. This project is building a Bitcoin-anchored registry and funding layer for open-source software, so contributions should preserve the project's goals around discoverability, provenance, public-good funding, and long-term maintainability.
+Thanks for helping improve BBOXX. This project is building a Bitcoin-anchored registry and funding layer for open-source software, so contributions should preserve the project's goals around discoverability, provenance, public-good funding, and long-term maintainability.
 
 ## Ways to Contribute
 
@@ -58,7 +58,7 @@ Before opening a pull request:
 - Note any migrations, environment variables, contract changes, or indexing assumptions.
 - Confirm which checks you ran, such as `npm run lint` or `npm run build`.
 
-Pull requests should be scoped, reviewable, and aligned with BBOX's Bitcoin-first open-source registry mission.
+Pull requests should be scoped, reviewable, and aligned with BBOXX's Bitcoin-first open-source registry mission.
 
 ## Coding Guidelines
 
@@ -73,7 +73,7 @@ Pull requests should be scoped, reviewable, and aligned with BBOX's Bitcoin-firs
 
 - Keep docs accurate, concise, and useful for builders, maintainers, reviewers, and funders.
 - Update `README.md`, `bar.md`, or onboarding docs when behavior or project concepts change.
-- Prefer examples that reflect real BBOX concepts: apps, maintainers, repositories, releases, milestones, funding links, Nostr identities, and Bitcoin anchors.
+- Prefer examples that reflect real BBOXX concepts: apps, maintainers, repositories, releases, milestones, funding links, Nostr identities, and Bitcoin anchors.
 
 ## Security
 
@@ -86,7 +86,7 @@ Areas that deserve extra caution include wallet interactions, signatures, Stacks
 - Be respectful and constructive.
 - Assume good intent, but verify technical claims.
 - Help make the project easier for new contributors to understand.
-- Keep discussions focused on improving BBOX and the public-good software ecosystem it supports.
+- Keep discussions focused on improving BBOXX and the public-good software ecosystem it supports.
 
 ## License
 

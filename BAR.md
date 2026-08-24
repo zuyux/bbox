@@ -97,7 +97,7 @@ Inscriptions are small JSON documents. At typical 2026 fee levels (~1 sat/vB dur
 Supported today by Unisat, Xverse, Sparrow Wallet (with Ordinals plugin), and other Taproot-compatible wallets.
 
 **Integration**  
-- BBOX (bbox.lol) and Zapstore can automatically pull the latest state from this L1 registry.
+- BBOXX (bboxx.app) and Zapstore can automatically pull the latest state from this L1 registry.
 - Frontends can filter by `chain_layer`, platform, license, or owner.
 - The registry is designed to complement — not replace — existing open-source stores like F-Droid or Nostr-based platforms.
 

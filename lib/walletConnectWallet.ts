@@ -47,8 +47,8 @@ const getWalletConnectProvider = async (): Promise<EthereumProvider> => {
         optionalChains: [30, 56, 137, 42161, 8453],
         showQrModal: true,
         metadata: {
-          name: 'BBOX',
-          description: 'BBOX app authentication',
+          name: 'BBOXX',
+          description: 'BBOXX app authentication',
           url: window.location.origin,
           icons: [`${window.location.origin}/bbox.png`],
         },

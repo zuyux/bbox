@@ -2,12 +2,12 @@ import { AddressPurpose, BitcoinNetworkType, request as satsRequest } from 'sats
 
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 
-const BBOX_SIGN_IN_DOMAIN = 'bbox.lol';
-const BBOX_SIGN_IN_URI = 'https://bbox.lol';
-const BBOX_SIGN_IN_STATEMENT = 'BBOX';
-const BBOX_SIGN_IN_VERSION = '1';
-const BBOX_SIGN_IN_CHAIN_ID = '1';
-const BBOX_SIGN_IN_NETWORK = BitcoinNetworkType.Mainnet;
+const BBOXX_SIGN_IN_DOMAIN = 'bboxx.app';
+const BBOXX_SIGN_IN_URI = 'https://bboxx.app';
+const BBOXX_SIGN_IN_STATEMENT = 'BBOXX';
+const BBOXX_SIGN_IN_VERSION = '1';
+const BBOXX_SIGN_IN_CHAIN_ID = '1';
+const BBOXX_SIGN_IN_NETWORK = BitcoinNetworkType.Mainnet;
 const MAINNET_STACKS_ADDRESS_PREFIXES = ['SP', 'SM'];
 
 type RpcSignatureResponse = {
@@ -66,12 +66,12 @@ const createNonce = () => {
 
 export const buildBboxStacksSignInMessage = (address: string, issuedAt = new Date()) => {
   return [
-    `${BBOX_SIGN_IN_DOMAIN} wants you to sign in with your Stacks account:`,
+    `${BBOXX_SIGN_IN_DOMAIN} wants you to sign in with your Stacks account:`,
     address,
-    BBOX_SIGN_IN_STATEMENT,
-    `URI: ${BBOX_SIGN_IN_URI}`,
-    `Version: ${BBOX_SIGN_IN_VERSION}`,
-    `Chain ID: ${BBOX_SIGN_IN_CHAIN_ID}`,
+    BBOXX_SIGN_IN_STATEMENT,
+    `URI: ${BBOXX_SIGN_IN_URI}`,
+    `Version: ${BBOXX_SIGN_IN_VERSION}`,
+    `Chain ID: ${BBOXX_SIGN_IN_CHAIN_ID}`,
     `Nonce: ${createNonce()}`,
     `Issued At: ${issuedAt.toISOString()}`,
   ].join('\n');
@@ -117,7 +117,7 @@ export const requestXverseMainnetStacksAddress = async (): Promise<string> => {
 export const requestXverseMainnetAddresses = async (): Promise<{ stacksAddress: string; bitcoinAddress: string }> => {
   const response = await satsRequest('wallet_connect', {
     addresses: [AddressPurpose.Stacks, AddressPurpose.Payment],
-    network: BBOX_SIGN_IN_NETWORK,
+    network: BBOXX_SIGN_IN_NETWORK,
   }) as WalletConnectResponse;
 
   if (response.status && response.status !== 'success') {

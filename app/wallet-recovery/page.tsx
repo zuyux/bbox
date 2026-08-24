@@ -101,7 +101,7 @@ export default function WalletRecoveryPage() {
       const walletData = await validateAndGenerateWallet(mnemonic);
       return {
         ...walletData,
-        label: `BBOX Wallet - ${email}`,
+        label: `BBOXX Wallet - ${email}`,
       };
     } catch (error) {
       console.error('Failed to generate wallet:', error);

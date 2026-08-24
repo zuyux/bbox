@@ -66,24 +66,24 @@ export async function POST(request: NextRequest) {
     try {
       await sendEmail({
         to: email,
-        subject: 'You are subscribed to BBOX',
+        subject: 'You are subscribed to BBOXX',
         html: `
           <div style="background:#18181b;color:#fff;font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:32px 24px;border-radius:12px;">
-            <h1 style="margin:0 0 16px;color:#ff7a1a;font-size:28px;">BBOX updates</h1>
+            <h1 style="margin:0 0 16px;color:#ff7a1a;font-size:28px;">BBOXX updates</h1>
             <p style="margin:0 0 16px;line-height:1.6;">Thanks for subscribing, <strong>${safeEmail}</strong>.</p>
-            <p style="margin:0 0 24px;line-height:1.6;color:#d4d4d8;">You will get product updates, app registry news, and launch notes from BBOX.</p>
-            <a href="https://bbox.app" style="display:inline-block;background:#ff5e00;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:700;">Visit BBOX</a>
-            <p style="margin:28px 0 0;color:#8b8b94;font-size:12px;">BBOX - The Universal Registry for Verified Software</p>
+            <p style="margin:0 0 24px;line-height:1.6;color:#d4d4d8;">You will get product updates, app registry news, and launch notes from BBOXX.</p>
+            <a href="https://bboxx.app" style="display:inline-block;background:#ff5e00;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:700;">Visit BBOXX</a>
+            <p style="margin:28px 0 0;color:#8b8b94;font-size:12px;">BBOXX - The Universal Registry for Verified Software</p>
           </div>
         `,
       });
 
       await sendEmail({
         to: adminEmail,
-        subject: `${existingSubscription ? 'BBOX subscriber reactivated' : 'New BBOX subscriber'}: ${email}`,
+        subject: `${existingSubscription ? 'BBOXX subscriber reactivated' : 'New BBOXX subscriber'}: ${email}`,
         html: `
           <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;">
-            <h2 style="margin:0 0 16px;">${existingSubscription ? 'Subscriber reactivated' : 'New BBOX subscriber'}</h2>
+            <h2 style="margin:0 0 16px;">${existingSubscription ? 'Subscriber reactivated' : 'New BBOXX subscriber'}</h2>
             <p style="margin:0 0 8px;"><strong>Email:</strong> ${safeEmail}</p>
             <p style="margin:0;color:#666;font-size:13px;">Source: footer subscribe form</p>
           </div>

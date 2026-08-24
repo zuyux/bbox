@@ -5,7 +5,7 @@ description: Technical guide to the Bitcoin App Registry (brc-app), its inscript
 
 The **Bitcoin App Registry (BAR)** is a permissionless, publisher-controlled registry for open-source applications on Bitcoin Layer 1. BAR uses Taproot inscriptions to create an append-only history that independent indexers can validate.
 
-BAR is the protocol layer; BBOX is one application that can index and present BAR records alongside richer project, community, and funding information.
+BAR is the protocol layer; BBOXX is one application that can index and present BAR records alongside richer project, community, and funding information.
 
 ## Design principles
 
@@ -138,18 +138,18 @@ BAR does not prove that linked code is safe, that the publisher is a particular 
 
 Those concerns require additional evidence and application layers. See [Trust and verification](/documentation/trust-and-verification).
 
-## BAR and the BBOX contract
+## BAR and the BBOXX contract
 
 The repository also contains a Stacks Clarity registry contract. It stores compact app state such as a publisher principal, IPFS metadata hash, status, verification flags, votes, ratings, and timestamps. This is distinct from BAR:
 
-| BAR | BBOX Clarity registry |
+| BAR | BBOXX Clarity registry |
 | --- | --- |
 | Bitcoin L1 inscriptions | Stacks smart contract |
 | Publisher-controlled canonical metadata history | Operational app and engagement state |
 | `register`, `update`, and `transfer` chain | Submission, metadata hash updates, votes, and ratings |
 | Independently reconstructed by BAR indexers | Read from contract state |
 
-BBOX may combine both views, but integrations should preserve their different trust models and validation rules.
+BBOXX may combine both views, but integrations should preserve their different trust models and validation rules.
 
 ## Implementation checklist
 
@@ -160,5 +160,5 @@ An early BAR integration should include:
 - Previous-pointer and app-chain validation
 - Fork and duplicate handling
 - Full history storage plus current-state projection
-- Re-indexing from Bitcoin data without relying on BBOX
+- Re-indexing from Bitcoin data without relying on BBOXX
 - Test vectors for valid updates, stale updates, transfers, and malformed JSON

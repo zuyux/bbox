@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ import {
   Github,
   Loader2,
   Upload,
+  Trash2,
   X
 } from 'lucide-react';
 import type { BitcoinApp } from '@/lib/appsUtils';
@@ -54,6 +56,7 @@ const CATEGORY_OPTIONS = [
 const PLATFORM_OPTIONS = ['Desktop', 'Android', 'iOS', 'Browser', 'Extension'];
 
 export default function AppDetailClient({ app, relatedApps }: AppDetailClientProps) {
+  const router = useRouter();
   const currentAddress = useCurrentAddress();
   const { walletType } = useWallet();
   const isAdmin = currentAddress === ADMIN_ADDRESS;
@@ -65,6 +68,8 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
   const [claimMessage, setClaimMessage] = useState('');
   const [editStatus, setEditStatus] = useState<'idle' | 'signing' | 'submitting' | 'success' | 'error'>('idle');
   const [editMessage, setEditMessage] = useState('');
+  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'signing' | 'deleting' | 'error'>('idle');
+  const [deleteMessage, setDeleteMessage] = useState('');
   const [imageUploadStatus, setImageUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [imageUploadMessage, setImageUploadMessage] = useState('');
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
@@ -291,6 +296,62 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
       const message = error instanceof Error ? error.message : 'Unable to save app changes.';
       setEditStatus('error');
       setEditMessage(message);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!isAdmin || !currentAddress) {
+      setDeleteStatus('error');
+      setDeleteMessage('Only the admin can delete an app.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete ${displayApp.name} from the registry? This cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    try {
+      setDeleteStatus('signing');
+      setDeleteMessage('');
+      if (!walletType) {
+        throw new Error('No connected Stacks wallet found. Please connect Leather, Hiro, or Xverse.');
+      }
+
+      const payload = JSON.stringify({
+        action: 'bbox_admin_app_delete',
+        address: currentAddress,
+        timestamp: new Date().toISOString(),
+        appId: displayApp.id,
+        appName: displayApp.name,
+      });
+      const signatureResult = await signStacksMessage(payload, walletType);
+      if (!signatureResult.signature) {
+        throw new Error('Admin signature was not returned by the wallet.');
+      }
+
+      setDeleteStatus('deleting');
+      const response = await fetch(`/api/update-app/${displayApp.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          app_name: displayApp.name,
+          publisher_address: currentAddress,
+          signature: signatureResult.signature,
+          signature_payload: signatureResult.signedPayload,
+          signature_public_key: signatureResult.publicKey,
+        }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(result?.error || 'Failed to delete app.');
+      }
+
+      router.push('/apps');
+      router.refresh();
+    } catch (error) {
+      setDeleteStatus('error');
+      setDeleteMessage(error instanceof Error ? error.message : 'Unable to delete app.');
     }
   };
 
@@ -775,6 +836,28 @@ export default function AppDetailClient({ app, relatedApps }: AppDetailClientPro
                   )}
                   {editStatus === 'error' && (
                     <p className="text-sm text-red-600">{editMessage}</p>
+                  )}
+                </div>
+                <div className="border-t border-red-500/30 pt-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-red-600">Delete from registry</p>
+                      <p className="text-xs text-muted-foreground">Temporary admin action. This permanently removes the app record.</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={handleDelete}
+                      disabled={deleteStatus === 'signing' || deleteStatus === 'deleting'}
+                    >
+                      {deleteStatus === 'signing' || deleteStatus === 'deleting'
+                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                        : <Trash2 className="h-4 w-4" />}
+                      {deleteStatus === 'signing' ? 'Signing...' : deleteStatus === 'deleting' ? 'Deleting...' : 'Delete app'}
+                    </Button>
+                  </div>
+                  {deleteStatus === 'error' && (
+                    <p className="mt-2 text-sm text-red-600">{deleteMessage}</p>
                   )}
                 </div>
               </form>

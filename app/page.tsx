@@ -30,6 +30,7 @@ const categoryIcons: Record<string, string> = {
   Mining: '/icons/mining.svg',
   DeFi: '/icons/defi.svg',
   Social: '/icons/social.svg',
+  Messaging: '/icons/social.svg',
   Networking: '/icons/network.svg',
   Identity: '/icons/id.svg',
   Developer: '/icons/dev.svg',
@@ -469,7 +470,7 @@ export default function HomePage() {
     <div className="bg-background l-dotted-grid-background min-h-screen">
       <div className="container mx-auto px-4 pt-24 pb-16">
         {/* Hero Section */}
-        <section className="relative isolate mb-16 grid min-h-[64vh] place-items-center overflow-hidden bg-transparent p-6 shadow-2xl shadow-black/10 sm:mx-0 sm:rounded-xl md:p-10 lg:bg-[url('/bbox-hero.png')] lg:bg-[length:50%_auto] lg:bg-left-top lg:bg-no-repeat lg:p-14">
+        <section className="relative isolate mb-16 grid min-h-[64vh] place-items-center overflow-hidden bg-transparent p-6 sm:mx-0 md:p-10 lg:bg-[url('/bbox-hero.png')] lg:bg-[length:50%_auto] lg:bg-left-top lg:bg-no-repeat lg:p-14">
           <div className="relative -mx-6 -mt-6 aspect-[3/2] overflow-hidden md:-mx-10 md:-mt-10 lg:hidden">
             <Image src="/bbox-hero.png" alt="Bitcoin rocket flying toward the moon" fill priority className="object-cover" sizes="(max-width: 1023px) 100vw, 0px" />
           </div>

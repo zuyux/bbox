@@ -210,7 +210,7 @@ const signNostrMessage = async (
     const event = await signNostriaEvent({
       created_at: Math.floor(Date.now() / 1000),
       kind: 27235,
-      tags: [['client', 'BBOX']],
+      tags: [['client', 'BBOXX']],
       content: payload,
     });
 
@@ -231,7 +231,7 @@ const signNostrMessage = async (
   const event = await provider.signEvent({
     created_at: Math.floor(Date.now() / 1000),
     kind: 27235,
-    tags: [['client', 'BBOX']],
+    tags: [['client', 'BBOXX']],
     content: payload,
   });
 
@@ -281,7 +281,7 @@ const requestSignatureViaPopup = async (
       message: payload,
       network: stacksNetwork,
       appDetails: {
-        name: 'BBOX',
+        name: 'BBOXX',
         icon: typeof window !== 'undefined' ? `${window.location.origin}/bbox.png` : '/bbox.png',
       },
       onFinish: (payload) => resolve(payload),

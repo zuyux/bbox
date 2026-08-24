@@ -1,16 +1,16 @@
-# BBOX
+# BBOXX
 
 **Bitcoin-Anchored Registry and Funding Layer for Open-Source Software**
 
-BBOX is an open-source coordination layer for discovering, verifying, funding, and maintaining high-integrity software.
+BBOXX is an open-source coordination layer for discovering, verifying, funding, and maintaining high-integrity software.
 
 Its first focus is the Bitcoin ecosystem: Bitcoin apps, Lightning tools, Nostr clients, wallets, privacy software, developer utilities, Bitcoin L2s, infrastructure projects, safe AI tools, and public-good research. The registry is designed to be universal, supporting desktop, Android, iOS, web, CLI, protocol, and infrastructure software.
 
-BBOX uses the **Bitcoin App Registry / BAR** protocol as a sovereign metadata layer. Publishers keep control over their project records while canonical registrations and updates can be anchored to Bitcoin Layer 1, creating an auditable history of software identity, maintainers, releases, funding milestones, and project evolution.
+BBOXX uses the **Bitcoin App Registry / BAR** protocol as a sovereign metadata layer. Publishers keep control over their project records while canonical registrations and updates can be anchored to Bitcoin Layer 1, creating an auditable history of software identity, maintainers, releases, funding milestones, and project evolution.
 
 ---
 
-## Why BBOX?
+## Why BBOXX?
 
 Open-source software is difficult to evaluate, fund, and preserve.
 
@@ -19,17 +19,17 @@ Developers need visibility, contributors, and sustainable funding.
 Grant committees and funders need better ways to inspect proof-of-work.
 Communities need a shared surface to coordinate public-good development.
 
-BBOX exists to make open-source software more discoverable, verifiable, fundable, and permanent.
+BBOXX exists to make open-source software more discoverable, verifiable, fundable, and permanent.
 
 ---
 
 ## Core Thesis
 
-BBOX is not just an app store.
+BBOXX is not just an app store.
 
-BBOX is a **Bitcoin-anchored coordination registry** for the people, projects, releases, and funding flows behind open-source software.
+BBOXX is a **Bitcoin-anchored coordination registry** for the people, projects, releases, and funding flows behind open-source software.
 
-Where traditional app stores focus on installation, BBOX focuses on:
+Where traditional app stores focus on installation, BBOXX focuses on:
 
 * software provenance;
 * developer proof-of-work;
@@ -56,7 +56,7 @@ Where traditional app stores focus on installation, BBOX focuses on:
 
 ## Bitcoin App Registry / BAR
 
-BAR is the registry protocol used by BBOX to preserve canonical software metadata.
+BAR is the registry protocol used by BBOXX to preserve canonical software metadata.
 
 A BAR record can represent:
 
@@ -144,7 +144,7 @@ Canonical registrations and updates can be anchored to Bitcoin L1, giving every 
 - **Contracts:** Clarity on Stacks for current listing and funding flows
 - **Registry:** BAR metadata anchored to Bitcoin L1
 - **Storage:** IPFS + GitHub metadata
-- **Indexing:** BBOX APIs, Hiro APIs, and BAR-compatible indexers
+- **Indexing:** BBOXX APIs, Hiro APIs, and BAR-compatible indexers
 - **Governance:** Multisig and DAO-oriented grant workflows
 
 ## Setup
@@ -171,11 +171,11 @@ npm run dev
 | **v0.1** | Public app index + metadata | Done |
 | **v0.2** | On-chain listings and milestone funding | In progress |
 | **v0.3** | BAR indexing, grant review, and governance workflows | Planned |
-| **v1.0** | Fully decentralized BBOX registry and funding layer | Planned |
+| **v1.0** | Fully decentralized BBOXX registry and funding layer | Planned |
 
 ## Contributors
 
-BBOX is developed by **ZUYUX**, a research and development collective.
+BBOXX is developed by **ZUYUX**, a research and development collective.
 
 Lead: [@fabohax](https://github.com/fabohax)
 Contributors: [@anthozg](https://github.com/anthozg), [@ronoel](https://github.com/ronoel)
@@ -191,5 +191,5 @@ Free to use, modify, and distribute under open-source terms.
 
 ## Links
 
-- [bbox.lol](https://bbox.lol)
+- [bboxx.app](https://bboxx.app)
 - [@zuyuxxyz](https://x.com/zuyuxxyz)

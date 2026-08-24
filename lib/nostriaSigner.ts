@@ -70,7 +70,7 @@ const buildAuthEvent = (): NostrEventTemplate => ({
   created_at: Math.floor(Date.now() / 1000),
   kind: 27235,
   tags: [
-    ['client', 'BBOX'],
+    ['client', 'BBOXX'],
     ['challenge', `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`],
   ],
   content: JSON.stringify({

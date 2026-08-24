@@ -1,14 +1,14 @@
-## “Swap through Bitflow” inside BBOX
+## “Swap through Bitflow” inside BBOXX
 
-The feature would let users acquire the asset required by a Bitcoin/Stacks application **without leaving its BBOX page**.
+The feature would let users acquire the asset required by a Bitcoin/Stacks application **without leaving its BBOXX page**.
 
 For example:
 
-> A user wants to fund an app with sBTC but currently holds STX. BBOX requests a Bitflow quote, shows the route, opens the wallet transaction, and swaps STX → sBTC. Once confirmed, BBOX enables the funding action.
+> A user wants to fund an app with sBTC but currently holds STX. BBOXX requests a Bitflow quote, shows the route, opens the wallet transaction, and swaps STX → sBTC. Once confirmed, BBOXX enables the funding action.
 
 Bitflow’s SDK already exposes the main pieces needed: token discovery, available swap pairs, route discovery, quotes, swap parameters, post-conditions and execution through `@stacks/connect`. ([BitFlow Documentation][1])
 
-# 1. Where it appears in BBOX
+# 1. Where it appears in BBOXX
 
 Add the integration to each application detail page:
 
@@ -33,9 +33,9 @@ The button could appear when:
 * The app has a funding campaign denominated in sBTC, STX or a stablecoin.
 * The user does not hold enough of the required asset.
 * The app defines a preferred payment asset.
-* BBOX detects a relevant Bitflow route.
+* BBOXX detects a relevant Bitflow route.
 
-## Strongest BBOX use case
+## Strongest BBOXX use case
 
 The highest-value version is not a generic exchange widget. It is:
 
@@ -50,7 +50,7 @@ sBTC → app token → Access service
 STX → stablecoin → Purchase product
 ```
 
-This connects Bitflow liquidity directly to BBOX’s app-distribution and crowdfunding layer.
+This connects Bitflow liquidity directly to BBOXX’s app-distribution and crowdfunding layer.
 
 # 2. User flow
 
@@ -69,9 +69,9 @@ The app manifest indicates that it accepts sBTC:
 }
 ```
 
-## Step 2: BBOX checks the wallet
+## Step 2: BBOXX checks the wallet
 
-BBOX reads the connected wallet’s available balances:
+BBOXX reads the connected wallet’s available balances:
 
 ```text
 STX:   420
@@ -110,7 +110,7 @@ Provided by Bitflow
 
 Bitflow can also identify multi-hop routes where no direct pair exists. Its aggregator searches connected liquidity sources and can execute routed swaps within one Stacks transaction. ([BitFlow Documentation][2])
 
-## Step 4: BBOX shows the quote
+## Step 4: BBOXX shows the quote
 
 Before asking for a wallet signature, display:
 
@@ -135,7 +135,7 @@ Bitflow Aggregator
 
 ## Step 5: Execute the swap
 
-BBOX passes the selected route, amount, wallet address and slippage tolerance to Bitflow.
+BBOXX passes the selected route, amount, wallet address and slippage tolerance to Bitflow.
 
 The SDK can either:
 
@@ -166,13 +166,13 @@ Your balance: 0.00043 sBTC
 # 3. MVP architecture
 
 ```text
-BBOX application page
+BBOXX application page
         │
         ├── Wallet state
         │   ├── Connected address
         │   └── Token balances
         │
-        ├── BBOX Bitflow adapter
+        ├── BBOXX Bitflow adapter
         │   ├── Token discovery
         │   ├── Route discovery
         │   ├── Quote normalization
@@ -190,9 +190,9 @@ BBOX application page
             └── Sign and broadcast
 ```
 
-Bitflow currently documents `@bitflowlabs/core-sdk` as the npm package. Its public endpoints can be used without a key under the documented default limit of 500 requests per minute per IP; BBOX could request higher limits as usage grows. ([BitFlow Documentation][1])
+Bitflow currently documents `@bitflowlabs/core-sdk` as the npm package. Its public endpoints can be used without a key under the documented default limit of 500 requests per minute per IP; BBOXX could request higher limits as usage grows. ([BitFlow Documentation][1])
 
-# 4. BBOX adapter
+# 4. BBOXX adapter
 
 Avoid calling the SDK directly from UI components. Create a separate adapter:
 
@@ -242,7 +242,7 @@ src/
 │       └── types.ts
 ```
 
-This keeps BBOX capable of integrating another liquidity provider later without rewriting the product interface.
+This keeps BBOXX capable of integrating another liquidity provider later without rewriting the product interface.
 
 # 5. Bitflow service skeleton
 
@@ -353,12 +353,12 @@ The MVP should treat swapping and funding as separate operations:
 
 ```text
 Transaction 1: STX → sBTC through Bitflow
-Transaction 2: sBTC → BBOX crowdfunding contract
+Transaction 2: sBTC → BBOXX crowdfunding contract
 ```
 
 Advantages:
 
-* No BBOX smart-contract changes.
+* No BBOXX smart-contract changes.
 * Easier wallet debugging.
 * Easier recovery if the second transaction fails.
 * Lower integration risk.
@@ -377,16 +377,16 @@ Bitflow swap
   ↓
 sBTC
   ↓
-BBOX contribution or purchase
+BBOXX contribution or purchase
 ```
 
 Ideally, this would happen as a composed contract flow so that the swap and final action succeed or fail together.
 
-However, whether Bitflow’s current router contracts allow this kind of third-party contract composition must be confirmed with the Bitflow team. Do not assume that transaction parameters generated for a normal wallet swap can automatically forward the output into a BBOX contract.
+However, whether Bitflow’s current router contracts allow this kind of third-party contract composition must be confirmed with the Bitflow team. Do not assume that transaction parameters generated for a normal wallet swap can automatically forward the output into a BBOXX contract.
 
 # 8. App manifest extension
 
-BBOX apps could declare payment requirements:
+BBOXX apps could declare payment requirements:
 
 ```ts
 type AppPaymentConfig = {
@@ -420,7 +420,7 @@ Example:
 }
 ```
 
-BBOX would use this metadata to generate contextual text:
+BBOXX would use this metadata to generate contextual text:
 
 ```text
 Get sBTC to fund this project
@@ -432,11 +432,11 @@ Acquire the asset needed to continue
 
 The Bitflow response should be treated as transaction-building input, not blindly trusted UI data.
 
-Before opening the wallet, BBOX should verify:
+Before opening the wallet, BBOXX should verify:
 
 * Input and output token IDs match the user’s selection.
 * Token contract addresses are allowlisted.
-* Token decimals match BBOX’s local registry.
+* Token decimals match BBOXX’s local registry.
 * Sender address matches the connected wallet.
 * Input amount has not changed.
 * Minimum output matches the displayed slippage.
@@ -487,7 +487,7 @@ Review the updated quote before continuing.
 
 Never automatically submit a changed route after the user has already reviewed the transaction.
 
-# 11. BBOX-specific opportunities
+# 11. BBOXX-specific opportunities
 
 ## Crowdfunding conversion
 
@@ -496,7 +496,7 @@ Allow users to fund every campaign using any Bitflow-supported input asset:
 ```text
 Campaign requests: sBTC
 User owns: STX
-BBOX action: Swap STX → sBTC
+BBOXX action: Swap STX → sBTC
 Final action: Contribute sBTC
 ```
 
@@ -512,7 +512,7 @@ View available liquidity
 Open the app with acquired token
 ```
 
-BBOX should not present this as investment advice. It should identify the token contract, route and liquidity source clearly.
+BBOXX should not present this as investment advice. It should identify the token contract, route and liquidity source clearly.
 
 ## “Required to use” actions
 
@@ -529,7 +529,7 @@ The swap widget can be preconfigured from that requirement rather than making th
 
 # 12. Analytics for Bitflow
 
-BBOX could give Bitflow useful integration metrics without collecting wallet identities:
+BBOXX could give Bitflow useful integration metrics without collecting wallet identities:
 
 ```text
 swap_widget_opened
@@ -544,7 +544,7 @@ post_swap_action_completed
 
 Useful aggregate metrics:
 
-* Swap volume initiated from BBOX.
+* Swap volume initiated from BBOXX.
 * Most requested token pairs.
 * Quote-to-sign conversion rate.
 * Sign-to-confirmation rate.
@@ -575,7 +575,7 @@ A focused contribution proposal could include:
 * Track pending and confirmed state.
 * Refresh token balances.
 
-### Milestone 3 — BBOX contextual actions
+### Milestone 3 — BBOXX contextual actions
 
 * App manifest payment metadata.
 * “Get sBTC to fund” flow.
@@ -585,13 +585,13 @@ A focused contribution proposal could include:
 
 # Recommended pitch
 
-> **BBOX proposes an embedded Bitflow integration that allows users to acquire the token required to fund, purchase from or interact with a Bitcoin application directly from its app page. The initial implementation would integrate Bitflow’s routing, quote and swap-execution SDK with Leather and Xverse, validate generated transaction parameters and post-conditions, and connect confirmed swaps to BBOX crowdfunding and application payment actions.**
+> **BBOXX proposes an embedded Bitflow integration that allows users to acquire the token required to fund, purchase from or interact with a Bitcoin application directly from its app page. The initial implementation would integrate Bitflow’s routing, quote and swap-execution SDK with Leather and Xverse, validate generated transaction parameters and post-conditions, and connect confirmed swaps to BBOXX crowdfunding and application payment actions.**
 
 The key value proposition is:
 
 ```text
 Bitflow supplies liquidity.
-BBOX supplies application discovery and user intent.
+BBOXX supplies application discovery and user intent.
 Together, users move directly from discovering an app
 to acquiring the asset required to use it.
 ```

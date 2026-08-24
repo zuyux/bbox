@@ -291,7 +291,7 @@ export function FundPublisherButton({ appName, publisherName, publisherAddress }
 											</p>
 											<p className="text-xs text-muted-foreground">
 												{activeMethod === 'extension' && (currentAddress ? `Address ${currentAddress.slice(0, 6)}…${currentAddress.slice(-4)}` : 'Awaiting address')}
-												{activeMethod === 'internal' && 'Enter your password on continue to sign with your BBOX wallet.'}
+												{activeMethod === 'internal' && 'Enter your password on continue to sign with your BBOXX wallet.'}
 												{!activeMethod && 'Connect a wallet extension or set up an encrypted wallet in Settings.'}
 											</p>
 										</div>

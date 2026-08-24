@@ -45,7 +45,7 @@ const lacquer = Lacquer({
 });
 
 const socialLocales = { en: 'en_US', es: 'es_ES', pt: 'pt_BR' } as const;
-const socialCoverUrl = 'https://bbox.lol/bbox-cover.png';
+const socialCoverUrl = 'https://bboxx.app/bbox-cover.png';
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -62,7 +62,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: seo.title,
     description: seo.description,
     keywords: seo.keywords,
-    applicationName: 'BBOX',
+    applicationName: 'BBOXX',
     alternates: {
       canonical: localizedPath,
       languages: {
@@ -74,7 +74,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: 'website',
-      siteName: 'BBOX',
+      siteName: 'BBOXX',
       title: seo.title,
       description: seo.description,
       url: localizedPath,
@@ -84,7 +84,7 @@ export async function generateMetadata(): Promise<Metadata> {
         url: socialCoverUrl,
         width: 1536,
         height: 1024,
-        alt: 'BBOX — Open App Store for Verified Software',
+        alt: 'BBOXX — Open App Store for Verified Software',
       }],
     },
     twitter: {
@@ -99,7 +99,7 @@ export async function generateMetadata(): Promise<Metadata> {
       apple: '/apple-touch-icon.png',
     },
     manifest: '/site.webmanifest',
-    appleWebApp: { capable: true, statusBarStyle: 'default', title: 'BBOX' },
+    appleWebApp: { capable: true, statusBarStyle: 'default', title: 'BBOXX' },
     formatDetection: { telephone: false, date: false, address: false, email: false, url: false },
   };
 }

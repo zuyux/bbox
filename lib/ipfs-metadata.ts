@@ -2,7 +2,7 @@ import { getIPFSUrl } from './pinataUpload';
 import { fetchJsonWithRetry } from './externalApi';
 
 /**
- * IPFS Metadata Upload Utilities for BBOX App Submissions
+ * IPFS Metadata Upload Utilities for BBOXX App Submissions
  * Handles uploading app metadata JSON to IPFS via Pinata
  */
 

@@ -1,8 +1,8 @@
-# BBOX Onboarding Flow Documentation
+# BBOXX Onboarding Flow Documentation
 
 ## Overview
 
-BBOX is a Bitcoin app marketplace with multi-chain wallet support (Stacks, Bitcoin, Rootstock, Liquid). The onboarding experience is designed to support multiple user types: new users creating their first wallet, existing wallet holders, and users connecting existing wallets via email or hardware wallet extensions.
+BBOXX is a Bitcoin app marketplace with multi-chain wallet support (Stacks, Bitcoin, Rootstock, Liquid). The onboarding experience is designed to support multiple user types: new users creating their first wallet, existing wallet holders, and users connecting existing wallets via email or hardware wallet extensions.
 
 ---
 
@@ -275,7 +275,7 @@ graph TD
 
 ```mermaid
 graph TD
-    A["🌐 bbox.com"]
+    A["🌐 bboxx.app"]
     A -->|"First Time"| B["Connect Modal"]
     A -->|"Returning User"| B
     
@@ -573,7 +573,7 @@ Expected Improvement: 60% smaller uploads
 
 ```mermaid
 graph TD
-    A["🌐 bbox.com"] --> B["Quick Assessment<br/>Do you have a wallet?"]
+    A["🌐 bboxx.app"] --> B["Quick Assessment<br/>Do you have a wallet?"]
     
     B -->|"Yes - Extension"| C1["Connect Leather/Xverse"]
     B -->|"Yes - Other"| C2["Import Seed Phrase"]
@@ -590,7 +590,7 @@ graph TD
     E --> E1["Profile Preview"]
     E1 --> F{"Save for now?"}
     
-    F -->|"Yes"| G["✅ Welcome to BBOX!"]
+    F -->|"Yes"| G["✅ Welcome to BBOXX!"]
     F -->|"Add more"| H["Full Profile Setup<br/>Optional Details"]
     
     H --> H1["Bio & Skills"]
@@ -671,7 +671,7 @@ Secondary Metrics:
 
 ## Summary
 
-The current BBOX onboarding flow is functional but has opportunities for optimization:
+The current BBOXX onboarding flow is functional but has opportunities for optimization:
 
 ✅ **Strengths:**
 - Multiple connection options

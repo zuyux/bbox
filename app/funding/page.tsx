@@ -505,7 +505,7 @@ export default function FundingDashboardPage() {
               <LocalizedText>Submit research and open-source projects for community funding.
             </LocalizedText></h1>
             <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-              <LocalizedText>BBOX helps researchers and developers present useful work to funders before they reach the submission form. Projects can be applications or specific research related to open-source software, privacy, cybersecurity, OSINT, Bitcoin, independent infrastructure, or adjacent public-good technology.
+              <LocalizedText>BBOXX helps researchers and developers present useful work to funders before they reach the submission form. Projects can be applications or specific research related to open-source software, privacy, cybersecurity, OSINT, Bitcoin, independent infrastructure, or adjacent public-good technology.
             </LocalizedText></p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer">

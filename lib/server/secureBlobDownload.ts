@@ -51,7 +51,7 @@ export async function downloadVerifiedBlob(args: {
     const timeout = setTimeout(() => controller.abort(), 30_000);
     let response: Response;
     try {
-      response = await fetch(url, { redirect: 'manual', signal: controller.signal, headers: { 'User-Agent': 'BBOX-IPFS-Processor/1.0' } });
+      response = await fetch(url, { redirect: 'manual', signal: controller.signal, headers: { 'User-Agent': 'BBOXX-IPFS-Processor/1.0' } });
     } finally { clearTimeout(timeout); }
 
     if (response.status >= 300 && response.status < 400) {

@@ -4,8 +4,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | BBOX',
-  description: 'How BBOX collects, uses, shares, and protects information.',
+  title: 'Privacy Policy | BBOXX',
+  description: 'How BBOXX collects, uses, shares, and protects information.',
 };
 
 const sections = [
@@ -13,12 +13,12 @@ const sections = [
     title: 'Information we collect',
     content: (
       <>
-        <p><LocalizedText>Depending on how you use BBOX, we may collect:</LocalizedText></p>
+        <p><LocalizedText>Depending on how you use BBOXX, we may collect:</LocalizedText></p>
         <ul>
           <li>
             <strong><LocalizedText>Account and wallet information:</LocalizedText></strong> <LocalizedText>email address, public wallet addresses,
             wallet type, email-verification records, and authentication data. If you create a
-            BBOX-managed wallet, we store an encrypted wallet backup and the technical information
+            BBOXX-managed wallet, we store an encrypted wallet backup and the technical information
             needed to restore it.
           </LocalizedText></li>
           <li>
@@ -38,7 +38,7 @@ const sections = [
         </ul>
         <p>
           <LocalizedText>Please do not send us a seed phrase or private key. Wallet extensions sign transactions
-          without intentionally sharing those secrets with BBOX.
+          without intentionally sharing those secrets with BBOXX.
         </LocalizedText></p>
       </>
     ),
@@ -49,8 +49,8 @@ const sections = [
       <>
         <p><LocalizedText>We use information to:</LocalizedText></p>
         <ul>
-          <li><LocalizedText>provide, secure, maintain, and improve BBOX;</LocalizedText></li>
-          <li><LocalizedText>create accounts, verify emails, and restore encrypted BBOX-managed wallets;</LocalizedText></li>
+          <li><LocalizedText>provide, secure, maintain, and improve BBOXX;</LocalizedText></li>
+          <li><LocalizedText>create accounts, verify emails, and restore encrypted BBOXX-managed wallets;</LocalizedText></li>
           <li><LocalizedText>publish profiles, app records, reviews, and other content you ask us to publish;</LocalizedText></li>
           <li><LocalizedText>process submissions, ownership claims, funding activity, and support requests;</LocalizedText></li>
           <li><LocalizedText>detect fraud, abuse, security incidents, and violations of our terms; and</LocalizedText></li>
@@ -63,10 +63,10 @@ const sections = [
     title: 'Public and decentralized data',
     content: (
       <p>
-        <LocalizedText>BBOX is an open software registry. Public wallet addresses, public profiles, listings,
+        <LocalizedText>BBOXX is an open software registry. Public wallet addresses, public profiles, listings,
         reviews, comments, transaction data, and content published to Bitcoin, other public
         blockchains, or IPFS may be visible worldwide. Blockchain and distributed-storage records
-        may be permanent and may not be removable by BBOX. Do not publish personal information you
+        may be permanent and may not be removable by BBOXX. Do not publish personal information you
         want to keep private.
       </LocalizedText></p>
     ),
@@ -95,13 +95,13 @@ const sections = [
       <>
         <p>
           <LocalizedText>Information may be processed in countries other than your own. We retain it for as long
-          as needed to provide BBOX, meet legal and security obligations, resolve disputes, and
+          as needed to provide BBOXX, meet legal and security obligations, resolve disputes, and
           enforce agreements. Retention periods vary by the type of record. Public blockchain and
           IPFS data may remain available indefinitely.
         </LocalizedText></p>
         <p>
           <LocalizedText>We use reasonable administrative and technical safeguards, including encryption for
-          BBOX-managed wallet backups. No online system is completely secure. You are responsible
+          BBOXX-managed wallet backups. No online system is completely secure. You are responsible
           for protecting your password, devices, wallet credentials, and recovery phrase.
         </LocalizedText></p>
       </>
@@ -113,7 +113,7 @@ const sections = [
       <>
         <p>
           <LocalizedText>You can edit profile fields and communication preferences in your settings, disconnect
-          your wallet, or clear BBOX browser data through your browser. Depending on where you live,
+          your wallet, or clear BBOXX browser data through your browser. Depending on where you live,
           you may also have rights to access, correct, delete, restrict, or receive a copy of your
           personal information, or object to certain processing.
         </LocalizedText></p>
@@ -129,7 +129,7 @@ const sections = [
     title: 'Children',
     content: (
       <p>
-        <LocalizedText>BBOX is not directed to children under 13, and we do not knowingly collect their personal
+        <LocalizedText>BBOXX is not directed to children under 13, and we do not knowingly collect their personal
         information. If you believe a child has provided personal information, please contact us.
       </LocalizedText></p>
     ),
@@ -138,7 +138,7 @@ const sections = [
     title: 'Changes to this policy',
     content: (
       <p>
-        <LocalizedText>We may update this policy as BBOX evolves. We will post the revised version here and update
+        <LocalizedText>We may update this policy as BBOXX evolves. We will post the revised version here and update
         the effective date. Material changes may also be announced through the service.
       </LocalizedText></p>
     ),
@@ -154,11 +154,11 @@ export default function PrivacyPolicyPage() {
           <h1 className="title text-4xl font-bold tracking-tight sm:text-5xl"><LocalizedText>Privacy Policy</LocalizedText></h1>
           <p className="mt-4 text-sm text-muted-foreground"><LocalizedText>Effective July 9, 2026</LocalizedText></p>
           <p className="mt-6 text-base leading-7 text-muted-foreground">
-            <LocalizedText>This policy explains how BBOX, developed and maintained by</LocalizedText>{' '}
+            <LocalizedText>This policy explains how BBOXX, developed and maintained by</LocalizedText>{' '}
             <Link className="text-foreground underline underline-offset-4" href="https://zuyux.org">
               <LocalizedText>zuyux
             </LocalizedText></Link>
-            <LocalizedText>, handles information when you use bbox.lol and related BBOX services.
+            <LocalizedText>, handles information when you use bboxx.app and related BBOXX services.
           </LocalizedText></p>
         </header>
 
@@ -187,7 +187,7 @@ export default function PrivacyPolicyPage() {
                 className="font-medium text-foreground underline underline-offset-4"
                 href="https://github.com/zuyux/bbox/issues"
               >
-                <LocalizedText>BBOX GitHub repository
+                <LocalizedText>BBOXX GitHub repository
               </LocalizedText></Link>
               .
             </p>

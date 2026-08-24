@@ -918,7 +918,7 @@ export default function WalletPage() {
         liquidAddress,
         nostrPublicKey,
         address: address || walletAddress,
-        label: `BBOX Wallet - ${trimmedEmail}`,
+        label: `BBOXX Wallet - ${trimmedEmail}`,
       };
 
       await createEncryptedWallet(walletData, password);

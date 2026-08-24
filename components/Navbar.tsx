@@ -15,13 +15,13 @@ export const Navbar = () => {
             <Link href="/" className="flex items-center gap-2 no-underline hover:no-underline" aria-label={messages.nav.home}>
               <Image
                 src="/bbox-xs.png"
-                alt="BBOX"
+                alt="BBOXX"
                 width={27}
                 height={27}
                 className="object-contain"
                 style={{ width: 'auto', height: 'auto' }}
               />
-              <span className="title mt-1 ml-1 text-3xl text-accent dark:text-white">BBOX</span>
+              <span className="title mt-1 ml-1 text-3xl text-accent dark:text-white">BBOXX</span>
               <span className="mt-1 rounded-full border border-foreground/20 bg-foreground/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-foreground/70">
                 Beta
               </span>

@@ -18,7 +18,7 @@ const slides = [
   {
     icon: ShieldCheck,
     title: 'WELCOME ABOARD',
-    body: 'BBOX is a universal registry for verified software. Discover open-source apps with clearer metadata, links, reviews, and trust signals in one place.',
+    body: 'BBOXX is a universal registry for verified software. Discover open-source apps with clearer metadata, links, reviews, and trust signals in one place.',
   },
   {
     icon: Boxes,

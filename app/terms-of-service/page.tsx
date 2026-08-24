@@ -3,20 +3,20 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | BBOX',
-  description: 'The terms that apply when you access or use BBOX.',
+  title: 'Terms of Service | BBOXX',
+  description: 'The terms that apply when you access or use BBOXX.',
 };
 
 const sections = [
   {
-    title: 'Using BBOX',
+    title: 'Using BBOXX',
     content: (
       <>
         <p>
-          <LocalizedText>You may use BBOX only if you can legally enter into this agreement and your use is permitted by applicable law. If you use BBOX for an organization, you represent that you have authority to accept these terms for it.</LocalizedText>
+          <LocalizedText>You may use BBOXX only if you can legally enter into this agreement and your use is permitted by applicable law. If you use BBOXX for an organization, you represent that you have authority to accept these terms for it.</LocalizedText>
         </p>
         <p>
-          <LocalizedText>You are responsible for your devices, internet access, wallet, account credentials, recovery phrase, and all activity performed through them. Keep them secure and notify us if you believe your account or BBOX-managed wallet has been compromised.</LocalizedText>
+          <LocalizedText>You are responsible for your devices, internet access, wallet, account credentials, recovery phrase, and all activity performed through them. Keep them secure and notify us if you believe your account or BBOXX-managed wallet has been compromised.</LocalizedText>
         </p>
       </>
     ),
@@ -26,10 +26,10 @@ const sections = [
     content: (
       <>
         <p>
-          <LocalizedText>BBOX is a discovery and registry service for open-source software. A listing, verification mark, review, ranking, link, or other information on BBOX is not an endorsement, warranty, security audit, or promise that an app is accurate, lawful, available, or safe.</LocalizedText>
+          <LocalizedText>BBOXX is a discovery and registry service for open-source software. A listing, verification mark, review, ranking, link, or other information on BBOXX is not an endorsement, warranty, security audit, or promise that an app is accurate, lawful, available, or safe.</LocalizedText>
         </p>
         <p>
-          <LocalizedText>Apps, wallets, websites, protocols, repositories, and other services reached through BBOX are operated by third parties under their own terms and privacy practices. You are responsible for evaluating them before installing software, connecting a wallet, signing a message or transaction, or transferring funds.</LocalizedText>
+          <LocalizedText>Apps, wallets, websites, protocols, repositories, and other services reached through BBOXX are operated by third parties under their own terms and privacy practices. You are responsible for evaluating them before installing software, connecting a wallet, signing a message or transaction, or transferring funds.</LocalizedText>
         </p>
       </>
     ),
@@ -39,13 +39,13 @@ const sections = [
     content: (
       <>
         <p>
-          <LocalizedText>Blockchain transactions are generally irreversible. Network fees, confirmation times, protocol behavior, asset values, and third-party wallet services are outside BBOX&apos;s control. Review every transaction carefully before approving it.</LocalizedText>
+          <LocalizedText>Blockchain transactions are generally irreversible. Network fees, confirmation times, protocol behavior, asset values, and third-party wallet services are outside BBOXX&apos;s control. Review every transaction carefully before approving it.</LocalizedText>
         </p>
         <p>
-          <LocalizedText>BBOX does not provide financial, investment, legal, or tax advice and does not act as your broker, custodian, fiduciary, or financial institution. You assume the risks associated with wallets, digital assets, smart contracts, and decentralized networks.</LocalizedText>
+          <LocalizedText>BBOXX does not provide financial, investment, legal, or tax advice and does not act as your broker, custodian, fiduciary, or financial institution. You assume the risks associated with wallets, digital assets, smart contracts, and decentralized networks.</LocalizedText>
         </p>
         <p>
-          <LocalizedText>Never share a private key or recovery phrase with us. If BBOX creates an encrypted wallet backup for you, you remain responsible for preserving the information and access methods needed to recover it.</LocalizedText>
+          <LocalizedText>Never share a private key or recovery phrase with us. If BBOXX creates an encrypted wallet backup for you, you remain responsible for preserving the information and access methods needed to recover it.</LocalizedText>
         </p>
       </>
     ),
@@ -55,13 +55,13 @@ const sections = [
     content: (
       <>
         <p>
-          <LocalizedText>You retain ownership of content you submit. You give BBOX a worldwide, non-exclusive, royalty-free license to host, store, reproduce, adapt for formatting or accessibility, publish, display, and distribute that content as needed to operate, promote, and improve the service.</LocalizedText>
+          <LocalizedText>You retain ownership of content you submit. You give BBOXX a worldwide, non-exclusive, royalty-free license to host, store, reproduce, adapt for formatting or accessibility, publish, display, and distribute that content as needed to operate, promote, and improve the service.</LocalizedText>
         </p>
         <p>
           <LocalizedText>You represent that you have the rights needed to submit the content, that it is accurate to the best of your knowledge, and that it does not violate law or another person&apos;s rights. You are responsible for app listings, ownership claims, reviews, comments, links, images, and other material you provide.</LocalizedText>
         </p>
         <p>
-          <LocalizedText>Some submissions may be written to Bitcoin, another public blockchain, or IPFS. Those records may be public, permanent, and impossible for BBOX to edit or remove.</LocalizedText>
+          <LocalizedText>Some submissions may be written to Bitcoin, another public blockchain, or IPFS. Those records may be public, permanent, and impossible for BBOXX to edit or remove.</LocalizedText>
         </p>
       </>
     ),
@@ -70,7 +70,7 @@ const sections = [
     title: 'Acceptable use',
     content: (
       <>
-        <p><LocalizedText>You must not use BBOX to:</LocalizedText></p>
+        <p><LocalizedText>You must not use BBOXX to:</LocalizedText></p>
         <ul>
           <li><LocalizedText>break the law, infringe intellectual-property or privacy rights, or facilitate fraud;</LocalizedText></li>
           <li><LocalizedText>publish malware, deceptive listings, false ownership claims, manipulated reviews, or harmful content;</LocalizedText></li>
@@ -88,15 +88,15 @@ const sections = [
     title: 'Funding and fees',
     content: (
       <p>
-        <LocalizedText>Funding opportunities, grants, tips, swaps, and other transfers shown or initiated through BBOX may depend on third-party providers and blockchain networks. Unless we expressly say otherwise, BBOX is not a party to agreements between funders, developers, or other users and does not guarantee that a project, payment, reward, or funding outcome will be completed.</LocalizedText>
+        <LocalizedText>Funding opportunities, grants, tips, swaps, and other transfers shown or initiated through BBOXX may depend on third-party providers and blockchain networks. Unless we expressly say otherwise, BBOXX is not a party to agreements between funders, developers, or other users and does not guarantee that a project, payment, reward, or funding outcome will be completed.</LocalizedText>
       </p>
     ),
   },
   {
-    title: 'BBOX intellectual property',
+    title: 'BBOXX intellectual property',
     content: (
       <p>
-        <LocalizedText>BBOX software may be made available under the license in its source-code repository. These terms do not change that license. The BBOX name, branding, site design, and service content remain protected by applicable intellectual-property laws, except for material owned by users or third parties.</LocalizedText>
+        <LocalizedText>BBOXX software may be made available under the license in its source-code repository. These terms do not change that license. The BBOXX name, branding, site design, and service content remain protected by applicable intellectual-property laws, except for material owned by users or third parties.</LocalizedText>
       </p>
     ),
   },
@@ -104,7 +104,7 @@ const sections = [
     title: 'Service availability and changes',
     content: (
       <p>
-        <LocalizedText>We may change, suspend, or discontinue any part of BBOX, and the service may experience errors, interruptions, data loss, or security incidents. We may update these terms by posting a revised version and changing the effective date. Continued use after an update means you accept the revised terms.</LocalizedText>
+        <LocalizedText>We may change, suspend, or discontinue any part of BBOXX, and the service may experience errors, interruptions, data loss, or security incidents. We may update these terms by posting a revised version and changing the effective date. Continued use after an update means you accept the revised terms.</LocalizedText>
       </p>
     ),
   },
@@ -112,7 +112,7 @@ const sections = [
     title: 'Disclaimers',
     content: (
       <p>
-        <LocalizedText>To the fullest extent permitted by law, BBOX is provided “as is” and “as available,” without warranties of any kind, whether express, implied, or statutory, including warranties of merchantability, fitness for a particular purpose, title, non-infringement, security, accuracy, or uninterrupted availability.</LocalizedText>
+        <LocalizedText>To the fullest extent permitted by law, BBOXX is provided “as is” and “as available,” without warranties of any kind, whether express, implied, or statutory, including warranties of merchantability, fitness for a particular purpose, title, non-infringement, security, accuracy, or uninterrupted availability.</LocalizedText>
       </p>
     ),
   },
@@ -120,7 +120,7 @@ const sections = [
     title: 'Limitation of liability',
     content: (
       <p>
-        <LocalizedText>To the fullest extent permitted by law, BBOX and its developers, maintainers, contributors, and service providers will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages, or for lost profits, data, goodwill, assets, opportunities, or business interruption arising from your use of or inability to use BBOX. Where liability cannot be excluded, it is limited to the greater of US$100 or the amount you paid BBOX during the twelve months before the event giving rise to the claim.</LocalizedText>
+        <LocalizedText>To the fullest extent permitted by law, BBOXX and its developers, maintainers, contributors, and service providers will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages, or for lost profits, data, goodwill, assets, opportunities, or business interruption arising from your use of or inability to use BBOXX. Where liability cannot be excluded, it is limited to the greater of US$100 or the amount you paid BBOXX during the twelve months before the event giving rise to the claim.</LocalizedText>
       </p>
     ),
   },
@@ -128,7 +128,7 @@ const sections = [
     title: 'Indemnity',
     content: (
       <p>
-        <LocalizedText>To the extent permitted by law, you will defend, indemnify, and hold harmless BBOX and its developers, maintainers, and contributors from claims, losses, liabilities, and reasonable expenses arising from your content, your use of the service, your violation of these terms, or your violation of another person&apos;s rights.</LocalizedText>
+        <LocalizedText>To the extent permitted by law, you will defend, indemnify, and hold harmless BBOXX and its developers, maintainers, and contributors from claims, losses, liabilities, and reasonable expenses arising from your content, your use of the service, your violation of these terms, or your violation of another person&apos;s rights.</LocalizedText>
       </p>
     ),
   },
@@ -136,7 +136,7 @@ const sections = [
     title: 'General terms',
     content: (
       <p>
-        <LocalizedText>If any provision is unenforceable, it will be limited to the minimum extent necessary and the remaining provisions will continue in effect. A failure to enforce a provision is not a waiver. You may not transfer these terms without our consent; we may transfer them as part of a reorganization or transfer of BBOX. These terms, together with the Privacy Policy and any additional terms presented for a feature, are the entire agreement regarding your use of BBOX.</LocalizedText>
+        <LocalizedText>If any provision is unenforceable, it will be limited to the minimum extent necessary and the remaining provisions will continue in effect. A failure to enforce a provision is not a waiver. You may not transfer these terms without our consent; we may transfer them as part of a reorganization or transfer of BBOXX. These terms, together with the Privacy Policy and any additional terms presented for a feature, are the entire agreement regarding your use of BBOXX.</LocalizedText>
       </p>
     ),
   },
@@ -151,11 +151,11 @@ export default function TermsOfServicePage() {
           <h1 className="title text-4xl font-bold tracking-tight sm:text-5xl"><LocalizedText>Terms of Service</LocalizedText></h1>
           <p className="mt-4 text-sm text-muted-foreground"><LocalizedText>Effective July 22, 2026</LocalizedText></p>
           <p className="mt-6 text-base leading-7 text-muted-foreground">
-            <LocalizedText>These terms govern your access to and use of BBOX, developed and maintained by</LocalizedText>{' '}
+            <LocalizedText>These terms govern your access to and use of BBOXX, developed and maintained by</LocalizedText>{' '}
             <Link className="text-foreground underline underline-offset-4" href="https://zuyux.org">
               <LocalizedText>zuyux</LocalizedText>
             </Link>
-            <LocalizedText>. By accessing or using bbox.lol or related BBOX services, you agree to these terms. If you do not agree, do not use BBOX.</LocalizedText>
+            <LocalizedText>. By accessing or using bboxx.app or related BBOXX services, you agree to these terms. If you do not agree, do not use BBOXX.</LocalizedText>
           </p>
         </header>
 
@@ -178,7 +178,7 @@ export default function TermsOfServicePage() {
               </Link>
               <LocalizedText>. You can also report an issue through the</LocalizedText>{' '}
               <Link className="font-medium text-foreground underline underline-offset-4" href="https://github.com/zuyux/bbox/issues">
-                <LocalizedText>BBOX GitHub repository</LocalizedText>
+                <LocalizedText>BBOXX GitHub repository</LocalizedText>
               </Link>
               .
             </p>

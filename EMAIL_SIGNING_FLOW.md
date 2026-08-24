@@ -1,10 +1,10 @@
 # Email Signing Encryption Flow
 
-This document explains how BBOX's Email Signing account flow protects wallet material and how it is restored for signing.
+This document explains how BBOXX's Email Signing account flow protects wallet material and how it is restored for signing.
 
 ## Purpose
 
-Email Signing lets a user create or restore a BBOX-managed wallet with an email address and password. The password is used as the wallet encryption passphrase. The email verification step proves control of the email address before the encrypted wallet backup is saved.
+Email Signing lets a user create or restore a BBOXX-managed wallet with an email address and password. The password is used as the wallet encryption passphrase. The email verification step proves control of the email address before the encrypted wallet backup is saved.
 
 ## Main Components
 

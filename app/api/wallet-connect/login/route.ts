@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
         encryptionSalt: data.encryption_salt,
         encryptionIv: data.encryption_iv,
         encryptionVersion: data.encryption_version ?? '1.0.0',
-        walletLabel: data.wallet_label ?? 'BBOX Wallet',
+        walletLabel: data.wallet_label ?? 'BBOXX Wallet',
         bitcoinAddress: data.bitcoin_address,
         rootstockAddress: data.rootstock_address,
         liquidAddress: data.liquid_address,

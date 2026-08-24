@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
       encryption_salt: salt,
       encryption_iv: iv,
       encryption_version: version || '1.0.0',
-      wallet_label: walletLabel || 'BBOX Wallet',
+      wallet_label: walletLabel || 'BBOXX Wallet',
       bitcoin_address: bitcoinAddress || null,
       rootstock_address: rootstockAddress || null,
       liquid_address: liquidAddress || null,

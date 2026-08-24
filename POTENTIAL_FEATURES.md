@@ -1,6 +1,6 @@
-# Potential New Features for BBOX
+# Potential New Features for BBOXX
 
-BBOX can grow into a discovery, reputation, and onboarding layer for the Stacks ecosystem. The next features should help three audiences at once: builders who need visibility, users who need trustworthy discovery, and funders who need clearer signals about project progress.
+BBOXX can grow into a discovery, reputation, and onboarding layer for the Stacks ecosystem. The next features should help three audiences at once: builders who need visibility, users who need trustworthy discovery, and funders who need clearer signals about project progress.
 
 ## 1. Builder Reputation Passport
 
@@ -27,7 +27,7 @@ Value:
 
 ## 2. Zero Authority DAO Sign-In
 
-Allow developers to sign into BBOX using Zero Authority DAO identity or reputation signals.
+Allow developers to sign into BBOXX using Zero Authority DAO identity or reputation signals.
 
 Potential elements:
 
@@ -39,7 +39,7 @@ Potential elements:
 
 Value:
 
-- Makes BBOX more trusted.
+- Makes BBOXX more trusted.
 - Connects builder identity to an existing Stacks community funding system.
 - Gives developers a stronger reason to create and maintain a profile.
 
@@ -60,7 +60,7 @@ Value:
 
 - Makes Stacks less intimidating for new users.
 - Helps Bitcoiners discover BTCFi, sBTC, and Stacks apps.
-- Turns BBOX into an onboarding surface, not only a directory.
+- Turns BBOXX into an onboarding surface, not only a directory.
 
 ## 4. App Submission and Publishing Flow
 
@@ -80,7 +80,7 @@ Potential elements:
 Value:
 
 - Makes it easier for builders to list their projects.
-- Improves data quality across BBOX.
+- Improves data quality across BBOXX.
 - Helps users understand each app quickly.
 
 ## 5. Improved Funding Dashboard
@@ -225,7 +225,7 @@ Potential elements:
 
 Value:
 
-- Turns BBOX into a collaboration layer.
+- Turns BBOXX into a collaboration layer.
 - Helps users participate even if they are not ready to fund.
 - Helps builders find support from the ecosystem.
 
@@ -304,6 +304,6 @@ Potential elements:
 
 Value:
 
-- Makes BBOX easier to adopt.
+- Makes BBOXX easier to adopt.
 - Reduces support friction.
 - Helps the project become a reliable public good.

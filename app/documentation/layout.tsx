@@ -17,7 +17,7 @@ export default async function DocumentationLayout({ children }: { children: Reac
         title: (
           <span className="flex items-center gap-2 font-semibold text-foreground">
             <Image src="/bbox-xs.png" alt="" width={20} height={20} aria-hidden="true" />
-            BBOX Docs
+            BBOXX Docs
           </span>
         ),
         url: '/documentation',

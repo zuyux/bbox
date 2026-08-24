@@ -698,7 +698,7 @@ export default function PublishPage() {
             <div>
               <h1 className="title text-3xl font-bold mb-2"><LocalizedText>Submit Your R&amp;D Project</LocalizedText></h1>
               <p className="text-muted-foreground">
-                <LocalizedText>Submit an application or focused research project to the BBOX registry. Open-source, privacy, cybersecurity, OSINT, Bitcoin, developer, safe AI, and off-chain public-good work are welcome.
+                <LocalizedText>Submit an application or focused research project to the BBOXX registry. Open-source, privacy, cybersecurity, OSINT, Bitcoin, developer, safe AI, and off-chain public-good work are welcome.
               </LocalizedText></p>
             </div>
             <Button
@@ -1442,7 +1442,7 @@ export default function PublishPage() {
                           <LocalizedText>Clarity contract on Stacks
                         </LocalizedText></Label>
                         <p className="text-xs text-muted-foreground">
-                          <LocalizedText>Calls the BBOX registry contract on Stacks with the IPFS metadata CID. The contract keeps compact
+                          <LocalizedText>Calls the BBOXX registry contract on Stacks with the IPFS metadata CID. The contract keeps compact
                           app state, charges the listing fee in sBTC, and uses STX for transaction gas.
                         </LocalizedText></p>
                       </div>

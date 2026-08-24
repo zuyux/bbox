@@ -25,6 +25,7 @@ import {
   Code, 
   Globe,
   Gamepad2,
+  MessageCircle,
   Loader2
 } from 'lucide-react';
 
@@ -36,6 +37,7 @@ const categoryIcons: Record<string, typeof Shield | string> = {
   Payment: Coins,
   Explorer: Globe,
   Social: Globe,
+  Messaging: MessageCircle,
   Networking: Globe,
   Identity: Shield,
   Infrastructure: Code,

@@ -23,6 +23,14 @@ type AdminEditPayload = {
   };
 };
 
+type AdminDeletePayload = {
+  action?: string;
+  address?: unknown;
+  timestamp?: unknown;
+  appId?: unknown;
+  appName?: unknown;
+};
+
 const normalizeHex = (value: string) => value.trim().replace(/^0x/i, '');
 
 const addressesMatchPublicKey = (address: string, publicKey: string) => {
@@ -128,6 +136,112 @@ const verifyAdminSignature = ({
     return { valid: false, error: 'Invalid admin signature', status: 401 };
   }
 };
+
+const verifyAdminDeleteSignature = ({
+  appId,
+  appName,
+  publisherAddress,
+  signature,
+  signedPayload,
+  publicKey,
+}: {
+  appId: string;
+  appName: string;
+  publisherAddress: string;
+  signature: string;
+  signedPayload: string;
+  publicKey: string;
+}) => {
+  let parsedPayload: AdminDeletePayload;
+  try {
+    parsedPayload = JSON.parse(signedPayload);
+  } catch {
+    return { valid: false, error: 'Invalid signed admin payload', status: 401 };
+  }
+
+  if (
+    parsedPayload.action !== 'bbox_admin_app_delete' ||
+    String(parsedPayload.appId ?? '').trim() !== appId ||
+    String(parsedPayload.appName ?? '') !== appName ||
+    String(parsedPayload.address ?? '').trim().toUpperCase() !== publisherAddress.toUpperCase()
+  ) {
+    return { valid: false, error: 'Signed payload does not match the app deletion', status: 401 };
+  }
+
+  const signedAt = Date.parse(String(parsedPayload.timestamp ?? ''));
+  if (!Number.isFinite(signedAt) || Math.abs(Date.now() - signedAt) > 5 * 60 * 1000) {
+    return { valid: false, error: 'Admin delete signature has expired', status: 401 };
+  }
+
+  const normalizedSignature = normalizeHex(signature);
+  const normalizedPublicKey = normalizeHex(publicKey);
+  try {
+    if (!addressesMatchPublicKey(publisherAddress, normalizedPublicKey)) {
+      return { valid: false, error: 'Public key does not match admin address', status: 401 };
+    }
+    const validSignature =
+      verifyMessageSignature({ signature: normalizedSignature, message: signedPayload, publicKey: normalizedPublicKey }) ||
+      verifyMessageSignatureRsv({ signature: normalizedSignature, message: signedPayload, publicKey: normalizedPublicKey });
+
+    return validSignature
+      ? { valid: true }
+      : { valid: false, error: 'Invalid admin signature', status: 401 };
+  } catch (error) {
+    console.error('Delete signature verification failed:', error);
+    return { valid: false, error: 'Invalid admin signature', status: 401 };
+  }
+};
+
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id: appId } = await context.params;
+  if (!appId) {
+    return NextResponse.json({ error: 'Missing app ID' }, { status: 400 });
+  }
+
+  const body = await request.json();
+  const appName = typeof body.app_name === 'string' ? body.app_name : '';
+  const signature = typeof body.signature === 'string' ? body.signature.trim() : '';
+  const signaturePayload = typeof body.signature_payload === 'string' ? body.signature_payload : '';
+  const signaturePublicKey = typeof body.signature_public_key === 'string' ? body.signature_public_key.trim() : '';
+  const publisherAddress = typeof body.publisher_address === 'string' ? body.publisher_address.trim() : '';
+
+  if (!appName || !signature || !signaturePayload || !signaturePublicKey || !isAdminAddress(publisherAddress)) {
+    return NextResponse.json({ error: 'Unauthorized admin delete request' }, { status: 403 });
+  }
+
+  const signatureCheck = verifyAdminDeleteSignature({
+    appId,
+    appName,
+    publisherAddress,
+    signature,
+    signedPayload: signaturePayload,
+    publicKey: signaturePublicKey,
+  });
+  if (!signatureCheck.valid) {
+    return NextResponse.json({ error: signatureCheck.error }, { status: signatureCheck.status });
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('bbox_apps')
+    .delete()
+    .eq('id', appId)
+    .eq('name', appName)
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    console.error('Supabase delete error:', error);
+    return NextResponse.json({ error: 'Database error: ' + error.message }, { status: 500 });
+  }
+  if (!data) {
+    return NextResponse.json({ error: 'App not found' }, { status: 404 });
+  }
+
+  return NextResponse.json({ success: true, id: data.id });
+}
 
 export async function PATCH(
   request: NextRequest,

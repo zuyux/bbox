@@ -27,8 +27,8 @@ import { getPersistedNetwork, type Network } from './network';
 import { getApiUrl } from './stacks-api';
 import { getSbtcAssetString, getSBTCContract } from './contracts';
 
-// BBOX Contract addresses per network
-const BBOX_CONTRACTS = {
+// BBOXX Contract addresses per network
+const BBOXX_CONTRACTS = {
   mainnet: 'SP000000000000000000002Q6VF78.bbox', // Update with actual mainnet address when deployed
   testnet: 'ST193GXQTNHVV9WSAPHAB89M6R9QSEXZKS3N9P3DZ.bbox-v2',
   devnet: 'ST193GXQTNHVV9WSAPHAB89M6R9QSEXZKS3N9P3DZ.bbox-v2',
@@ -56,7 +56,7 @@ export type ContractAppRecord = {
 
 export function getBboxContractAddress(): string {
   const network = getPersistedNetwork();
-  return BBOX_CONTRACTS[network] || BBOX_CONTRACTS.testnet;
+  return BBOXX_CONTRACTS[network] || BBOXX_CONTRACTS.testnet;
 }
 
 export function getStacksNetwork(): typeof STACKS_MAINNET | typeof STACKS_TESTNET {
@@ -360,7 +360,7 @@ export async function submitAppToContract(
     functionArgs: [stringAsciiCV(ipfsHash)],
     postConditions,
     appDetails: {
-      name: 'BBOX',
+      name: 'BBOXX',
       icon: typeof window !== 'undefined' ? `${window.location.origin}/bbox.png` : '',
     },
     onFinish,
@@ -557,7 +557,7 @@ export async function sendSbtcDonation(options: SendSbtcDonationOptions): Promis
     postConditionMode: PostConditionMode.Deny,
     postConditions: [donationPostCondition],
     appDetails: {
-      name: 'BBOX Funding',
+      name: 'BBOXX Funding',
       icon: typeof window !== 'undefined' ? `${window.location.origin}/bbox.png` : '',
     },
     onFinish: (data) => {
@@ -861,7 +861,7 @@ async function executeBboxContractCall(options: BboxContractCallOptions): Promis
   const { openContractCall } = await import('@stacks/connect');
 
   const fallbackAppDetails = appDetails ?? {
-    name: 'BBOX',
+    name: 'BBOXX',
     icon: typeof window !== 'undefined' ? `${window.location.origin}/bbox.png` : '',
   };
 

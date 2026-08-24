@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: DocumentationPageProps): Prom
   if (!page) notFound();
 
   return {
-    title: `${page.data.title} | BBOX Docs`,
+    title: `${page.data.title} | BBOXX Docs`,
     description: page.data.description,
   };
 }

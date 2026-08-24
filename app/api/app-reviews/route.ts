@@ -10,7 +10,7 @@ import {
 
 const TABLE_NAME = 'app_reviews';
 const LEGACY_APPS_TABLE_NAME = 'apps';
-const BBOX_APPS_TABLE_NAME = 'bbox_apps';
+const BBOXX_APPS_TABLE_NAME = 'bbox_apps';
 
 type SignedReviewPayload = {
   action?: string;
@@ -43,7 +43,7 @@ const ensureLegacyReviewApp = async (appId: string) => {
   }
 
   const { data: bboxApp, error: bboxAppError } = await supabaseAdmin
-    .from(BBOX_APPS_TABLE_NAME)
+    .from(BBOXX_APPS_TABLE_NAME)
     .select('name, description, category, tags, link, imgcid, downloads, rating, verified')
     .eq('id', appId)
     .maybeSingle();
@@ -57,8 +57,8 @@ const ensureLegacyReviewApp = async (appId: string) => {
     .insert([
       {
         id: legacyAppId,
-        name: String(bboxApp?.name || `BBOX app ${appId}`),
-        description: String(bboxApp?.description || 'BBOX app review compatibility record'),
+        name: String(bboxApp?.name || `BBOXX app ${appId}`),
+        description: String(bboxApp?.description || 'BBOXX app review compatibility record'),
         category: String(bboxApp?.category || 'Uncategorized'),
         tags: Array.isArray(bboxApp?.tags) ? bboxApp.tags.map(String) : [],
         version: '0.0.0',
@@ -68,7 +68,7 @@ const ensureLegacyReviewApp = async (appId: string) => {
         rating: typeof bboxApp?.rating === 'number' ? bboxApp.rating : Number(bboxApp?.rating) || 0,
         verified: Boolean(bboxApp?.verified),
         publisher_address: 'bbox-review-compatibility',
-        publisher_name: 'BBOX',
+        publisher_name: 'BBOXX',
         publisher_email: 'reviews@bbox.local',
         status: 'pending',
       },

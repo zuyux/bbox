@@ -1,4 +1,4 @@
-const fallbackSiteUrl = 'https://bbox.lol';
+const fallbackSiteUrl = 'https://bboxx.app';
 
 export function getSiteUrl() {
   const configuredUrl = process.env.NEXT_PUBLIC_BASE_URL?.trim();

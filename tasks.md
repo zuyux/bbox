@@ -1,4 +1,4 @@
-# BBOX Improvement Task List
+# BBOXX Improvement Task List
 
 ## 1. UI / UX polish
 
@@ -47,7 +47,7 @@
 
 - Add in-app help or tooltips for milestone funding and DAO governance
 - Update README with exact dev setup commands and architecture notes ✓
-- Add a “how to use BBOX” page for new users ✓
+- Add a “how to use BBOXX” page for new users ✓
 
 ## 9. Security and privacy
 

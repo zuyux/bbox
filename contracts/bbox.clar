@@ -1,4 +1,4 @@
-;; BBOX - Open Bitcoin App Store - Decentralized app listing contract
+;; BBOXX - Open Bitcoin App Store - Decentralized app listing contract
 ;; Discover, evaluate, and fund open-source Bitcoin applications through transparent milestones and on-chain contracts
 
 ;; ============================================

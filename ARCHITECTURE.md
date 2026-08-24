@@ -1,6 +1,6 @@
-# BBOX Architecture
+# BBOXX Architecture
 
-BBOX is a Next.js application for discovering, submitting, reviewing, and funding open-source Bitcoin ecosystem software. The product combines a web registry, Supabase-backed operational data, IPFS/Vercel Blob media storage, browser and imported wallet flows, and Stacks/Clarity contract helpers for decentralized app listings.
+BBOXX is a Next.js application for discovering, submitting, reviewing, and funding open-source Bitcoin ecosystem software. The product combines a web registry, Supabase-backed operational data, IPFS/Vercel Blob media storage, browser and imported wallet flows, and Stacks/Clarity contract helpers for decentralized app listings.
 
 The README explains the product thesis. This document explains how the codebase fits together.
 
@@ -61,7 +61,7 @@ Core application logic and integrations live here.
 
 - `appsUtils.ts` defines the `BitcoinApp` shape used by the seed registry and provides category, search, featured-app, and stats helpers.
 - `supabaseClient.ts` creates the browser Supabase client and server-only `supabaseAdmin` client. API routes use the admin client for trusted database operations.
-- `network.ts`, `stacks-api.ts`, `contracts.ts`, and `bbox-contract.ts` encapsulate Stacks network selection, Hiro API URLs, sBTC contract constants, and BBOX contract calls.
+- `network.ts`, `stacks-api.ts`, `contracts.ts`, and `bbox-contract.ts` encapsulate Stacks network selection, Hiro API URLs, sBTC contract constants, and BBOXX contract calls.
 - `encryptedStorage.ts`, `encryptedWalletSigning.ts`, `walletUnlock.ts`, and wallet-specific helpers implement imported-wallet storage, signing, and unlock behavior.
 - `profileApi.ts`, `allProfilesApi.ts`, `connectedAccountsApi.ts`, `emailVerification.ts`, and `commentSigning.ts` are client/server API helpers around user data and signed actions.
 - `pinata.ts`, `pinataUpload.ts`, `directPinataUpload.ts`, `ipfs-utils.ts`, and `ipfs-metadata.ts` handle IPFS URL generation and Pinata upload conventions.
@@ -133,7 +133,7 @@ Comment creation requires a wallet address, message, signature, signed payload, 
 
 ### Uploads And Media
 
-BBOX uses two upload paths:
+BBOXX uses two upload paths:
 
 - **Pinata/IPFS:** `/api/upload-metadata`, Pinata helpers, and IPFS URL utilities are used for durable metadata and CID-based media references.
 - **Vercel Blob:** `/api/upload-to-blob` creates presigned upload tokens for larger user media, validating file type and size before generating a client upload token.
@@ -142,7 +142,7 @@ BBOX uses two upload paths:
 
 ## Wallet And Session Model
 
-BBOX has two wallet layers:
+BBOXX has two wallet layers:
 
 1. **Connected wallet state:** `components/WalletProvider.tsx` stores an address and wallet type (`leather`, `xverse`, or `imported`) in local storage. This is the lightweight app-wide identity context used by many UI flows.
 2. **Encrypted imported wallet state:** `components/EncryptedWalletProvider.tsx` works with `lib/encryptedStorage.ts` to store imported wallet material encrypted by passphrase, restore active sessions, lock on expiry, broadcast cross-tab events, and support devnet wallets during local development.
@@ -156,7 +156,7 @@ Stacks integration is organized around a few small modules:
 - `lib/network.ts` determines the active network from local storage or `NEXT_PUBLIC_STACKS_NETWORK`.
 - `lib/stacks-api.ts` maps `mainnet`, `testnet`, and `devnet` to Hiro-compatible API base URLs.
 - `lib/contracts.ts` contains sBTC contract identifiers and asset string helpers.
-- `lib/bbox-contract.ts` performs BBOX contract reads and transaction construction/broadcasting helpers.
+- `lib/bbox-contract.ts` performs BBOXX contract reads and transaction construction/broadcasting helpers.
 - `contracts/bbox.clar` is the Clarity source for app registry, metadata hash updates, voting, ratings, admin controls, and listing fee behavior.
 
 The contract design keeps large or frequently changing app details off-chain. On-chain state points to IPFS metadata and records publisher-controlled registry actions.

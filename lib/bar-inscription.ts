@@ -143,7 +143,7 @@ export function estimateBarInscriptionFees(payload: BarPayload, feeRate = 8, ser
 export async function getBarOrdinalsAddress(): Promise<string> {
   const response = await request('getAccounts', {
     purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
-    message: 'BBOX needs your Bitcoin Taproot address to inscribe app metadata through BAR.',
+    message: 'BBOXX needs your Bitcoin Taproot address to inscribe app metadata through BAR.',
   });
 
   if (response.status === 'error') {
