@@ -1,64 +1,10 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-
-<svg
-   width="800px"
-   height="800px"
-   viewBox="0 0 24 24"
-   fill="none"
-   version="1.1"
-   id="svg1"
-   sodipodi:docname="email.svg"
-   inkscape:version="1.4.4 (1:1.4.4+202605061436+dcaf3e7d9e)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs1">
-    <inkscape:path-effect
-       effect="fillet_chamfer"
-       id="path-effect1"
-       is_visible="true"
-       lpeversion="1"
-       nodesatellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 | F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 | F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1"
-       radius="0"
-       unit="px"
-       method="auto"
-       mode="F"
-       chamfer_steps="1"
-       flexible="false"
-       use_knot_distance="true"
-       apply_no_radius="true"
-       apply_with_radius="true"
-       only_selected="false"
-       hide_knots="false" />
-  </defs>
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="#505050"
-     bordercolor="#eeeeee"
-     borderopacity="1"
-     inkscape:showpageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#505050"
-     showguides="false"
-     inkscape:zoom="0.8845359"
-     inkscape:cx="427.34274"
-     inkscape:cy="343.11779"
-     inkscape:window-width="1920"
-     inkscape:window-height="1011"
-     inkscape:window-x="0"
-     inkscape:window-y="32"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg1" />
-  <path
-     fill-rule="evenodd"
-     clip-rule="evenodd"
-     d="M 20.25,5.25 H 3.75 L 3,6 v 12 l 0.75,0.75 h 16.5 L 21,18 V 6 L 20.25,5.25 M 4.5,7.6955 V 17.25 h 15 V 7.69525 c 0,0 -4.121386,6.818342 -7.5001,6.81835 C 8.621291,14.513608 4.5,7.6955 4.5,7.6955 Z M 18.3099,6.75 H 5.68986 c 0,0 3.4674494,5.736404 6.31004,5.7364 2.842581,-4e-6 6.31,-5.7364 6.31,-5.7364 z"
-     fill="#0C0F0A"
-     id="path1"
-     sodipodi:nodetypes="cccccccccccccscccsc"
-     style="fill:#ffffff;stroke:#ffffff;stroke-opacity:1;stroke-width:0.99999;stroke-dasharray:none;stroke-linecap:round;paint-order:stroke fill markers;stroke-linejoin:round" />
+<svg width="24" height="24" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_4482_9788)">
+<path d="M17.56 3.66992H6.44C3.99 3.66992 2 5.65992 2 8.10992V15.8899C2 18.3399 3.99 20.3299 6.44 20.3299H17.55C20 20.3299 21.99 18.3399 21.99 15.8899V8.10992C21.99 5.65992 20 3.66992 17.55 3.66992H17.56ZM17.86 9.35992L13.19 11.3799C12.81 11.5399 12.41 11.6199 12.01 11.6199C11.61 11.6199 11.2 11.5399 10.82 11.3699L6.15 9.32992C5.77 9.15992 5.6 8.71992 5.76 8.33992C5.93 7.95992 6.37 7.78992 6.75 7.94992L11.42 9.98992C11.79 10.1499 12.22 10.1499 12.59 9.98992L17.26 7.96992C17.64 7.79992 18.08 7.97992 18.25 8.35992C18.41 8.73992 18.24 9.17992 17.86 9.34992V9.35992Z"/>
+</g>
+<defs>
+<clipPath id="clip0_4482_9788">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>
 </svg>

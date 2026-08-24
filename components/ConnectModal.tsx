@@ -7,7 +7,7 @@ import { persistCachedWalletState, queueWelcomeModalAfterSignIn, useWallet, type
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { X, Wallet, Mail } from 'lucide-react';
+import { Eye, EyeOff, X, Wallet } from 'lucide-react';
 import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 import { connectAlbyWallet } from '@/lib/albyWallet';
@@ -23,7 +23,8 @@ import {
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { useRouter } from 'next/navigation';
 import { getConnectedAccountPasskeyByAddress, getConnectedAccountByAddress } from '@/lib/connectedAccountsApi';
-import { decryptPortableEncryptedWallet, type WalletData } from '@/lib/encryptedStorage';
+import { decryptPortableEncryptedWallet, getStoredEncryptedWallet, validatePassphraseStrength, type WalletData } from '@/lib/encryptedStorage';
+import { createStacksAccount } from '@/lib/stacksWallet';
 import ImportWalletModal from './ImportWalletModal';
 // Password verification utility for settings changes
 // Usage: await verifyPassphraseForSettings(address, passphrase, privateKey)
@@ -56,6 +57,7 @@ interface ConnectModalProps {
 }
 
 type ConnectMode = 'wallets' | 'email' | 'import';
+type EmailAuthStep = 'credentials' | 'create';
 
 interface EmailAccountPayload {
   account: {
@@ -120,6 +122,11 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
     setWallets([...detectWalletExtensions()].sort((a, b) => a.name.localeCompare(b.name)));
   }, []);
   const [email, setEmail] = useState('');
+  const [emailAuthStep, setEmailAuthStep] = useState<EmailAuthStep>('credentials');
+  const [emailCode, setEmailCode] = useState('');
+  const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [verifiedEmailToken, setVerifiedEmailToken] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [emailStatus, setEmailStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [emailMessage, setEmailMessage] = useState('');
   const [password, setPassword] = useState('');
@@ -198,6 +205,209 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
 
 
 
+
+  const resetEmailCreationState = () => {
+    setEmailCode('');
+    setEmailCodeSent(false);
+    setVerifiedEmailToken(null);
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    setEmailMessage('');
+    if (emailAuthStep === 'create') {
+      resetEmailCreationState();
+      setEmailAuthStep('credentials');
+    }
+  };
+
+  const switchToCreateEmailAccount = (message = 'Email not registered yet. Verify it to create your account.') => {
+    setEmailAuthStep('create');
+    resetEmailCreationState();
+    setEmailStatus('idle');
+    setEmailMessage(message);
+  };
+
+  const handleRequestEmailCode = async () => {
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(trimmedEmail)) {
+      setEmailStatus('error');
+      setEmailMessage('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setEmailStatus('loading');
+      setEmailMessage('');
+      setVerifiedEmailToken(null);
+
+      const response = await fetch('/api/auth/email-code/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send verification code');
+      }
+
+      setEmailCodeSent(true);
+      setEmailStatus('success');
+      setEmailMessage('CODE sent. Check your email.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to send verification code';
+      setEmailStatus('error');
+      setEmailMessage(message);
+      onError?.(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyEmailCode = async () => {
+    const trimmedEmail = email.trim();
+    const trimmedCode = emailCode.trim();
+
+    if (!/^\d{6}$/.test(trimmedCode)) {
+      setEmailStatus('error');
+      setEmailMessage('Enter the 6-digit CODE.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setEmailStatus('loading');
+      setEmailMessage('');
+
+      const response = await fetch('/api/auth/email-code/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, code: trimmedCode }),
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.verifiedEmailToken) {
+        throw new Error(result.error || 'Failed to verify CODE');
+      }
+
+      setVerifiedEmailToken(result.verifiedEmailToken);
+      setEmailStatus('success');
+      setEmailMessage('Email verified. Create your account.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to verify CODE';
+      setVerifiedEmailToken(null);
+      setEmailStatus('error');
+      setEmailMessage(message);
+      onError?.(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateEmailAccount = async () => {
+    const trimmedEmail = email.trim();
+    const strengthInfo = validatePassphraseStrength(password);
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setEmailStatus('error');
+      setEmailMessage('Please enter a valid email address');
+      return;
+    }
+
+    if (!verifiedEmailToken) {
+      setEmailStatus('error');
+      setEmailMessage('Verify your email before creating your account.');
+      return;
+    }
+
+    if (!strengthInfo.isValid) {
+      setEmailStatus('error');
+      setEmailMessage(`Password needs: ${strengthInfo.feedback.join(', ')}`);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setEmailStatus('loading');
+      setEmailMessage('');
+
+      const { mnemonic, stxPrivateKey, address, bitcoinAddress, rootstockAddress, liquidAddress, nostrPublicKey } = await createStacksAccount('mainnet');
+      const walletData: WalletData = {
+        mnemonic,
+        privateKey: stxPrivateKey,
+        bitcoinAddress,
+        rootstockAddress,
+        liquidAddress,
+        nostrPublicKey,
+        address,
+        label: `BBOXX Wallet - ${trimmedEmail}`,
+      };
+
+      await createEncryptedWallet(walletData, password);
+      const encryptedSnapshot = getStoredEncryptedWallet();
+      if (!encryptedSnapshot) {
+        throw new Error('Failed to capture encrypted wallet snapshot. Please try again.');
+      }
+
+      const saveResponse = await fetch('/api/save-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          verifiedEmailToken,
+          passkey: CryptoJS.SHA256(stxPrivateKey + password).toString(),
+          passphrase: password,
+          address,
+          encryptedWallet: {
+            encryptedMnemonic: encryptedSnapshot.encryptedMnemonic,
+            encryptedPrivateKey: encryptedSnapshot.encryptedPrivateKey,
+            salt: encryptedSnapshot.salt,
+            iv: encryptedSnapshot.iv,
+            version: encryptedSnapshot.version,
+            label: encryptedSnapshot.label,
+            bitcoinAddress: encryptedSnapshot.bitcoinAddress,
+            rootstockAddress: encryptedSnapshot.rootstockAddress,
+            liquidAddress: encryptedSnapshot.liquidAddress,
+            nostrPublicKey: encryptedSnapshot.nostrPublicKey,
+          },
+        }),
+      });
+      const saveResult = await saveResponse.json().catch(() => null);
+
+      if (!saveResponse.ok) {
+        throw new Error(saveResult?.error || 'Failed to create account.');
+      }
+
+      await fetch('/api/wallet-connect/account-created', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, bitcoinAddress: walletData.bitcoinAddress, preVerified: true }),
+      }).catch((error) => {
+        console.warn('Failed to send account created email:', error);
+      });
+
+      setAddress(walletData.address);
+      setWalletType('imported');
+      await persistSessionForWallet(walletData.address, 'imported');
+      setPassword('');
+      setEmailStatus('success');
+      setEmailMessage('Account created. Redirecting...');
+      onSuccess?.();
+      onClose();
+      router.push(`/welcome?email=${encodeURIComponent(trimmedEmail)}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to create account';
+      setEmailStatus('error');
+      setEmailMessage(message);
+      onError?.(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleEmailConnect = async () => {
     const identifier = email.trim();
@@ -300,6 +510,22 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
       router.push('/wallet');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to authenticate account';
+      if (identifier.includes('@')) {
+        try {
+          const checkResponse = await fetch('/api/profile/check-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: identifier }),
+          });
+          const checkResult = await checkResponse.json();
+          if (checkResponse.ok && checkResult.exists === false) {
+            switchToCreateEmailAccount();
+            return;
+          }
+        } catch (checkError) {
+          console.warn('Email availability check failed:', checkError);
+        }
+      }
       setEmailStatus('error');
       setEmailMessage(msg);
       onError?.(msg);
@@ -319,7 +545,7 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="text-foreground text-xl font-semibold flex items-center">
             <Wallet className="w-5 h-5 mr-2" />
-            <LocalizedText>{connectMode === 'import' ? 'Recover Wallet' : connectMode === 'email' ? 'Sign in with username or email' : 'Connect Wallet'}
+            <LocalizedText>{connectMode === 'import' ? 'Recover Wallet' : connectMode === 'email' ? 'Continue with Email' : 'Connect Wallet'}
           </LocalizedText></h2>
           <button 
             onClick={onClose}
@@ -550,43 +776,119 @@ export default function ConnectModal({ onClose, onSuccess, onError, initialConne
                 className="w-full h-12 rounded-lg mb-2 bg-white text-gray-900 border border-gray-300 font-semibold text-base flex items-center px-4 hover:bg-gray-50 cursor-pointer"
                 type="button"
               >
-                <Mail className="w-5 h-5 mr-2" />
-                <LocalizedText>Sign In with Username or Email
+                <Image src="/email.svg" alt="" width={22} height={22} className="mr-2 h-5 w-5" />
+                <LocalizedText>Continue with Email
               </LocalizedText></Button>
             </>
           )}
           {connectMode === "email" && (
-            <div className="space-y-2 text-black">
+            <div className="space-y-3 text-black">
               <div className="space-y-0">
-                <Label htmlFor="email" className="hidden">Username or email</Label>
+                <Label htmlFor="email" className="hidden">Email</Label>
                 <Input
                   id="email"
-                  type="text"
-                  autoComplete="username"
+                  type="email"
+                  autoComplete="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Username or email"
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder="Email"
                   className="h-12 bg-background px-5 py-3 text-base text-foreground border-foreground/40 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                  disabled={isLoading || Boolean(verifiedEmailToken)}
                 />
               </div>
               <div className="space-y-0">
                 <Label htmlFor="password" className="hidden"><LocalizedText>Password</LocalizedText></Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  className="h-12 bg-background px-5 py-3 text-base text-foreground border-foreground/40 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className="h-12 bg-background px-5 py-3 pr-12 text-base text-foreground border-foreground/40 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                    autoComplete={emailAuthStep === 'create' ? 'new-password' : 'current-password'}
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    disabled={isLoading}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-              <Button 
-                onClick={handleEmailConnect} 
-                disabled={!email || !password || isLoading} 
-                className="w-full h-11"
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
+              {emailAuthStep === 'credentials' ? (
+                <Button 
+                  onClick={handleEmailConnect} 
+                  disabled={!email || !password || isLoading} 
+                  className="w-full h-11"
+                >
+                  {isLoading ? "Checking..." : "Continue with Email"}
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      onClick={handleRequestEmailCode}
+                      disabled={!email || isLoading || Boolean(verifiedEmailToken)}
+                      className="flex-1 h-11"
+                    >
+                      {emailCodeSent ? 'Resend CODE' : 'Send CODE'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        resetEmailCreationState();
+                        setEmailAuthStep('credentials');
+                        setEmailMessage('');
+                      }}
+                      disabled={isLoading}
+                      className="h-11"
+                    >
+                      Change
+                    </Button>
+                  </div>
+                  {emailCodeSent && (
+                    <div className="flex gap-2">
+                      <Input
+                        id="email-code"
+                        type="text"
+                        inputMode="numeric"
+                        value={emailCode}
+                        onChange={(e) => {
+                          setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                          setVerifiedEmailToken(null);
+                        }}
+                        placeholder="CODE"
+                        className="h-12 bg-background px-5 py-3 text-base text-foreground border-foreground/40 focus-visible:border-orange-500 focus-visible:ring-orange-500/30 focus-visible:ring-[3px]"
+                        autoComplete="one-time-code"
+                        disabled={isLoading || Boolean(verifiedEmailToken)}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleVerifyEmailCode}
+                        disabled={emailCode.length !== 6 || isLoading || Boolean(verifiedEmailToken)}
+                        className="h-12"
+                      >
+                        Verify
+                      </Button>
+                    </div>
+                  )}
+                  <Button
+                    type="button"
+                    onClick={handleCreateEmailAccount}
+                    disabled={!password || !verifiedEmailToken || isLoading}
+                    className="w-full h-11"
+                  >
+                    {isLoading ? 'Continuing...' : 'Continue with Email'}
+                  </Button>
+                </div>
+              )}
               {emailMessage && (
                 <div className="text-sm" style={{ color: emailStatus === 'error' ? 'red' : 'green', marginTop: 8 }}>
                   {emailMessage}

@@ -4,12 +4,13 @@ import { assertVerifiedEmailToken, VerifiedEmailTokenError } from '@/lib/emailCo
 import { getHashedIp } from '@/lib/visitorIdentity';
 import { sendAccountActivityNotification } from '@/lib/accountActivityNotifications';
 import { createPasswordVerifier } from '@/lib/server/passwordVerifier';
+import { verifyGoogleIdToken } from '@/lib/server/googleAuth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, passkey, passphrase, address, encryptedWallet, verifiedEmailToken } = await request.json();
+    const { email, passkey, passphrase, address, encryptedWallet, verifiedEmailToken, googleIdToken } = await request.json();
 
-    if (!email || !passkey || !passphrase || !address || !encryptedWallet || !verifiedEmailToken) {
+    if (!email || !passkey || !passphrase || !address || !encryptedWallet || (!verifiedEmailToken && !googleIdToken)) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -53,17 +54,34 @@ export async function POST(request: NextRequest) {
     const trimmedEmail = email.trim();
     const normalizedEmail = trimmedEmail.toLowerCase();
 
-    try {
-      assertVerifiedEmailToken(verifiedEmailToken, normalizedEmail);
-    } catch (tokenError) {
-      if (tokenError instanceof VerifiedEmailTokenError) {
+    if (googleIdToken) {
+      try {
+        const googleIdentity = await verifyGoogleIdToken(googleIdToken);
+        if (googleIdentity.email !== normalizedEmail) {
+          return NextResponse.json(
+            { error: 'Google credential does not match account email' },
+            { status: 401 }
+          );
+        }
+      } catch (tokenError) {
         return NextResponse.json(
-          { error: tokenError.message },
-          { status: tokenError.statusCode }
+          { error: tokenError instanceof Error ? tokenError.message : 'Invalid Google credential' },
+          { status: 401 }
         );
       }
+    } else {
+      try {
+        assertVerifiedEmailToken(verifiedEmailToken, normalizedEmail);
+      } catch (tokenError) {
+        if (tokenError instanceof VerifiedEmailTokenError) {
+          return NextResponse.json(
+            { error: tokenError.message },
+            { status: tokenError.statusCode }
+          );
+        }
 
-      throw tokenError;
+        throw tokenError;
+      }
     }
 
     const [existingAccountResult, existingProfileResult] = await Promise.all([

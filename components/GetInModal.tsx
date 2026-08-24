@@ -8,15 +8,15 @@ import { persistCachedWalletState, queueWelcomeModalAfterSignIn, useWallet } fro
 import { useEncryptedWallet } from './EncryptedWalletProvider';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { CircleHelp, X, Shield } from 'lucide-react';
+import { CircleHelp, X } from 'lucide-react';
 import { createStacksAccount } from '@/lib/stacksWallet';
 import { useRouter } from 'next/navigation';
 import { PasswordInput } from '@/components/PasswordInput';
 import ConnectModal from './ConnectModal';
 import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
-import { formatStxAddress } from '@/lib/address-utils';
 import { getStoredEncryptedWallet } from '@/lib/encryptedStorage';
+import { requestGoogleIdToken } from '@/lib/googleIdentity';
 import { connectAlbyWallet } from '@/lib/albyWallet';
 import { connectNostriaSigner } from '@/lib/nostriaSigner';
 import { connectOkxWallet } from '@/lib/okxWallet';
@@ -31,7 +31,6 @@ import {
 export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const { address, setAddress, setWalletType } = useWallet();
   const {
-    isWalletEncrypted,
     isAuthenticated: isEncryptedAuthenticated,
     isSessionLocked,
     createEncryptedWallet,
@@ -48,6 +47,11 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
   const [showEncryptedWalletFlow, setShowEncryptedWalletFlow] = useState(false);
   const [encryptedWalletMode, setEncryptedWalletMode] = useState<'unlock' | 'create'>('unlock');
   const [createWalletError, setCreateWalletError] = useState<string | null>(null);
+  const [googleAccount, setGoogleAccount] = useState<{
+    email: string;
+    verifiedEmailToken: string;
+    idToken: string;
+  } | null>(null);
 
   const walletOptions = [
     { id: 'alby', label: 'Alby', icon: '/alby.svg', needsContrastPlate: true, mode: 'wallets' as const },
@@ -267,6 +271,37 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     }
   };
 
+  const handleGoogleContinue = async () => {
+    setWalletError(null);
+    setWalletInstallUrl(null);
+    setCreateWalletError(null);
+
+    try {
+      const idToken = await requestGoogleIdToken();
+      const response = await fetch('/api/auth/google/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.email || !result.verifiedEmailToken) {
+        throw new Error(result.error || 'Google sign-in failed.');
+      }
+
+      setGoogleAccount({
+        email: result.email,
+        verifiedEmailToken: result.verifiedEmailToken,
+        idToken,
+      });
+      setEncryptedWalletMode('create');
+      setShowEncryptedWalletFlow(true);
+    } catch (error) {
+      setWalletError(error instanceof Error ? error.message : 'Google sign-in failed.');
+      console.error('Google sign-in error:', error);
+    }
+  };
+
   useEffect(() => {
     if (address && onClose) {
       onClose();
@@ -296,14 +331,15 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     try {
       if (encryptedWalletMode === 'create') {
         setCreateWalletError(null);
-        const trimmedEmail = email?.trim();
+        const trimmedEmail = googleAccount?.email || email?.trim();
+        const nextVerifiedEmailToken = googleAccount?.verifiedEmailToken || verifiedEmailToken;
 
         if (!trimmedEmail) {
           setCreateWalletError('Email is required to create a wallet.');
           return;
         }
 
-        if (!verifiedEmailToken) {
+        if (!nextVerifiedEmailToken) {
           setCreateWalletError('Verify your email before creating a wallet.');
           return;
         }
@@ -325,13 +361,14 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
         }
 
         // Generate new wallet data for encryption
-        const { mnemonic, stxPrivateKey, address, bitcoinAddress, rootstockAddress, liquidAddress } = await createStacksAccount('mainnet');
+        const { mnemonic, stxPrivateKey, address, bitcoinAddress, rootstockAddress, liquidAddress, nostrPublicKey } = await createStacksAccount('mainnet');
         const walletData = {
           mnemonic,
           privateKey: stxPrivateKey,
           bitcoinAddress,
           rootstockAddress,
           liquidAddress,
+          nostrPublicKey,
           address,
           label: 'sumak'
         };
@@ -355,7 +392,8 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
               },
               body: JSON.stringify({
                 email: trimmedEmail,
-                verifiedEmailToken,
+                verifiedEmailToken: nextVerifiedEmailToken,
+                googleIdToken: googleAccount?.idToken,
                 passkey: CryptoJS.SHA256(stxPrivateKey + password).toString(),
                 passphrase: password,
                 address,
@@ -369,6 +407,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 	                  bitcoinAddress: encryptedSnapshot.bitcoinAddress,
 	                  rootstockAddress: encryptedSnapshot.rootstockAddress,
 	                  liquidAddress: encryptedSnapshot.liquidAddress,
+                    nostrPublicKey: encryptedSnapshot.nostrPublicKey,
 	                }
 	              }),
             });
@@ -441,12 +480,6 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       // Error will be handled by the PassphraseInput component
       console.error('Encrypted wallet operation failed:', error);
     }
-  };
-
-  const handleShowEncryptedWallet = () => {
-    setEncryptedWalletMode(isWalletEncrypted ? 'unlock' : 'create');
-    setCreateWalletError(null);
-    setShowEncryptedWalletFlow(true);
   };
 
   return (
@@ -522,6 +555,9 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
                 error={encryptedWalletMode === 'create' ? createWalletError : encryptedAuthError}
                 showStrengthIndicator={encryptedWalletMode === 'create'}
                 onCancel={() => setShowEncryptedWalletFlow(false)}
+                initialEmail={googleAccount?.email}
+                verifiedEmailTokenOverride={googleAccount?.verifiedEmailToken}
+                emailLocked={Boolean(googleAccount)}
               />
 
               {encryptedWalletMode === 'unlock' && (
@@ -625,38 +661,37 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 
               <div className="mt-2">
                 <Button
-                  onClick={() => {
-                    setImportModalMode('email');
-                    setShowImportModal(true);
-                  }}
-                  className="w-full h-12 rounded-[9px] bg-background text-foreground font-semibold text-base cursor-pointer flex items-center px-4 border border-border hover:bg-muted"
+                  onClick={handleGoogleContinue}
+                  className="mb-2 w-full h-12 rounded-[9px] bg-background text-foreground font-semibold text-base cursor-pointer flex items-center px-4 border border-border hover:bg-muted"
                   type="button"
                 >
                   <Image
-                    src="/wallet.svg"
-                    alt="Sign in With Email"
+                    src="/google-ico.svg"
+                    alt="Google"
                     width={18}
                     height={18}
                     className="mr-3 invert dark:invert-0"
                     unoptimized
                   />
-                  <span className="text-center flex-1"><LocalizedText>Email Signing</LocalizedText></span>
+                  <span className="text-center flex-1"><LocalizedText>Continue with Google</LocalizedText></span>
                 </Button>
-              </div>
-
-              {/* Encrypted Wallet Option */}
-              <div>
                 <Button
-                  onClick={handleShowEncryptedWallet}
+                  onClick={() => {
+                    setImportModalMode('email');
+                    setShowImportModal(true);
+                  }}
                   className="w-full h-12 rounded-[9px] bg-orange-500 text-white font-semibold text-base cursor-pointer flex items-center px-4 hover:bg-orange-600"
                   type="button"
                 >
-                  <Shield className="text-white w-[18px] h-[18px] mx-[5px]"/>
-                  <span className="text-center flex-1 text-white">
-                    {isWalletEncrypted && walletInfo
-                      ? `Unlock ${formatStxAddress(walletInfo.address)}`
-                      : "Create Account"}
-                  </span>
+                  <Image
+                    src="/email.svg"
+                    alt="Email"
+                    width={18}
+                    height={18}
+                    className="mr-3"
+                    unoptimized
+                  />
+                  <span className="text-center flex-1 text-white"><LocalizedText>Continue with Email</LocalizedText></span>
                 </Button>
               </div>
             </>
