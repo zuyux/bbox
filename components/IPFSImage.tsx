@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { extractIPFSHash, optimizeIPFSUrl } from '@/lib/ipfs-utils';
 
@@ -33,72 +33,18 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
 }) => {
   const [currentSrc, setCurrentSrc] = useState<string>('');
   const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadImageWithFallback = async () => {
-      setIsLoading(true);
-      setHasError(false);
+    setHasError(false);
 
-      const hash = extractIPFSHash(src);
-      if (!hash) {
-        console.error('Invalid IPFS hash for image:', src);
-        setCurrentSrc(src);
-        setIsLoading(false);
-        return;
-      }
+    const hash = extractIPFSHash(src);
+    if (!hash) {
+      console.error('Invalid IPFS hash for image:', src);
+      setCurrentSrc(src);
+      return;
+    }
 
-      // Try different IPFS gateways
-      const gateways = [
-        'https://gateway.pinata.cloud/ipfs/',
-        'https://ipfs.io/ipfs/',
-        'https://cloudflare-ipfs.com/ipfs/',
-        'https://dweb.link/ipfs/',
-        'https://gateway.ipfs.io/ipfs/'
-      ];
-
-      for (const gateway of gateways) {
-        try {
-          const testUrl = `${gateway}${hash}`;
-          
-          // Test if the image loads
-          await new Promise<void>((resolve, reject) => {
-            const img = document.createElement('img');
-            const timeoutId = window.setTimeout(() => {
-              img.onload = null;
-              img.onerror = null;
-              reject(new Error('Timeout'));
-            }, 10000);
-
-            img.onload = () => {
-              window.clearTimeout(timeoutId);
-              resolve();
-            };
-            img.onerror = () => {
-              window.clearTimeout(timeoutId);
-              reject(new Error('Load failed'));
-            };
-            img.crossOrigin = 'anonymous';
-            img.src = testUrl;
-          });
-
-          // If we get here, the image loaded successfully
-          setCurrentSrc(optimizeIPFSUrl(testUrl));
-          setIsLoading(false);
-          return;
-        } catch {
-          continue;
-        }
-      }
-
-      // All gateways failed
-      console.error('Failed to load image from all IPFS gateways');
-      setHasError(true);
-      setCurrentSrc(src); // Fallback to original URL
-      setIsLoading(false);
-    };
-
-    loadImageWithFallback();
+    setCurrentSrc(optimizeIPFSUrl(src));
   }, [src]);
 
   const handleImageError = () => {
@@ -107,7 +53,6 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
   };
 
   const handleImageLoad = () => {
-    setIsLoading(false);
     onLoad?.();
   };
 
@@ -122,7 +67,7 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
     );
   }
 
-  if (isLoading || !currentSrc) {
+  if (!currentSrc) {
     return (
       <div className={`flex items-center justify-center bg-transparent ${className}`}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -130,20 +75,20 @@ const IPFSImage: React.FC<IPFSImageProps> = ({
     );
   }
 
-  const imageProps = {
-    src: currentSrc,
-    alt: alt || 'IPFS Image',
-    className,
-    onError: handleImageError,
-    onLoad: handleImageLoad,
-    priority,
-    unoptimized: true,
-    ...(fill
-      ? { fill: true, sizes: sizes || '100vw', ...(loading ? { loading } : {}) }
-      : { width: width || 400, height: height || 400, ...(loading ? { loading } : {}) }),
-  };
-
-  return <Image {...imageProps} />;
+  return (
+    <Image
+      src={currentSrc}
+      alt={alt || 'IPFS Image'}
+      className={className}
+      onError={handleImageError}
+      onLoad={handleImageLoad}
+      priority={priority}
+      unoptimized
+      {...(fill
+        ? { fill: true, sizes: sizes || '100vw', ...(loading ? { loading } : {}) }
+        : { width: width || 400, height: height || 400, ...(loading ? { loading } : {}) })}
+    />
+  );
 };
 
 export default IPFSImage;

@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import type { Locale } from '@/lib/i18n';
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const configuredFromAddress = process.env.RESEND_FROM_EMAIL?.trim();
@@ -170,32 +171,109 @@ export const emailTemplates = {
     `
   }),
 
-  verifiedAccountCreated: ({ bitcoinAddress }: {
+  verifiedAccountCreated: ({ bitcoinAddress, locale = 'en' }: {
     bitcoinAddress: string;
-  }) => ({
-    subject: "BBOXX Account Created Successfully",
+    locale?: Locale;
+  }) => {
+    const templates = {
+      en: {
+        subject: 'Welcome to BBOXX - your account is ready',
+        heading: "Welcome to BBOXX - we're glad you're here!",
+        intro: 'Your Google email has been verified and your account is ready. You are now part of a growing community helping make trustworthy open-source software easier to discover, support, and preserve.',
+        whatTitle: 'What is BBOXX?',
+        shortFor: 'BBOXX is short for Bitcoin Box',
+        whatLead: 'an open home for high-integrity software and the people who build it.',
+        whatBody: 'BBOXX is a Bitcoin-anchored registry and funding layer where anyone can discover verified open-source apps, review transparent project information, support public goods, and follow the work behind each project. Builders keep control of their records while Bitcoin provides a durable, auditable foundation.',
+        nextTitle: 'What you can do next',
+        nextItems: [
+          'Explore verified apps across Bitcoin, privacy, infrastructure, developer tools, AI, games, and public-good software.',
+          'Keep your builder or user profile useful with links, project details, funding information, and account settings.',
+          'Support open work with transparent project records and direct funding paths when available.',
+        ],
+        addressLabel: 'Bitcoin Address:',
+        securityTitle: 'Important Security Notice:',
+        securityBody: 'Keep your mnemonic/seed phrase safe. Never share it with anyone. This is the only way to recover your wallet.',
+        cta: 'Explore BBOXX',
+        footer: 'The Universal Registry for Verified Software',
+      },
+      es: {
+        subject: 'Bienvenido a BBOXX - tu cuenta esta lista',
+        heading: 'Bienvenido a BBOXX - nos alegra que estes aqui.',
+        intro: 'Tu correo de Google fue verificado y tu cuenta esta lista. Ahora formas parte de una comunidad que ayuda a que el software de codigo abierto confiable sea mas facil de descubrir, apoyar y preservar.',
+        whatTitle: 'Que es BBOXX?',
+        shortFor: 'BBOXX significa Bitcoin Box',
+        whatLead: 'un hogar abierto para software de alta integridad y las personas que lo construyen.',
+        whatBody: 'BBOXX es un registro y capa de financiamiento anclados en Bitcoin donde cualquiera puede descubrir aplicaciones de codigo abierto verificadas, revisar informacion transparente de proyectos, apoyar bienes publicos y seguir el trabajo detras de cada proyecto. Los builders mantienen el control de sus registros mientras Bitcoin aporta una base durable y auditable.',
+        nextTitle: 'Que puedes hacer ahora',
+        nextItems: [
+          'Explora apps verificadas de Bitcoin, privacidad, infraestructura, herramientas para desarrolladores, IA, juegos y software de bien publico.',
+          'Manten util tu perfil de builder o usuario con enlaces, detalles de proyectos, informacion de financiamiento y ajustes de cuenta.',
+          'Apoya trabajo abierto con registros transparentes de proyectos y rutas directas de financiamiento cuando esten disponibles.',
+        ],
+        addressLabel: 'Direccion Bitcoin:',
+        securityTitle: 'Aviso importante de seguridad:',
+        securityBody: 'Guarda bien tu frase mnemonica/seed phrase. Nunca la compartas con nadie. Es la unica forma de recuperar tu wallet.',
+        cta: 'Explorar BBOXX',
+        footer: 'El Registro Universal de Software Verificado',
+      },
+      pt: {
+        subject: 'Bem-vindo ao BBOXX - sua conta esta pronta',
+        heading: 'Bem-vindo ao BBOXX - que bom ter voce aqui.',
+        intro: 'Seu email do Google foi verificado e sua conta esta pronta. Agora voce faz parte de uma comunidade que ajuda software open-source confiavel a ser mais facil de descobrir, apoiar e preservar.',
+        whatTitle: 'O que e BBOXX?',
+        shortFor: 'BBOXX significa Bitcoin Box',
+        whatLead: 'uma casa aberta para software de alta integridade e para as pessoas que o constroem.',
+        whatBody: 'BBOXX e um registro e uma camada de financiamento ancorados em Bitcoin onde qualquer pessoa pode descobrir apps open-source verificados, revisar informacoes transparentes de projetos, apoiar bens publicos e acompanhar o trabalho por tras de cada projeto. Builders mantem controle dos seus registros enquanto Bitcoin oferece uma base duravel e auditavel.',
+        nextTitle: 'O que voce pode fazer agora',
+        nextItems: [
+          'Explore apps verificados de Bitcoin, privacidade, infraestrutura, ferramentas para desenvolvedores, IA, jogos e software de bem publico.',
+          'Mantenha seu perfil de builder ou usuario util com links, detalhes de projetos, informacoes de financiamento e configuracoes da conta.',
+          'Apoie trabalho aberto com registros transparentes de projetos e caminhos diretos de financiamento quando disponiveis.',
+        ],
+        addressLabel: 'Endereco Bitcoin:',
+        securityTitle: 'Aviso importante de seguranca:',
+        securityBody: 'Guarde bem sua frase mnemonica/seed phrase. Nunca a compartilhe com ninguem. Ela e a unica forma de recuperar sua wallet.',
+        cta: 'Explorar BBOXX',
+        footer: 'O Registro Universal de Software Verificado',
+      },
+    };
+    const copy = templates[locale] ?? templates.en;
+
+    return {
+    subject: copy.subject,
     html: `
       <div style="background:#000;padding:32px 24px;color:#fff;font-family:Arial,sans-serif;">
       <div style="background:#000;padding:32px 24px;border-radius:16px;max-width:600px;margin:auto;">
-        <h2 style="color:#ff8a00;margin-bottom:20px;">Welcome to BBOXX — we're glad you're here!</h2>
-        <p>Your email has been verified and your account is ready. You are now part of a growing community helping make trustworthy open-source software easier to discover, support, and preserve.</p>
+        <h2 style="color:#ff8a00;margin-bottom:20px;">${copy.heading}</h2>
+        <p style="color:#e5e5e5;line-height:1.6;">${copy.intro}</p>
 
         <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#000;">
-          <h3 style="margin-top:0;color:#ff8a00;">What is BBOXX?</h3>
-          <p style="margin:8px 0;color:#e5e5e5;"><strong>BBOXX is short for Bitcoin Box</strong> — an open home for high-integrity software and the people who build it.</p>
-          <p style="margin:12px 0 0;color:#e5e5e5;">BBOXX is a Bitcoin-anchored registry and funding layer where anyone can discover verified open-source apps, review transparent project information, support public goods, and follow the work behind each project. Builders keep control of their records while Bitcoin provides a durable, auditable foundation.</p>
+          <h3 style="margin-top:0;color:#ff8a00;">${copy.whatTitle}</h3>
+          <p style="margin:8px 0;color:#e5e5e5;"><strong>${copy.shortFor}</strong> - ${copy.whatLead}</p>
+          <p style="margin:12px 0 0;color:#e5e5e5;line-height:1.6;">${copy.whatBody}</p>
         </div>
 
-        <p><strong>Bitcoin Address:</strong> <code style="background:#000;border:1px solid #333;padding:4px 8px;border-radius:4px;color:#fff;">${bitcoinAddress}</code></p>
-        <div style="background:#000;border:1px solid #2f2f33;padding:16px;border-radius:8px;margin:20px 0;">
-          <p style="margin:0;color:#ff8a00;"><strong>Important Security Notice:</strong></p>
-          <p style="margin:8px 0 0 0;">Keep your mnemonic/seed phrase safe. Never share it with anyone. This is the only way to recover your wallet.</p>
+        <div style="margin:28px 0;padding:24px;border:1px solid #2f2f33;border-radius:12px;background:#000;">
+          <h3 style="margin-top:0;color:#ff8a00;">${copy.nextTitle}</h3>
+          <ul style="margin:12px 0 0;padding-left:20px;color:#e5e5e5;line-height:1.6;">
+            ${copy.nextItems.map((item) => `<li style="margin:8px 0;">${item}</li>`).join('')}
+          </ul>
         </div>
-        <p style="color:#898989;font-size:13px;">BBOXX &mdash; The Universal Registry for Verified Software</p>
+
+        <p><strong>${copy.addressLabel}</strong> <code style="display:inline-block;max-width:100%;overflow-wrap:anywhere;background:#000;border:1px solid #333;padding:4px 8px;border-radius:4px;color:#fff;">${bitcoinAddress}</code></p>
+        <div style="background:#000;border:1px solid #2f2f33;padding:16px;border-radius:8px;margin:20px 0;">
+          <p style="margin:0;color:#ff8a00;"><strong>${copy.securityTitle}</strong></p>
+          <p style="margin:8px 0 0 0;color:#e5e5e5;line-height:1.6;">${copy.securityBody}</p>
+        </div>
+        <div style="text-align:center;margin:28px 0;">
+          <a href="https://bboxx.app" style="display:inline-block;padding:12px 26px;background:#ff6a00;color:#050505;border-radius:8px;font-weight:700;text-decoration:none;">${copy.cta}</a>
+        </div>
+        <p style="color:#898989;font-size:13px;">BBOXX &mdash; ${copy.footer}</p>
       </div>
       </div>
     `
-  }),
+    };
+  },
 
   emailVerificationCode: ({ code, expiresInMinutes, verifyOnDeviceUrl }: {
     code: string;

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { optimizeIPFSUrl, preloadImageWithFallback, isSafariOrIOS } from '@/lib/ipfs-utils';
+import { optimizeIPFSUrl } from '@/lib/ipfs-utils';
 
 interface SafariOptimizedImageProps {
   src: string;
@@ -44,27 +44,9 @@ export default function SafariOptimizedImage({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Optimize the URL when running on Safari/iOS
-    if (isSafariOrIOS()) {
-      const optimized = optimizeIPFSUrl(src, filename || `sbtc-image.png`);
-      setOptimizedSrc(optimized);
-      
-      // Preload the image with automatic fallback
-      preloadImageWithFallback(src, filename)
-        .then((workingUrl) => {
-          setOptimizedSrc(workingUrl);
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error('Failed to load image with all gateways:', error);
-          setImageError(true);
-          setIsLoading(false);
-        });
-    } else {
-      // Use the original URL for other browsers
-      setOptimizedSrc(src);
-      setIsLoading(false);
-    }
+    setOptimizedSrc(optimizeIPFSUrl(src, filename || 'sbtc-image.png'));
+    setImageError(false);
+    setIsLoading(false);
   }, [src, filename]);
 
   const handleLoad = () => {

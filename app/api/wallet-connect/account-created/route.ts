@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, emailTemplates } from '@/lib/email';
 import { createEmailToken } from '@/lib/emailVerification';
+import { getPreferredLocale, isLocale } from '@/lib/i18n';
 
 const VERIFICATION_WINDOW_HOURS = 48;
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, bitcoinAddress, preVerified } = await request.json();
+    const { email, bitcoinAddress, preVerified, locale } = await request.json();
     if (!email || !bitcoinAddress) {
       return NextResponse.json({ error: 'Missing email or Bitcoin address' }, { status: 400 });
     }
+    const emailLocale = isLocale(locale)
+      ? locale
+      : getPreferredLocale(request.headers.get('accept-language'));
 
     const baseUrl =
       process.env.NEXT_PUBLIC_BASE_URL ||
@@ -17,7 +21,7 @@ export async function POST(request: NextRequest) {
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
     const emailTemplate = preVerified
-      ? emailTemplates.verifiedAccountCreated({ bitcoinAddress })
+      ? emailTemplates.verifiedAccountCreated({ bitcoinAddress, locale: emailLocale })
       : (() => {
           const verifyToken = createEmailToken({ email, address: bitcoinAddress, type: 'verify', expiresInHours: VERIFICATION_WINDOW_HOURS });
           const removeToken = createEmailToken({ email, address: bitcoinAddress, type: 'remove', expiresInHours: VERIFICATION_WINDOW_HOURS });

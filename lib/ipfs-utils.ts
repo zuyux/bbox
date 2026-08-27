@@ -43,22 +43,11 @@ export function optimizeIPFSUrl(url: string, filename?: string): string {
     return url;
   }
 
-  // Prefer our proxy API first on Safari/iOS
-  if (typeof window !== 'undefined' && isSafariOrIOS()) {
-    return `/api/ipfs-proxy?hash=${hash}&filename=${filename || 'sbtc-image.png'}`;
-  }
-
-  // Use the primary gateway for other browsers
-  const baseUrl = `${IPFS_GATEWAYS[0]}${hash}`;
-
-  if (!filename) {
-    return baseUrl;
-  }
-
   const params = new URLSearchParams();
-  params.set('filename', filename);
+  params.set('hash', hash);
+  params.set('filename', filename || 'sbtc-image.png');
 
-  return `${baseUrl}?${params.toString()}`;
+  return `/api/ipfs-proxy?${params.toString()}`;
 }
 
 /**
@@ -73,10 +62,7 @@ export function generateFallbackUrls(url: string, filename?: string): string[] {
 
   const urls: string[] = [];
   
-  // Prioritize our proxy on Safari/iOS
-  if (typeof window !== 'undefined' && isSafariOrIOS()) {
-    urls.push(`/api/ipfs-proxy?hash=${hash}&filename=${filename || 'sbtc-image.png'}`);
-  }
+  urls.push(optimizeIPFSUrl(url, filename));
 
   // Append direct gateway URLs
   IPFS_GATEWAYS.forEach(gateway => {

@@ -446,10 +446,20 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
 
           // Send confirmation email with address
           try {
+            const deviceLocale = typeof navigator !== 'undefined'
+              ? (navigator.languages || [navigator.language])
+                  .map((language) => language?.toLowerCase().split('-')[0])
+                  .find((language) => language === 'en' || language === 'es' || language === 'pt')
+              : undefined;
             const mailRes = await fetch('/api/wallet-connect/account-created', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: trimmedEmail, bitcoinAddress: walletData.bitcoinAddress, preVerified: true }),
+              body: JSON.stringify({
+                email: trimmedEmail,
+                bitcoinAddress: walletData.bitcoinAddress,
+                preVerified: true,
+                locale: deviceLocale,
+              }),
             });
             const mailResult = await mailRes.json();
             if (!mailRes.ok) {
