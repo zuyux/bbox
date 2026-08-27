@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { validatePassphraseStrength } from '@/lib/encryptedStorage';
 
+const EMAIL_CODE_VERIFICATION_STORAGE_KEY = 'bbox_email_code_verification';
+
 interface PasswordInputProps {
   onSubmit: (password: string, email?: string, verifiedEmailToken?: string) => Promise<void>;
   mode: 'unlock' | 'create' | 'change';
@@ -45,6 +47,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   const [emailCodeMessage, setEmailCodeMessage] = useState<string | null>(null);
   const [emailCodeError, setEmailCodeError] = useState<string | null>(null);
   const [emailCodeLoading, setEmailCodeLoading] = useState(false);
+  const [emailCodeLinkToken, setEmailCodeLinkToken] = useState<string | null>(null);
   const [verifiedEmailToken, setVerifiedEmailToken] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [strengthInfo, setStrengthInfo] = useState<{
@@ -66,6 +69,81 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
     setEmailCodeMessage('Google account verified.');
     setEmailCodeError(null);
   }, [verifiedEmailTokenOverride]);
+
+  useEffect(() => {
+    if (mode !== 'create' || verifiedEmailToken || typeof window === 'undefined') return;
+
+    try {
+      const storedValue = sessionStorage.getItem(EMAIL_CODE_VERIFICATION_STORAGE_KEY);
+      if (!storedValue) return;
+
+      const stored = JSON.parse(storedValue) as {
+        email?: string;
+        purpose?: string;
+        verifiedEmailToken?: string;
+        storedAt?: number;
+      };
+      const normalizedStoredEmail = stored.email?.trim().toLowerCase();
+      const normalizedCurrentEmail = email.trim().toLowerCase();
+      const storedRecently = typeof stored.storedAt === 'number' && Date.now() - stored.storedAt < 15 * 60 * 1000;
+
+      if (
+        normalizedStoredEmail &&
+        normalizedStoredEmail === normalizedCurrentEmail &&
+        stored.purpose === 'create_account' &&
+        stored.verifiedEmailToken &&
+        storedRecently
+      ) {
+        setVerifiedEmailToken(stored.verifiedEmailToken);
+        setEmailCodeSent(false);
+        setEmailCodeMessage('Email verified. You can create your wallet now.');
+        setEmailCodeError(null);
+        setEmailCodeLinkToken(null);
+        sessionStorage.removeItem(EMAIL_CODE_VERIFICATION_STORAGE_KEY);
+      }
+    } catch {
+      sessionStorage.removeItem(EMAIL_CODE_VERIFICATION_STORAGE_KEY);
+    }
+  }, [email, mode, verifiedEmailToken]);
+
+  useEffect(() => {
+    if (mode !== 'create' || !emailCodeSent || !emailCodeLinkToken || verifiedEmailToken) return;
+
+    let cancelled = false;
+    const pollVerificationStatus = async () => {
+      try {
+        const response = await fetch('/api/auth/email-code/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: emailCodeLinkToken }),
+        });
+        const result = await response.json();
+
+        if (cancelled || !response.ok) return;
+
+        if (result.verified && result.verifiedEmailToken) {
+          setVerifiedEmailToken(result.verifiedEmailToken);
+          setEmailCodeSent(false);
+          setEmailCodeLinkToken(null);
+          setEmailCodeMessage('Email verified. You can create your wallet now.');
+          setEmailCodeError(null);
+        } else if (result.expired) {
+          setEmailCodeLinkToken(null);
+          setEmailCodeError('Verification code expired. Request a new code.');
+        }
+      } catch {
+        // Keep polling quietly; manual code entry still works.
+      }
+    };
+
+    void pollVerificationStatus();
+    const intervalId = window.setInterval(pollVerificationStatus, 1000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [emailCodeLinkToken, emailCodeSent, mode, verifiedEmailToken]);
 
   // Validate password strength in real-time for create/change modes
   useEffect(() => {
@@ -118,6 +196,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
       setEmailCodeSent(false);
       setEmailCodeMessage(null);
       setEmailCodeError(null);
+      setEmailCodeLinkToken(null);
       setVerifiedEmailToken(null);
       setTouched(false);
     } catch (error) {
@@ -133,6 +212,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
     setEmailCodeSent(false);
     setEmailCodeMessage(null);
     setEmailCodeError(null);
+    setEmailCodeLinkToken(null);
     setVerifiedEmailToken(null);
   };
 
@@ -140,6 +220,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
     const trimmedEmail = email.trim();
     setEmailCodeMessage(null);
     setEmailCodeError(null);
+    setEmailCodeLinkToken(null);
     setVerifiedEmailToken(null);
 
     if (!trimmedEmail) {
@@ -166,6 +247,9 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         throw new Error(result.error || 'Failed to send verification code');
       }
 
+      if (typeof result.emailCodeLinkToken === 'string') {
+        setEmailCodeLinkToken(result.emailCodeLinkToken);
+      }
       setEmailCodeSent(true);
       setEmailCodeMessage('Verification code sent. Check your email.');
     } catch (requestError) {
@@ -200,6 +284,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
       }
 
       setVerifiedEmailToken(result.verifiedEmailToken);
+      setEmailCodeLinkToken(null);
       setEmailCodeMessage('Email verified. You can create your wallet now.');
     } catch (verifyError) {
       setVerifiedEmailToken(null);

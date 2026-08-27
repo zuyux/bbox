@@ -197,9 +197,10 @@ export const emailTemplates = {
     `
   }),
 
-  emailVerificationCode: ({ code, expiresInMinutes }: {
+  emailVerificationCode: ({ code, expiresInMinutes, verifyOnDeviceUrl }: {
     code: string;
     expiresInMinutes: number;
+    verifyOnDeviceUrl?: string;
   }) => ({
     subject: "Your BBOXX verification code",
     html: `
@@ -210,6 +211,11 @@ export const emailTemplates = {
         <div style="letter-spacing:8px;font-size:32px;font-weight:700;text-align:center;background:#000;border:1px solid #2f2f33;border-radius:12px;padding:22px;margin:24px 0;color:#fff;">
           ${code}
         </div>
+        ${verifyOnDeviceUrl ? `
+        <div style="text-align:center;margin:0 0 24px;">
+          <a href="${verifyOnDeviceUrl}" style="display:inline-block;padding:13px 28px;background:#ff6a00;color:#050505;border-radius:8px;font-weight:700;text-decoration:none;font-size:15px;">Click to Verify</a>
+        </div>
+        ` : ''}
         <p style="margin:0 0 14px;color:#9ca3af;font-size:14px;">This code expires in ${expiresInMinutes} minutes.</p>
         <p style="margin:0;color:#9ca3af;font-size:14px;">If you did not request this, you can ignore this email.</p>
         <p style="color:#898989;font-size:12px;margin-top:28px;">BBOXX &mdash; The Universal Registry for Verified Software</p>

@@ -34,6 +34,10 @@ interface VerifiedEmailTokenPayload {
   nonce: string;
 }
 
+interface EmailCodeLinkTokenPayload extends VerifiedEmailTokenPayload {
+  code: string;
+}
+
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 const createSignature = (payloadPart: string) =>
@@ -61,6 +65,26 @@ export function createVerifiedEmailToken(email: string, purpose: EmailCodePurpos
     purpose,
     iat: now,
     exp: now + VERIFIED_EMAIL_TOKEN_TTL_MINUTES * 60 * 1000,
+    nonce: crypto.randomBytes(16).toString('hex'),
+  };
+  const payloadPart = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = createSignature(payloadPart);
+
+  return `${payloadPart}.${signature}`;
+}
+
+export function createEmailCodeLinkToken(
+  email: string,
+  code: string,
+  purpose: EmailCodePurpose = EMAIL_CODE_PURPOSE
+): string {
+  const now = Date.now();
+  const payload: EmailCodeLinkTokenPayload = {
+    email: normalizeEmail(email),
+    code,
+    purpose,
+    iat: now,
+    exp: now + EMAIL_CODE_TTL_MINUTES * 60 * 1000,
     nonce: crypto.randomBytes(16).toString('hex'),
   };
   const payloadPart = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -103,6 +127,16 @@ export function decodeVerifiedEmailToken(token: string): VerifiedEmailTokenPaylo
 
   if (payload.exp < Date.now()) {
     throw new VerifiedEmailTokenError('Verified email token expired', 410);
+  }
+
+  return payload;
+}
+
+export function decodeEmailCodeLinkToken(token: string): EmailCodeLinkTokenPayload {
+  const payload = decodeVerifiedEmailToken(token) as EmailCodeLinkTokenPayload;
+
+  if (!/^\d{6}$/.test(payload.code)) {
+    throw new VerifiedEmailTokenError('Invalid verification link token');
   }
 
   return payload;

@@ -1,6 +1,6 @@
 
 import { LocalizedText } from "@/components/LocalizedText";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import CryptoJS from 'crypto-js';
 import Image from "next/image";
 import Link from 'next/link';
@@ -16,7 +16,7 @@ import ConnectModal from './ConnectModal';
 import { detectWalletExtensions } from '@/lib/detectWalletExtensions';
 import { getWalletErrorMessage, isWalletRequestCancelled } from '@/lib/walletErrors';
 import { getStoredEncryptedWallet } from '@/lib/encryptedStorage';
-import { requestGoogleIdToken } from '@/lib/googleIdentity';
+import { renderGoogleSignInButton } from '@/lib/googleIdentity';
 import { connectAlbyWallet } from '@/lib/albyWallet';
 import { connectNostriaSigner } from '@/lib/nostriaSigner';
 import { connectOkxWallet } from '@/lib/okxWallet';
@@ -40,6 +40,7 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     walletInfo
   } = useEncryptedWallet();
   const router = useRouter();
+  const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
   const [walletError, setWalletError] = useState<string | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -271,13 +272,12 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
     }
   };
 
-  const handleGoogleContinue = async () => {
+  const handleGoogleCredential = useCallback(async (idToken: string) => {
     setWalletError(null);
     setWalletInstallUrl(null);
     setCreateWalletError(null);
 
     try {
-      const idToken = await requestGoogleIdToken();
       const response = await fetch('/api/auth/google/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -300,7 +300,20 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
       setWalletError(error instanceof Error ? error.message : 'Google sign-in failed.');
       console.error('Google sign-in error:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (showEncryptedWalletFlow || !googleButtonRef.current) return;
+
+    void renderGoogleSignInButton(
+      googleButtonRef.current,
+      handleGoogleCredential,
+      (error) => {
+        setWalletError(error.message);
+        console.error('Google sign-in error:', error);
+      }
+    );
+  }, [handleGoogleCredential, showEncryptedWalletFlow]);
 
   useEffect(() => {
     if (address && onClose) {
@@ -660,21 +673,20 @@ export default function GetInModal({ onClose }: { onClose?: () => void }) {
               )}
 
               <div className="mt-2">
-                <Button
-                  onClick={handleGoogleContinue}
-                  className="mb-2 w-full h-12 rounded-[9px] bg-background text-foreground font-semibold text-base cursor-pointer flex items-center px-4 border border-border hover:bg-muted"
-                  type="button"
-                >
-                  <Image
-                    src="/google-ico.svg"
-                    alt="Google"
-                    width={18}
-                    height={18}
-                    className="mr-3 invert dark:invert-0"
-                    unoptimized
-                  />
-                  <span className="text-center flex-1"><LocalizedText>Continue with Google</LocalizedText></span>
-                </Button>
+                <div className="relative mb-2 h-12 w-full overflow-hidden rounded-[9px]">
+                  <div className="absolute inset-0 z-10 opacity-[0.01] [&>div]:!h-full [&>div]:!w-full [&_iframe]:!h-full [&_iframe]:!w-full" ref={googleButtonRef} />
+                  <div className="pointer-events-none absolute inset-0 flex h-12 w-full items-center rounded-[9px] border border-border bg-background px-4 text-base font-semibold text-foreground">
+                    <Image
+                      src="/google-ico.svg"
+                      alt="Google"
+                      width={18}
+                      height={18}
+                      className="mr-3 invert dark:invert-0"
+                      unoptimized
+                    />
+                    <span className="flex-1 text-center"><LocalizedText>Continue with Google</LocalizedText></span>
+                  </div>
+                </div>
                 <Button
                   onClick={() => {
                     setImportModalMode('email');

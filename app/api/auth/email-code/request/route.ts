@@ -6,6 +6,7 @@ import {
   PROFILE_EMAIL_CODE_PURPOSE,
   EMAIL_CODE_TTL_MINUTES,
   createEmailCode,
+  createEmailCodeLinkToken,
   hashEmailCode,
   isEmailCodePurpose,
 } from '@/lib/emailCodeAuth';
@@ -85,9 +86,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to prepare verification code' }, { status: 500 });
     }
 
+    const emailCodeLinkToken = createEmailCodeLinkToken(normalizedEmail, code, purpose);
     const template = emailTemplates.emailVerificationCode({
       code,
       expiresInMinutes: EMAIL_CODE_TTL_MINUTES,
+      verifyOnDeviceUrl: `${request.nextUrl.origin}/api/auth/email-code/link?token=${encodeURIComponent(emailCodeLinkToken)}`,
     });
 
     try {
@@ -107,6 +110,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Verification code sent',
+      emailCodeLinkToken,
     });
   } catch (error) {
     console.error('Email code request failed:', error);
